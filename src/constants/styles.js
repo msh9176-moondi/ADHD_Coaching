@@ -11,10 +11,10 @@ export const PACKAGE_COLORS = {
     border: 'border-green-200'
   },
   basic: {
-    bg: 'bg-blue-100',
-    text: 'text-blue-700',
-    badge: 'bg-blue-100 text-blue-700',
-    border: 'border-blue-200'
+    bg: 'bg-emerald-100',
+    text: 'text-emerald-700',
+    badge: 'bg-emerald-100 text-emerald-700',
+    border: 'border-emerald-200'
   },
   premium: {
     bg: 'bg-purple-100',
@@ -41,11 +41,11 @@ export const STATUS_COLORS = {
     icon: 'text-green-500'
   },
   completed: {
-    bg: 'bg-blue-50',
-    text: 'text-blue-700',
-    badge: 'bg-blue-100 text-blue-700',
-    border: 'border-blue-200',
-    icon: 'text-blue-500'
+    bg: 'bg-emerald-50',
+    text: 'text-emerald-700',
+    badge: 'bg-emerald-100 text-emerald-700',
+    border: 'border-emerald-200',
+    icon: 'text-emerald-500'
   },
   paused: {
     bg: 'bg-gray-50',
@@ -71,9 +71,9 @@ export const PRIORITY_COLORS = {
     badge: 'bg-gray-100 text-gray-600'
   },
   medium: {
-    bg: 'bg-blue-100',
-    text: 'text-blue-600',
-    badge: 'bg-blue-100 text-blue-600'
+    bg: 'bg-emerald-100',
+    text: 'text-emerald-600',
+    badge: 'bg-emerald-100 text-emerald-600'
   },
   high: {
     bg: 'bg-red-100',
@@ -90,9 +90,9 @@ export const TASK_STATUS_COLORS = {
     badge: 'bg-gray-100 text-gray-600'
   },
   in_progress: {
-    bg: 'bg-blue-100',
-    text: 'text-blue-600',
-    badge: 'bg-blue-100 text-blue-600'
+    bg: 'bg-emerald-100',
+    text: 'text-emerald-600',
+    badge: 'bg-emerald-100 text-emerald-600'
   },
   submitted: {
     bg: 'bg-yellow-100',
@@ -114,10 +114,10 @@ export const TASK_STATUS_COLORS = {
 // InfoBox variant 색상
 export const INFO_BOX_VARIANTS = {
   info: {
-    bg: 'bg-blue-50',
-    border: 'border-blue-200',
-    text: 'text-blue-800',
-    icon: 'text-blue-600'
+    bg: 'bg-emerald-50',
+    border: 'border-emerald-200',
+    text: 'text-emerald-800',
+    icon: 'text-emerald-600'
   },
   success: {
     bg: 'bg-green-50',
@@ -142,12 +142,12 @@ export const INFO_BOX_VARIANTS = {
 // StatCard 색상
 export const STAT_CARD_COLORS = {
   blue: {
-    bg: 'bg-blue-50',
-    iconBg: 'bg-blue-100',
-    icon: 'text-blue-600',
-    value: 'text-blue-600',
-    label: 'text-blue-500',
-    border: 'border-blue-100'
+    bg: 'bg-emerald-50',
+    iconBg: 'bg-emerald-100',
+    icon: 'text-emerald-600',
+    value: 'text-emerald-600',
+    label: 'text-emerald-500',
+    border: 'border-emerald-100'
   },
   green: {
     bg: 'bg-green-50',

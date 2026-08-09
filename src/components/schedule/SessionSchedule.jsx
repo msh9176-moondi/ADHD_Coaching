@@ -134,14 +134,14 @@ export function SessionSchedule({ userRole = 'coachee', coacheeId = null }) {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Calendar className="w-5 h-5 text-blue-600" />
+            <Calendar className="w-5 h-5 text-emerald-600" />
             다가오는 상담
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           {loading ? (
             <div className="flex items-center justify-center py-8">
-              <Loader2 className="w-6 h-6 animate-spin text-blue-500" />
+              <Loader2 className="w-6 h-6 animate-spin text-emerald-500" />
               <span className="ml-2 text-gray-500">불러오는 중...</span>
             </div>
           ) : sessions.length === 0 ? (
@@ -193,9 +193,9 @@ function SessionCard({ session, formatDate, showCoacheeName = false, onViewDetai
   return (
     <div className="flex flex-col md:flex-row md:items-center gap-3 md:gap-4 p-3 md:p-4 bg-gray-50 rounded-xl">
       <div className="flex items-center gap-3 md:gap-4">
-        <div className="flex-shrink-0 w-12 h-12 md:w-14 md:h-14 bg-blue-100 rounded-xl flex flex-col items-center justify-center">
-          <span className="text-base md:text-lg font-bold text-blue-600">{sessionNumber}</span>
-          <span className="text-[10px] md:text-xs text-blue-500">회기</span>
+        <div className="flex-shrink-0 w-12 h-12 md:w-14 md:h-14 bg-emerald-100 rounded-xl flex flex-col items-center justify-center">
+          <span className="text-base md:text-lg font-bold text-emerald-600">{sessionNumber}</span>
+          <span className="text-[10px] md:text-xs text-emerald-500">회기</span>
         </div>
 
         <div className="flex-1 min-w-0 md:hidden">
@@ -317,10 +317,10 @@ function MiniCalendar({ date, sessions }) {
                     ? ''
                     : hasSession
                     ? sessionCount >= 3
-                      ? 'bg-blue-600 text-white font-medium'
+                      ? 'bg-emerald-600 text-white font-medium'
                       : sessionCount >= 2
-                      ? 'bg-blue-500 text-white font-medium'
-                      : 'bg-blue-400 text-white font-medium'
+                      ? 'bg-emerald-500 text-white font-medium'
+                      : 'bg-emerald-400 text-white font-medium'
                     : isToday
                     ? 'bg-gray-200 font-medium'
                     : 'hover:bg-gray-100'
@@ -363,15 +363,15 @@ function MiniCalendar({ date, sessions }) {
       {/* 범례 */}
       <div className="flex items-center justify-end gap-3 mt-3 text-xs text-gray-500">
         <div className="flex items-center gap-1">
-          <div className="w-3 h-3 rounded bg-blue-400" />
+          <div className="w-3 h-3 rounded bg-emerald-400" />
           <span>1건</span>
         </div>
         <div className="flex items-center gap-1">
-          <div className="w-3 h-3 rounded bg-blue-500" />
+          <div className="w-3 h-3 rounded bg-emerald-500" />
           <span>2건</span>
         </div>
         <div className="flex items-center gap-1">
-          <div className="w-3 h-3 rounded bg-blue-600" />
+          <div className="w-3 h-3 rounded bg-emerald-600" />
           <span>3건+</span>
         </div>
       </div>

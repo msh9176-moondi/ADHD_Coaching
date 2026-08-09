@@ -136,7 +136,7 @@ export function SessionNote({ coachee, sessionNumber = 1, session, onDelete, onB
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
+        <Loader2 className="w-8 h-8 animate-spin text-emerald-500" />
         <span className="ml-2 text-gray-600">세션일지를 불러오는 중...</span>
       </div>
     )
@@ -156,7 +156,7 @@ export function SessionNote({ coachee, sessionNumber = 1, session, onDelete, onB
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="flex items-center gap-2">
-              <FileText className="w-5 h-5 text-blue-600" />
+              <FileText className="w-5 h-5 text-emerald-600" />
               {sessionNumber}회기 세션 일지
             </CardTitle>
             <Badge variant="primary">작성 중</Badge>
@@ -293,7 +293,7 @@ export function SessionNote({ coachee, sessionNumber = 1, session, onDelete, onB
             <Textarea
               label={
                 <span className="flex items-center gap-2">
-                  <Rocket className="w-4 h-4 text-blue-500" />
+                  <Rocket className="w-4 h-4 text-emerald-500" />
                   다음 실행 과제
                 </span>
               }
@@ -453,9 +453,9 @@ function CoacheeInfoCard({ coachee }) {
               <p className="text-lg font-semibold text-gray-900">{recentScore}</p>
               <p className="text-xs text-gray-500">현재 점수</p>
             </div>
-            <div className="p-2 bg-blue-50 rounded-lg">
-              <p className="text-lg font-semibold text-blue-600">{targetScore}</p>
-              <p className="text-xs text-blue-500">목표 점수</p>
+            <div className="p-2 bg-emerald-50 rounded-lg">
+              <p className="text-lg font-semibold text-emerald-600">{targetScore}</p>
+              <p className="text-xs text-emerald-500">목표 점수</p>
             </div>
           </div>
         </div>
@@ -495,23 +495,23 @@ function RecentRecordsCard({ coachee }) {
 
 function AIAssistCard() {
   return (
-    <Card className="border-blue-200 bg-blue-50">
+    <Card className="border-emerald-200 bg-emerald-50">
       <CardHeader className="py-3">
         <CardTitle className="text-sm flex items-center gap-2">
-          <Sparkles className="w-4 h-4 text-blue-600" />
+          <Sparkles className="w-4 h-4 text-emerald-600" />
           AI 코칭 보조
         </CardTitle>
       </CardHeader>
       <CardContent className="py-2 space-y-3 text-sm">
         <div>
           <p className="font-medium text-blue-800 mb-1">확인해 볼 가능성</p>
-          <p className="text-blue-700">
+          <p className="text-emerald-700">
             시작 전 부담감보다 휴대폰의 즉각적인 사회적 보상이 더 강하게 작용할 수 있습니다.
           </p>
         </div>
         <div>
           <p className="font-medium text-blue-800 mb-1">추가 질문 제안</p>
-          <p className="text-blue-700">
+          <p className="text-emerald-700">
             "휴대폰을 보기 직전 어떤 기분이나 생각이 있었나요?"
           </p>
         </div>

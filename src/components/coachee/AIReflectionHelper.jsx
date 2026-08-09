@@ -136,7 +136,7 @@ export function AIReflectionInsight({ reflection }) {
 
   return (
     <div className="mt-4 pt-4 border-t">
-      <div className="bg-gradient-to-br from-purple-50 to-indigo-50 rounded-lg p-4 space-y-3">
+      <div className="bg-gradient-to-br from-purple-50 to-orange-50 rounded-lg p-4 space-y-3">
         <div className="flex items-center gap-2 mb-2">
           <Sparkles className="w-4 h-4 text-purple-600" />
           <h4 className="font-medium text-purple-800 text-sm">AI 인사이트</h4>
@@ -157,8 +157,8 @@ export function AIReflectionInsight({ reflection }) {
         )}
 
         {insight.growth && (
-          <div className="bg-blue-50 rounded-lg p-2">
-            <p className="text-xs text-blue-600 mb-1">성장 포인트 🌱</p>
+          <div className="bg-emerald-50 rounded-lg p-2">
+            <p className="text-xs text-emerald-600 mb-1">성장 포인트 🌱</p>
             <p className="text-sm text-blue-800">{insight.growth}</p>
           </div>
         )}

@@ -136,11 +136,11 @@ export function OnboardingPage() {
   // ===== 인트로 화면 =====
   if (phase === 'intro') {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gradient-to-b from-amber-50 to-white flex items-center justify-center p-4">
         <div className="max-w-lg w-full text-center">
           <div className="mb-6 md:mb-8">
-            <div className="w-16 h-16 md:w-20 md:h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4 md:mb-6">
-              <Sparkles className="w-8 h-8 md:w-10 md:h-10 text-blue-600" />
+            <div className="w-16 h-16 md:w-20 md:h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4 md:mb-6">
+              <Sparkles className="w-8 h-8 md:w-10 md:h-10 text-emerald-600" />
             </div>
             <h1 className="text-xl md:text-2xl font-bold text-gray-900 mb-2 md:mb-3">
               {user?.name || '회원'}님, 환영합니다!
@@ -165,8 +165,8 @@ export function OnboardingPage() {
                 </div>
 
                 <div className="flex items-center gap-4 text-left">
-                  <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center flex-shrink-0">
-                    <Brain className="w-6 h-6 text-blue-600" />
+                  <div className="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <Brain className="w-6 h-6 text-emerald-600" />
                   </div>
                   <div>
                     <h3 className="font-semibold text-gray-900">ADHD 자가진단</h3>
@@ -316,8 +316,8 @@ export function OnboardingPage() {
           {/* 헤더 */}
           <div className="mb-6">
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
-                <Brain className="w-5 h-5 text-blue-600" />
+              <div className="w-10 h-10 bg-emerald-100 rounded-xl flex items-center justify-center">
+                <Brain className="w-5 h-5 text-emerald-600" />
               </div>
               <div>
                 <h1 className="text-xl font-bold text-gray-900">ADHD 자가진단</h1>
@@ -333,7 +333,7 @@ export function OnboardingPage() {
               </div>
               <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-blue-500 rounded-full transition-all duration-300"
+                  className="h-full bg-emerald-500 rounded-full transition-all duration-300"
                   style={{ width: `${asrsProgress}%` }}
                 />
               </div>
@@ -354,7 +354,7 @@ export function OnboardingPage() {
           <Card>
             <CardContent className="p-6 space-y-6">
               {/* 질문 번호 */}
-              <span className="inline-block px-3 py-1 bg-blue-500 text-white text-sm font-medium rounded-lg">
+              <span className="inline-block px-3 py-1 bg-emerald-500 text-white text-sm font-medium rounded-lg">
                 Q{currentAsrsQuestion + 1}
               </span>
 
@@ -377,12 +377,12 @@ export function OnboardingPage() {
                       onClick={() => handleAsrsSelect(option.value)}
                       className={`w-full flex items-center gap-4 p-4 rounded-xl border-2 transition-all text-left ${
                         isSelected
-                          ? 'border-blue-500 bg-blue-50'
+                          ? 'border-emerald-500 bg-emerald-50'
                           : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
                       }`}
                     >
                       <span className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
-                        isSelected ? 'border-blue-500 bg-blue-500' : 'border-gray-300'
+                        isSelected ? 'border-emerald-500 bg-emerald-500' : 'border-gray-300'
                       }`}>
                         {isSelected && <span className="w-2 h-2 bg-white rounded-full" />}
                       </span>

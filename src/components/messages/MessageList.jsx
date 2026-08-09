@@ -1079,12 +1079,12 @@ export function MessageList({
             onChange={(e) => setNewMessage(e.target.value)}
             onKeyPress={(e) => e.key === 'Enter' && handleSend()}
             placeholder="메시지 입력..."
-            className="flex-1 min-w-0 px-3 py-2 text-sm bg-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="flex-1 min-w-0 px-3 py-2 text-sm bg-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
           />
           <button
             onClick={handleSend}
             disabled={!newMessage.trim()}
-            className="p-2 flex-shrink-0 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors"
+            className="p-2 flex-shrink-0 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 disabled:opacity-50 transition-colors"
           >
             <Send className="w-4 h-4" />
           </button>
@@ -1210,9 +1210,9 @@ function MessageBubble({ message, isOwn, userRole, formatTime, onViewGoal, onVie
       <div className={`flex gap-2 ${isOwn ? 'flex-row-reverse' : ''}`}>
         {!isOwn && <Avatar name={message.senderName} size="xs" />}
         <div className={`max-w-[90%] ${isOwn ? 'items-end' : 'items-start'} flex flex-col`}>
-          <div className="w-56 rounded-xl border-2 border-blue-200 bg-blue-50 overflow-hidden text-sm">
-            <div className="px-3 py-2 bg-blue-100 flex items-center gap-1.5">
-              <Target className="w-4 h-4 text-blue-600" />
+          <div className="w-56 rounded-xl border-2 border-emerald-200 bg-emerald-50 overflow-hidden text-sm">
+            <div className="px-3 py-2 bg-emerald-100 flex items-center gap-1.5">
+              <Target className="w-4 h-4 text-emerald-600" />
               <span className="font-medium text-blue-800">목표합의서 확인 요청</span>
             </div>
             <div className="p-3 space-y-2">
@@ -1222,7 +1222,7 @@ function MessageBubble({ message, isOwn, userRole, formatTime, onViewGoal, onVie
               {!isOwn && originalGoal && !hasOtherAgreed && (
                 <button
                   onClick={() => onViewGoal(originalGoal)}
-                  className="w-full py-1.5 bg-blue-500 text-white rounded-lg text-xs font-medium hover:bg-blue-600 transition-colors flex items-center justify-center gap-1"
+                  className="w-full py-1.5 bg-emerald-500 text-white rounded-lg text-xs font-medium hover:bg-emerald-600 transition-colors flex items-center justify-center gap-1"
                 >
                   <ChevronRight className="w-3.5 h-3.5" />
                   내용 확인하고 동의하기
@@ -1310,7 +1310,7 @@ function MessageBubble({ message, isOwn, userRole, formatTime, onViewGoal, onVie
                 <span className="font-medium text-green-800 text-sm">과제 제출 완료</span>
               </div>
               {hasFeedback && (
-                <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">피드백 완료</span>
+                <span className="text-xs bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full">피드백 완료</span>
               )}
             </div>
             <div className="p-3 space-y-2">
@@ -1338,8 +1338,8 @@ function MessageBubble({ message, isOwn, userRole, formatTime, onViewGoal, onVie
                 </div>
               )}
               {hasFeedback && (
-                <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded-lg">
-                  <p className="text-xs text-blue-600 font-medium mb-1">💬 코치 피드백</p>
+                <div className="mt-2 p-2 bg-emerald-50 border border-emerald-200 rounded-lg">
+                  <p className="text-xs text-emerald-600 font-medium mb-1">💬 코치 피드백</p>
                   <p className="text-sm text-gray-700">{submissionData.feedback}</p>
                 </div>
               )}
@@ -1347,7 +1347,7 @@ function MessageBubble({ message, isOwn, userRole, formatTime, onViewGoal, onVie
               {userRole === 'coach' && !hasFeedback && (
                 <button
                   onClick={() => onOpenFeedback && onOpenFeedback(message.id)}
-                  className="w-full mt-2 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg text-sm font-medium hover:from-blue-600 hover:to-blue-700 transition-all shadow-sm hover:shadow flex items-center justify-center gap-2"
+                  className="w-full mt-2 py-2 bg-gradient-to-r from-amber-500 to-emerald-600 text-white rounded-lg text-sm font-medium hover:from-emerald-600 hover:to-blue-700 transition-all shadow-sm hover:shadow flex items-center justify-center gap-2"
                 >
                   <Edit3 className="w-4 h-4" />
                   피드백 작성하기
@@ -1434,7 +1434,7 @@ function MessageBubble({ message, isOwn, userRole, formatTime, onViewGoal, onVie
       {!isOwn && <Avatar name={message.senderName} size="xs" />}
       <div className={`max-w-[75%] ${isOwn ? 'items-end' : 'items-start'} flex flex-col`}>
         <div className={`px-3 py-2 rounded-2xl text-sm ${
-          isOwn ? 'bg-blue-600 text-white rounded-br-md' : 'bg-gray-100 text-gray-900 rounded-bl-md'
+          isOwn ? 'bg-emerald-600 text-white rounded-br-md' : 'bg-gray-100 text-gray-900 rounded-bl-md'
         }`}>
           <p className="whitespace-pre-wrap">{message.content}</p>
         </div>
@@ -1472,8 +1472,8 @@ function GoalAgreementPanel({ userRole, editingMessage, onClose, onSubmit }) {
     <SidePanel
       title={isEditing ? '합의서 수정' : '합의서 작성'}
       icon={Target}
-      iconColor="text-blue-600"
-      headerBg="bg-blue-50"
+      iconColor="text-emerald-600"
+      headerBg="bg-emerald-50"
       headerTextColor="text-blue-900"
       onClose={onClose}
       footer={
@@ -1502,7 +1502,7 @@ function GoalAgreementPanel({ userRole, editingMessage, onClose, onSubmit }) {
                   const emptyGoal = goals.find(g => !g.topic)
                   if (emptyGoal) updateGoal(emptyGoal.id, 'topic', topic)
                 }}
-                className="px-2 py-1 bg-gray-100 text-gray-600 rounded-full text-xs hover:bg-blue-100 hover:text-blue-700 transition-colors"
+                className="px-2 py-1 bg-gray-100 text-gray-600 rounded-full text-xs hover:bg-emerald-100 hover:text-emerald-700 transition-colors"
               >
                 {topic}
               </button>
@@ -1528,7 +1528,7 @@ function GoalAgreementPanel({ userRole, editingMessage, onClose, onSubmit }) {
                   value={goal.topic}
                   onChange={(e) => updateGoal(goal.id, 'topic', e.target.value)}
                   placeholder="예: 공부 시작 전환"
-                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 />
               </div>
               <div>
@@ -1538,13 +1538,13 @@ function GoalAgreementPanel({ userRole, editingMessage, onClose, onSubmit }) {
                   onChange={(e) => updateGoal(goal.id, 'desiredResult', e.target.value)}
                   placeholder="이 목표가 달성되면 어떤 변화가 있을까요?"
                   rows={2}
-                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-none"
                 />
               </div>
               <div className="grid grid-cols-2 gap-3">
-                <div className="p-3 bg-blue-50 rounded-lg">
+                <div className="p-3 bg-emerald-50 rounded-lg">
                   <label className="text-xs font-medium text-gray-500 block mb-2">
-                    현재 점수: <span className="text-blue-600 font-bold text-base">{goal.currentScore}</span>점
+                    현재 점수: <span className="text-emerald-600 font-bold text-base">{goal.currentScore}</span>점
                   </label>
                   <input type="range" min="1" max="10" value={goal.currentScore} onChange={(e) => updateGoal(goal.id, 'currentScore', parseInt(e.target.value))} className="w-full" />
                 </div>
@@ -1562,7 +1562,7 @@ function GoalAgreementPanel({ userRole, editingMessage, onClose, onSubmit }) {
         {goals.length < 3 && (
           <button
             onClick={addGoal}
-            className="w-full py-3 border-2 border-dashed border-gray-300 rounded-xl text-gray-500 hover:border-blue-400 hover:text-blue-600 transition-colors flex items-center justify-center gap-2 text-sm"
+            className="w-full py-3 border-2 border-dashed border-gray-300 rounded-xl text-gray-500 hover:border-blue-400 hover:text-emerald-600 transition-colors flex items-center justify-center gap-2 text-sm"
           >
             <Plus className="w-4 h-4" /> 목표 추가 (최대 3개)
           </button>
@@ -1592,8 +1592,8 @@ function GoalViewPanel({ message, userRole, onClose, onEdit, onAgree, onNewGoal,
     <SidePanel
       title={`목표 합의서 v${version}`}
       icon={FileText}
-      iconColor="text-blue-600"
-      headerBg="bg-blue-50"
+      iconColor="text-emerald-600"
+      headerBg="bg-emerald-50"
       headerTextColor="text-blue-900"
       onClose={onClose}
       footer={
@@ -1611,7 +1611,7 @@ function GoalViewPanel({ message, userRole, onClose, onEdit, onAgree, onNewGoal,
             </div>
           )}
           {hasAgreed && !isConfirmed && (
-            <div className="text-center text-sm text-blue-600 py-2">
+            <div className="text-center text-sm text-emerald-600 py-2">
               동의 완료 - {otherHasAgreed ? '합의 완료!' : '상대방 확인 대기'}
             </div>
           )}
@@ -1651,7 +1651,7 @@ function GoalViewPanel({ message, userRole, onClose, onEdit, onAgree, onNewGoal,
             <div className="p-4 space-y-3">
               <div>
                 <label className="text-xs font-medium text-gray-500 block mb-1">코칭 주제</label>
-                <p className="text-sm font-medium text-gray-900 bg-blue-50 px-3 py-2 rounded-lg">
+                <p className="text-sm font-medium text-gray-900 bg-emerald-50 px-3 py-2 rounded-lg">
                   {goal.topic || '(미입력)'}
                 </p>
               </div>
@@ -1662,9 +1662,9 @@ function GoalViewPanel({ message, userRole, onClose, onEdit, onAgree, onNewGoal,
                 </p>
               </div>
               <div className="grid grid-cols-2 gap-3">
-                <div className="text-center p-3 bg-blue-50 rounded-lg">
+                <div className="text-center p-3 bg-emerald-50 rounded-lg">
                   <label className="text-xs text-gray-500 block mb-1">현재 점수</label>
-                  <span className="text-2xl font-bold text-blue-600">{goal.currentScore}</span>
+                  <span className="text-2xl font-bold text-emerald-600">{goal.currentScore}</span>
                   <span className="text-sm text-gray-500">점</span>
                 </div>
                 <div className="text-center p-3 bg-green-50 rounded-lg">
@@ -2078,8 +2078,8 @@ function TaskSubmitPanel({ taskMessage, onClose, onSubmit, userId }) {
     <SidePanel
       title="과제 제출"
       icon={Send}
-      iconColor="text-blue-600"
-      headerBg="bg-blue-50"
+      iconColor="text-emerald-600"
+      headerBg="bg-emerald-50"
       headerTextColor="text-blue-900"
       onClose={onClose}
       footer={
@@ -2118,7 +2118,7 @@ function TaskSubmitPanel({ taskMessage, onClose, onSubmit, userId }) {
             onChange={(e) => setContent(e.target.value)}
             placeholder="과제를 수행한 내용을 작성해주세요. 느낀 점이나 어려웠던 점도 함께 적어주세요."
             rows={5}
-            className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+            className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-none"
           />
         </div>
 
@@ -2167,7 +2167,7 @@ function TaskSubmitPanel({ taskMessage, onClose, onSubmit, userId }) {
           <button
             onClick={handleImageAdd}
             disabled={isUploading}
-            className="w-full py-3 border-2 border-dashed border-gray-300 rounded-lg text-gray-500 hover:border-blue-400 hover:text-blue-600 transition-colors flex items-center justify-center gap-2 text-sm disabled:opacity-50"
+            className="w-full py-3 border-2 border-dashed border-gray-300 rounded-lg text-gray-500 hover:border-blue-400 hover:text-emerald-600 transition-colors flex items-center justify-center gap-2 text-sm disabled:opacity-50"
           >
             {isUploading ? (
               <>
@@ -2206,7 +2206,7 @@ function FeedbackModal({ taskMessage, feedbackText, setFeedbackText, onClose, on
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
         {/* 헤더 */}
-        <div className="bg-gradient-to-r from-blue-500 to-blue-600 px-6 py-4">
+        <div className="bg-gradient-to-r from-amber-500 to-emerald-600 px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
@@ -2270,7 +2270,7 @@ function FeedbackModal({ taskMessage, feedbackText, setFeedbackText, onClose, on
             onChange={(e) => setFeedbackText(e.target.value)}
             placeholder="피코치의 노력을 인정하고, 다음 단계를 위한 격려나 조언을 남겨주세요..."
             rows={4}
-            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-sm"
+            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent resize-none text-sm"
             autoFocus
           />
           <p className="text-xs text-gray-400 mt-2">
@@ -2290,7 +2290,7 @@ function FeedbackModal({ taskMessage, feedbackText, setFeedbackText, onClose, on
                 <button
                   key={idx}
                   onClick={() => setFeedbackText(text)}
-                  className="px-3 py-1.5 text-xs bg-gray-100 hover:bg-blue-50 hover:text-blue-600 rounded-full transition-colors"
+                  className="px-3 py-1.5 text-xs bg-gray-100 hover:bg-emerald-50 hover:text-emerald-600 rounded-full transition-colors"
                 >
                   {text}
                 </button>
@@ -2311,7 +2311,7 @@ function FeedbackModal({ taskMessage, feedbackText, setFeedbackText, onClose, on
           <Button
             onClick={onSubmit}
             disabled={!canSubmit}
-            className="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700"
+            className="flex-1 bg-gradient-to-r from-amber-500 to-emerald-600 hover:from-emerald-600 hover:to-blue-700"
           >
             <Send className="w-4 h-4 mr-2" />
             피드백 보내기

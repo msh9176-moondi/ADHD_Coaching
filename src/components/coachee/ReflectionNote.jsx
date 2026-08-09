@@ -28,7 +28,7 @@ export function ReflectionNote({ session, initialData, onSubmit, onCancel, isEdi
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <BookOpen className="w-5 h-5 text-blue-600" />
+          <BookOpen className="w-5 h-5 text-emerald-600" />
           {session?.sessionNumber || 1}회기 성찰일지
         </CardTitle>
       </CardHeader>
@@ -54,7 +54,7 @@ export function ReflectionNote({ session, initialData, onSubmit, onCancel, isEdi
             value={reflection.topic}
             onChange={(e) => handleChange('topic', e.target.value)}
             placeholder="오늘 상담에서 다룬 주제를 적어주세요"
-            className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
           />
         </div>
 
@@ -87,7 +87,7 @@ export function ReflectionNote({ session, initialData, onSubmit, onCancel, isEdi
                 onChange={(e) => handleChange('currentScore', parseInt(e.target.value))}
                 className="flex-1"
               />
-              <span className="w-8 text-center font-medium text-blue-600">
+              <span className="w-8 text-center font-medium text-emerald-600">
                 {reflection.currentScore}
               </span>
             </div>
@@ -125,7 +125,7 @@ export function ReflectionNote({ session, initialData, onSubmit, onCancel, isEdi
         {/* 액션플랜 */}
         <div className="space-y-2">
           <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
-            <Rocket className="w-4 h-4 text-blue-500" />
+            <Rocket className="w-4 h-4 text-emerald-500" />
             액션플랜
           </label>
           <Textarea

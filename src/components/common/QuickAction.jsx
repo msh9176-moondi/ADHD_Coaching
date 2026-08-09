@@ -14,7 +14,7 @@ export const QuickAction = forwardRef(function QuickAction(
         disabled
           ? 'bg-gray-100 border border-gray-200 text-gray-400 cursor-not-allowed'
           : primary
-            ? 'bg-blue-600 text-white hover:bg-blue-700'
+            ? 'bg-emerald-600 text-white hover:bg-emerald-700'
             : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 hover:border-gray-300'
       } ${className}`}
     >

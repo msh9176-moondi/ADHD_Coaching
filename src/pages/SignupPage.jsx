@@ -208,7 +208,7 @@ export function SignupPage() {
       <div className="max-w-md w-full">
         {/* 로고 */}
         <div className="text-center mb-6 md:mb-8">
-          <h1 className="text-2xl md:text-3xl font-bold text-blue-600">FLOCA</h1>
+          <h1 className="text-2xl md:text-3xl font-bold text-emerald-600">FLOCA</h1>
           <p className="text-sm md:text-base text-gray-600 mt-1 md:mt-2">ADHD 실행회복 코칭</p>
         </div>
 
@@ -227,12 +227,12 @@ export function SignupPage() {
                   onClick={() => setFormData(prev => ({ ...prev, role: 'coachee' }))}
                   className={`flex flex-col items-center gap-1.5 md:gap-2 p-3 md:p-4 rounded-xl border-2 transition-all ${
                     formData.role === 'coachee'
-                      ? 'border-blue-500 bg-blue-50'
+                      ? 'border-emerald-500 bg-emerald-50'
                       : 'border-gray-200 hover:border-gray-300'
                   }`}
                 >
-                  <User className={`w-5 h-5 md:w-6 md:h-6 ${formData.role === 'coachee' ? 'text-blue-600' : 'text-gray-400'}`} />
-                  <span className={`text-sm md:text-base font-medium ${formData.role === 'coachee' ? 'text-blue-700' : 'text-gray-600'}`}>
+                  <User className={`w-5 h-5 md:w-6 md:h-6 ${formData.role === 'coachee' ? 'text-emerald-600' : 'text-gray-400'}`} />
+                  <span className={`text-sm md:text-base font-medium ${formData.role === 'coachee' ? 'text-emerald-700' : 'text-gray-600'}`}>
                     피코치
                   </span>
                   <span className="text-[10px] md:text-xs text-gray-500">코칭을 받고 싶어요</span>
@@ -242,12 +242,12 @@ export function SignupPage() {
                   onClick={() => setFormData(prev => ({ ...prev, role: 'coach' }))}
                   className={`flex flex-col items-center gap-1.5 md:gap-2 p-3 md:p-4 rounded-xl border-2 transition-all ${
                     formData.role === 'coach'
-                      ? 'border-blue-500 bg-blue-50'
+                      ? 'border-emerald-500 bg-emerald-50'
                       : 'border-gray-200 hover:border-gray-300'
                   }`}
                 >
-                  <Users className={`w-5 h-5 md:w-6 md:h-6 ${formData.role === 'coach' ? 'text-blue-600' : 'text-gray-400'}`} />
-                  <span className={`text-sm md:text-base font-medium ${formData.role === 'coach' ? 'text-blue-700' : 'text-gray-600'}`}>
+                  <Users className={`w-5 h-5 md:w-6 md:h-6 ${formData.role === 'coach' ? 'text-emerald-600' : 'text-gray-400'}`} />
+                  <span className={`text-sm md:text-base font-medium ${formData.role === 'coach' ? 'text-emerald-700' : 'text-gray-600'}`}>
                     코치
                   </span>
                   <span className="text-[10px] md:text-xs text-gray-500">코칭을 제공해요</span>
@@ -274,7 +274,7 @@ export function SignupPage() {
                   onChange={handleChange}
                   className={`w-full px-4 py-3 rounded-xl border ${
                     errors.coachCode ? 'border-red-300 bg-red-50' : 'border-gray-200'
-                  } focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
+                  } focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent`}
                   placeholder="관리자에게 받은 초대 코드를 입력하세요"
                 />
                 {errors.coachCode && (
@@ -298,7 +298,7 @@ export function SignupPage() {
                 onChange={handleChange}
                 className={`w-full px-4 py-3 rounded-xl border ${
                   errors.name ? 'border-red-300 bg-red-50' : 'border-gray-200'
-                } focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
+                } focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent`}
                 placeholder="홍길동"
               />
               {errors.name && (
@@ -321,7 +321,7 @@ export function SignupPage() {
                 onChange={handleChange}
                 className={`w-full px-4 py-3 rounded-xl border ${
                   errors.email ? 'border-red-300 bg-red-50' : 'border-gray-200'
-                } focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
+                } focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent`}
                 placeholder="example@email.com"
               />
               {errors.email && (
@@ -344,7 +344,7 @@ export function SignupPage() {
                 onChange={handleChange}
                 className={`w-full px-4 py-3 rounded-xl border ${
                   errors.phone ? 'border-red-300 bg-red-50' : 'border-gray-200'
-                } focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
+                } focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent`}
                 placeholder="010-1234-5678"
               />
               {errors.phone && (
@@ -368,7 +368,7 @@ export function SignupPage() {
                   onChange={handleChange}
                   className={`w-full px-4 py-3 rounded-xl border ${
                     errors.password ? 'border-red-300 bg-red-50' : 'border-gray-200'
-                  } focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent pr-12`}
+                  } focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent pr-12`}
                   placeholder="6자 이상"
                 />
                 <button
@@ -399,7 +399,7 @@ export function SignupPage() {
                 onChange={handleChange}
                 className={`w-full px-4 py-3 rounded-xl border ${
                   errors.passwordConfirm ? 'border-red-300 bg-red-50' : 'border-gray-200'
-                } focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
+                } focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent`}
                 placeholder="비밀번호 재입력"
               />
               {errors.passwordConfirm && (
@@ -422,7 +422,7 @@ export function SignupPage() {
                       key={option.value}
                       className={`flex items-center gap-3 p-3 rounded-xl border-2 cursor-pointer transition-all ${
                         formData.adhdStatus === option.value
-                          ? 'border-blue-500 bg-blue-50'
+                          ? 'border-emerald-500 bg-emerald-50'
                           : 'border-gray-200 hover:border-gray-300'
                       }`}
                     >
@@ -435,7 +435,7 @@ export function SignupPage() {
                         className="sr-only"
                       />
                       <span className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                        formData.adhdStatus === option.value ? 'border-blue-500 bg-blue-500' : 'border-gray-300'
+                        formData.adhdStatus === option.value ? 'border-emerald-500 bg-emerald-500' : 'border-gray-300'
                       }`}>
                         {formData.adhdStatus === option.value && (
                           <span className="w-2 h-2 bg-white rounded-full" />
@@ -468,7 +468,7 @@ export function SignupPage() {
                       onClick={() => toggleDifficulty(difficulty)}
                       className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
                         formData.difficulties.includes(difficulty)
-                          ? 'bg-blue-500 text-white'
+                          ? 'bg-emerald-500 text-white'
                           : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                       }`}
                     >
@@ -487,10 +487,10 @@ export function SignupPage() {
                   name="agreePrivacy"
                   checked={formData.agreePrivacy}
                   onChange={handleChange}
-                  className="mt-1 w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  className="mt-1 w-4 h-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
                 />
                 <span className="text-sm text-gray-600">
-                  <span className="text-blue-600 underline cursor-pointer">개인정보 수집 및 이용</span>에 동의합니다. (필수)
+                  <span className="text-emerald-600 underline cursor-pointer">개인정보 수집 및 이용</span>에 동의합니다. (필수)
                 </span>
               </label>
 
@@ -500,7 +500,7 @@ export function SignupPage() {
                   name="agreeNonMedical"
                   checked={formData.agreeNonMedical}
                   onChange={handleChange}
-                  className="mt-1 w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  className="mt-1 w-4 h-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
                 />
                 <span className="text-sm text-gray-600">
                   본 서비스는 의료 행위가 아닌 코칭 서비스임을 이해합니다. (필수)
@@ -538,7 +538,7 @@ export function SignupPage() {
 
           <p className="mt-6 text-center text-sm text-gray-500">
             이미 계정이 있으신가요?{' '}
-            <Link to="/login" className="text-blue-600 font-medium hover:underline">
+            <Link to="/login" className="text-emerald-600 font-medium hover:underline">
               로그인
             </Link>
           </p>

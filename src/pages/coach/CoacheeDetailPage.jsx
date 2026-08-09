@@ -34,7 +34,7 @@ const TYPE_COLORS = {
   inattention: 'bg-purple-100 text-purple-600',
   hyperactivity: 'bg-orange-100 text-orange-600',
   impulsivity: 'bg-red-100 text-red-600',
-  combined: 'bg-blue-100 text-blue-600'
+  combined: 'bg-emerald-100 text-emerald-600'
 }
 
 // ADHD 유형 분석 함수
@@ -117,7 +117,7 @@ export function CoacheeDetailPage() {
 
   const packageColors = {
     starter: 'bg-green-100 text-green-700 border-green-200',
-    basic: 'bg-blue-100 text-blue-700 border-blue-200',
+    basic: 'bg-emerald-100 text-emerald-700 border-emerald-200',
     premium: 'bg-purple-100 text-purple-700 border-purple-200'
   }
 
@@ -229,7 +229,7 @@ export function CoacheeDetailPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
+        <Loader2 className="w-8 h-8 animate-spin text-emerald-500" />
         <span className="ml-2 text-gray-600">피코치 정보를 불러오는 중...</span>
       </div>
     )
@@ -364,7 +364,7 @@ export function CoacheeDetailPage() {
                 </div>
                 <div className="h-3 bg-gray-100 rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-blue-500 rounded-full transition-all"
+                    className="h-full bg-emerald-500 rounded-full transition-all"
                     style={{ width: `${progress}%` }}
                   />
                 </div>
@@ -379,14 +379,14 @@ export function CoacheeDetailPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <User className="w-5 h-5 text-blue-600" />
+              <User className="w-5 h-5 text-emerald-600" />
               자기소개
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
               <h4 className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-1">
-                <User className="w-4 h-4 text-blue-500" />
+                <User className="w-4 h-4 text-emerald-500" />
                 소개
               </h4>
               <p className="text-sm text-gray-600 bg-gray-50 p-3 rounded-lg">
@@ -625,7 +625,7 @@ export function CoacheeDetailPage() {
               <h4 className="text-sm font-medium text-gray-700">과제 현황</h4>
               <button
                 onClick={handleAddTask}
-                className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-700 font-medium"
+                className="flex items-center gap-1 text-xs text-emerald-600 hover:text-emerald-700 font-medium"
               >
                 <Plus className="w-3.5 h-3.5" />
                 과제 추가
@@ -641,12 +641,12 @@ export function CoacheeDetailPage() {
                   <div className="flex items-center gap-3">
                     <div className={`w-6 h-6 rounded-full flex items-center justify-center ${
                       task.status === 'completed' ? 'bg-green-100' :
-                      task.status === 'in_progress' ? 'bg-blue-100' : 'bg-gray-100'
+                      task.status === 'in_progress' ? 'bg-emerald-100' : 'bg-gray-100'
                     }`}>
                       {task.status === 'completed' ? (
                         <CheckCircle className="w-4 h-4 text-green-600" />
                       ) : task.status === 'in_progress' ? (
-                        <TrendingUp className="w-4 h-4 text-blue-600" />
+                        <TrendingUp className="w-4 h-4 text-emerald-600" />
                       ) : (
                         <Clock className="w-4 h-4 text-gray-400" />
                       )}
@@ -666,7 +666,7 @@ export function CoacheeDetailPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="flex items-center gap-2">
-              <FileText className="w-5 h-5 text-blue-600" />
+              <FileText className="w-5 h-5 text-emerald-600" />
               세션 기록
             </CardTitle>
             <div className="flex items-center gap-2">

@@ -14,7 +14,7 @@ export function MyGoal() {
       <Card>
         <CardHeader>
           <CardTitle className="text-base flex items-center gap-2">
-            <Target className="w-4 h-4 text-blue-600" />
+            <Target className="w-4 h-4 text-emerald-600" />
             나의 코칭 목표
           </CardTitle>
         </CardHeader>
@@ -35,7 +35,7 @@ export function MyGoal() {
     <Card>
       <CardHeader>
         <CardTitle className="text-base flex items-center gap-2">
-          <Target className="w-4 h-4 text-blue-600" />
+          <Target className="w-4 h-4 text-emerald-600" />
           나의 코칭 목표
         </CardTitle>
       </CardHeader>
@@ -47,7 +47,7 @@ export function MyGoal() {
 
           {/* 점수 표시 */}
           <div className="flex items-center gap-3">
-            <span className="text-2xl font-bold text-blue-600">
+            <span className="text-2xl font-bold text-emerald-600">
               {coachingGoal.currentScore}
             </span>
             <ArrowRight className="w-4 h-4 text-gray-400" />
@@ -59,7 +59,7 @@ export function MyGoal() {
           {/* 진행 바 */}
           <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
             <div
-              className="h-full bg-blue-500 rounded-full transition-all"
+              className="h-full bg-emerald-500 rounded-full transition-all"
               style={{ width: `${Math.min(progressPercent, 100)}%` }}
             />
           </div>

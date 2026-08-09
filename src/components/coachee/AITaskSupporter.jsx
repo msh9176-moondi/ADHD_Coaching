@@ -27,7 +27,7 @@ export function AITaskSupporter({ task, onClose }) {
   }
 
   return (
-    <div className="bg-gradient-to-br from-purple-50 to-indigo-50 rounded-xl p-4 border border-purple-200">
+    <div className="bg-gradient-to-br from-purple-50 to-orange-50 rounded-xl p-4 border border-purple-200">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <Sparkles className="w-4 h-4 text-purple-600" />
@@ -129,8 +129,8 @@ export function AITaskSupporter({ task, onClose }) {
                 </div>
               )}
               {result.data.suggestion && (
-                <div className="bg-blue-50 rounded-lg p-3">
-                  <p className="text-xs text-blue-600 mb-1">💭 다른 방법</p>
+                <div className="bg-emerald-50 rounded-lg p-3">
+                  <p className="text-xs text-emerald-600 mb-1">💭 다른 방법</p>
                   <p className="text-sm text-blue-800">{result.data.suggestion}</p>
                 </div>
               )}

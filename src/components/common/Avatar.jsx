@@ -24,7 +24,7 @@ export function Avatar({ src, name, size = 'md', className = '' }) {
   }
 
   return (
-    <div className={`${sizes[size]} rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-medium ${className}`}>
+    <div className={`${sizes[size]} rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center font-medium ${className}`}>
       {name ? getInitials(name) : <User className="w-1/2 h-1/2" />}
     </div>
   )

@@ -109,11 +109,11 @@ export function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-100 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* 로고 */}
         <div className="text-center mb-6 md:mb-8">
-          <div className="inline-flex items-center justify-center w-14 h-14 md:w-16 md:h-16 bg-blue-600 rounded-2xl mb-3 md:mb-4">
+          <div className="inline-flex items-center justify-center w-14 h-14 md:w-16 md:h-16 bg-emerald-600 rounded-2xl mb-3 md:mb-4">
             <Target className="w-7 h-7 md:w-8 md:h-8 text-white" />
           </div>
           <h1 className="text-2xl md:text-3xl font-bold text-gray-900">FLOCA</h1>
@@ -171,7 +171,7 @@ export function LoginPage() {
           {/* 회원가입 링크 */}
           <p className="text-center text-sm text-gray-500 mt-6">
             계정이 없으신가요?{' '}
-            <Link to="/signup" className="text-blue-600 hover:text-blue-700 font-medium">
+            <Link to="/signup" className="text-emerald-600 hover:text-emerald-700 font-medium">
               회원가입
             </Link>
           </p>

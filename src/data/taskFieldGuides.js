@@ -66,7 +66,7 @@ export const FIELD_GUIDES = {
 
 // 색상 맵
 export const COLOR_MAP = {
-  blue: { bg: 'bg-blue-50', border: 'border-blue-200', text: 'text-blue-600', ring: 'focus:ring-blue-500' },
+  blue: { bg: 'bg-emerald-50', border: 'border-emerald-200', text: 'text-emerald-600', ring: 'focus:ring-emerald-500' },
   green: { bg: 'bg-green-50', border: 'border-green-200', text: 'text-green-600', ring: 'focus:ring-green-500' },
   purple: { bg: 'bg-purple-50', border: 'border-purple-200', text: 'text-purple-600', ring: 'focus:ring-purple-500' },
   amber: { bg: 'bg-amber-50', border: 'border-amber-200', text: 'text-amber-600', ring: 'focus:ring-amber-500' },

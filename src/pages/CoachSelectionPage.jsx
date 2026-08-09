@@ -62,11 +62,11 @@ export function CoachSelectionPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white py-8 px-4">
+    <div className="min-h-screen bg-gradient-to-b from-amber-50 to-white py-8 px-4">
       <div className="max-w-lg mx-auto">
         {/* 헤더 */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-100 text-blue-700 rounded-full text-sm font-medium mb-4">
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-100 text-emerald-700 rounded-full text-sm font-medium mb-4">
             <Sparkles className="w-4 h-4" />
             코칭 시작하기
           </div>
@@ -84,8 +84,8 @@ export function CoachSelectionPage() {
           <CardContent className="p-6">
             {/* 로고 & 이름 */}
             <div className="flex items-center gap-4 mb-6">
-              <div className="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center">
-                <Target className="w-8 h-8 text-blue-600" />
+              <div className="w-16 h-16 bg-emerald-100 rounded-2xl flex items-center justify-center">
+                <Target className="w-8 h-8 text-emerald-600" />
               </div>
               <div>
                 <h2 className="text-xl font-bold text-gray-900">FLOCA 코칭</h2>
@@ -105,7 +105,7 @@ export function CoachSelectionPage() {
                 {coach.specialties.map((specialty, idx) => (
                   <span
                     key={idx}
-                    className="px-3 py-1.5 bg-blue-50 text-blue-700 text-sm rounded-lg"
+                    className="px-3 py-1.5 bg-emerald-50 text-emerald-700 text-sm rounded-lg"
                   >
                     {specialty}
                   </span>
@@ -138,7 +138,7 @@ export function CoachSelectionPage() {
         {/* 패키지 선택 섹션 */}
         <div className="mb-6">
           <div className="flex items-center gap-2 mb-4">
-            <Package className="w-5 h-5 text-blue-600" />
+            <Package className="w-5 h-5 text-emerald-600" />
             <h2 className="text-lg font-bold text-gray-900">코칭 패키지 선택</h2>
           </div>
           <p className="text-sm text-gray-600 mb-4">목표에 맞는 회기 수를 선택해주세요.</p>
@@ -150,22 +150,22 @@ export function CoachSelectionPage() {
                 onClick={() => setSelectedPackage(pkg.id)}
                 className={`relative p-4 rounded-xl border-2 cursor-pointer transition-all ${
                   selectedPackage === pkg.id
-                    ? 'border-blue-500 bg-blue-50'
+                    ? 'border-emerald-500 bg-emerald-50'
                     : pkg.recommended
-                    ? 'border-blue-300 bg-white hover:border-blue-400'
+                    ? 'border-emerald-300 bg-white hover:border-blue-400'
                     : 'border-gray-200 bg-white hover:border-gray-300'
                 }`}
               >
                 {/* 추천 배지 */}
                 {pkg.recommended && (
-                  <div className="absolute -top-2.5 left-4 px-2 py-0.5 bg-blue-500 text-white text-xs font-bold rounded">
+                  <div className="absolute -top-2.5 left-4 px-2 py-0.5 bg-emerald-500 text-white text-xs font-bold rounded">
                     추천
                   </div>
                 )}
 
                 {/* 선택 체크 */}
                 {selectedPackage === pkg.id && (
-                  <div className="absolute top-4 right-4 w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
+                  <div className="absolute top-4 right-4 w-6 h-6 bg-emerald-500 rounded-full flex items-center justify-center">
                     <Check className="w-4 h-4 text-white" />
                   </div>
                 )}
@@ -178,7 +178,7 @@ export function CoachSelectionPage() {
                   <div className="flex-1">
                     <div className="flex items-baseline gap-2 mb-1">
                       <h3 className="font-bold text-gray-900">{pkg.name}</h3>
-                      <span className="text-2xl font-black text-blue-600">{pkg.sessions}</span>
+                      <span className="text-2xl font-black text-emerald-600">{pkg.sessions}</span>
                       <span className="text-sm text-gray-500">회기</span>
                     </div>
                     <p className="text-sm text-gray-600 mb-2">{pkg.description}</p>

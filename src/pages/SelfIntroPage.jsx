@@ -111,12 +111,12 @@ export function SelfIntroPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white py-8 px-4">
+    <div className="min-h-screen bg-gradient-to-b from-amber-50 to-white py-8 px-4">
       <div className="max-w-2xl mx-auto">
         {/* 헤더 */}
         <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <User className="w-8 h-8 text-blue-600" />
+          <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <User className="w-8 h-8 text-emerald-600" />
           </div>
           <h1 className="text-2xl font-bold text-gray-900 mb-2">
             나를 소개합니다
@@ -132,7 +132,7 @@ export function SelfIntroPage() {
           <Card>
             <CardContent className="p-5">
               <label className="flex items-center gap-2 font-semibold text-gray-900 mb-3">
-                <User className="w-4 h-4 text-blue-600" />
+                <User className="w-4 h-4 text-emerald-600" />
                 코치님께 전달하고 싶은 자기소개
                 <span className="text-red-500">*</span>
               </label>
@@ -141,7 +141,7 @@ export function SelfIntroPage() {
                 onChange={(e) => setIntro(e.target.value)}
                 placeholder="예: 저는 디자이너인데 아이디어는 많은데 실행이 항상 막혀요. 완벽해야 시작하는 스타일이라 작은 것부터 시작하는 게 정말 힘들어요."
                 rows={4}
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none text-sm"
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-none text-sm"
               />
             </CardContent>
           </Card>
@@ -159,7 +159,7 @@ export function SelfIntroPage() {
                 onChange={(e) => setExpectation(e.target.value)}
                 placeholder="예: 아침 루틴을 딱 하나라도 꾸준히 유지하고 싶어요. 매일 실패해서 자책하는 걸 줄이고 싶어요."
                 rows={3}
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none text-sm"
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-none text-sm"
               />
             </CardContent>
           </Card>
@@ -177,7 +177,7 @@ export function SelfIntroPage() {
                 onChange={(e) => setConcern(e.target.value)}
                 placeholder="예: 과제를 못 했을 때 코치님께 실망을 드릴 것 같아서 걱정돼요. 또 가끔 약속을 잊어버릴 수도 있어요."
                 rows={3}
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none text-sm"
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-none text-sm"
               />
             </CardContent>
           </Card>
@@ -200,16 +200,16 @@ export function SelfIntroPage() {
                       onClick={() => toggleStyle(style.id)}
                       className={`flex items-center gap-2 p-3 rounded-xl border-2 text-left transition-all ${
                         isSelected
-                          ? 'border-blue-500 bg-blue-50'
+                          ? 'border-emerald-500 bg-emerald-50'
                           : 'border-gray-200 hover:border-gray-300'
                       }`}
                     >
                       <span className="text-lg">{style.emoji}</span>
-                      <span className={`text-sm ${isSelected ? 'text-blue-700 font-medium' : 'text-gray-700'}`}>
+                      <span className={`text-sm ${isSelected ? 'text-emerald-700 font-medium' : 'text-gray-700'}`}>
                         {style.label}
                       </span>
                       {isSelected && (
-                        <Check className="w-4 h-4 text-blue-600 ml-auto" />
+                        <Check className="w-4 h-4 text-emerald-600 ml-auto" />
                       )}
                     </button>
                   )

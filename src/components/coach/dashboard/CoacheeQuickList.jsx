@@ -84,7 +84,7 @@ export function CoacheeQuickList({ coachees = [] }) {
                 <td className="py-4">
                   <button
                     onClick={() => navigate(`/coach/coachees/${coachee.id}`)}
-                    className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+                    className="text-emerald-600 hover:text-emerald-700 text-sm font-medium"
                   >
                     상세보기
                   </button>

@@ -39,13 +39,13 @@ export function TaskCard({ task, onClick, onComplete }) {
             className={`p-2 rounded-full transition-colors ${
               isCompleted
                 ? 'bg-green-100'
-                : 'bg-blue-100 hover:bg-blue-200'
+                : 'bg-emerald-100 hover:bg-blue-200'
             }`}
           >
             {isCompleted ? (
               <CheckCircle2 className="w-5 h-5 text-green-600" />
             ) : (
-              <Circle className="w-5 h-5 text-blue-600" />
+              <Circle className="w-5 h-5 text-emerald-600" />
             )}
           </button>
 
@@ -100,7 +100,7 @@ export function TaskCard({ task, onClick, onComplete }) {
                 <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
                   <div
                     className={`h-full rounded-full transition-all ${
-                      isCompleted ? 'bg-green-500' : 'bg-blue-500'
+                      isCompleted ? 'bg-green-500' : 'bg-emerald-500'
                     }`}
                     style={{ width: `${progress}%` }}
                   />

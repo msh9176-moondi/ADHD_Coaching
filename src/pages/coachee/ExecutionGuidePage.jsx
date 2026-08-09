@@ -182,7 +182,7 @@ const GUIDE_SECTIONS = [
 function GuideSection({ section, isOpen, onToggle }) {
   const Icon = section.icon
   const colorMap = {
-    blue: { bg: 'bg-blue-100', text: 'text-blue-600', border: 'border-blue-200' },
+    blue: { bg: 'bg-emerald-100', text: 'text-emerald-600', border: 'border-emerald-200' },
     green: { bg: 'bg-green-100', text: 'text-green-600', border: 'border-green-200' },
     purple: { bg: 'bg-purple-100', text: 'text-purple-600', border: 'border-purple-200' },
     yellow: { bg: 'bg-yellow-100', text: 'text-yellow-600', border: 'border-yellow-200' },
@@ -253,7 +253,7 @@ export function ExecutionGuidePage() {
       {/* 뒤로가기 */}
       <button
         onClick={() => navigate(-1)}
-        className="flex items-center gap-1 text-blue-600 hover:text-blue-700"
+        className="flex items-center gap-1 text-emerald-600 hover:text-emerald-700"
       >
         <ChevronLeft className="w-4 h-4" />
         돌아가기

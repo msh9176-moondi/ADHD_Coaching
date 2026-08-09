@@ -73,8 +73,8 @@ export function MessagesPage() {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="flex items-center gap-3 md:gap-4">
               <div className="relative">
-                <div className="w-12 h-12 md:w-14 md:h-14 bg-blue-100 rounded-full flex items-center justify-center">
-                  <Target className="w-6 h-6 md:w-7 md:h-7 text-blue-600" />
+                <div className="w-12 h-12 md:w-14 md:h-14 bg-emerald-100 rounded-full flex items-center justify-center">
+                  <Target className="w-6 h-6 md:w-7 md:h-7 text-emerald-600" />
                 </div>
                 <div className="absolute bottom-0 right-0 w-3.5 h-3.5 md:w-4 md:h-4 bg-green-500 border-2 border-white rounded-full" />
               </div>
@@ -88,7 +88,7 @@ export function MessagesPage() {
               <p className="text-xs md:text-sm text-gray-500">다음 세션</p>
               {nextSession ? (
                 <p className="text-sm md:text-base font-medium text-gray-900 flex items-center gap-1">
-                  <Calendar className="w-4 h-4 text-blue-500" />
+                  <Calendar className="w-4 h-4 text-emerald-500" />
                   {new Date(nextSession.scheduled_at).toLocaleDateString('ko-KR', {
                     month: 'long',
                     day: 'numeric',
@@ -106,7 +106,7 @@ export function MessagesPage() {
 
       {/* 나의 코칭 목표 카드 */}
       {confirmedGoal ? (
-        <Card className="border-2 border-blue-100 bg-gradient-to-r from-blue-50 to-indigo-50">
+        <Card className="border-2 border-emerald-100 bg-gradient-to-r from-amber-50 to-orange-50">
           <CardContent className="py-4">
             <button
               onClick={() => setShowGoalDetail(!showGoalDetail)}
@@ -114,13 +114,13 @@ export function MessagesPage() {
             >
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
+                  <div className="w-8 h-8 bg-emerald-500 rounded-lg flex items-center justify-center">
                     <Flame className="w-5 h-5 text-white" />
                   </div>
                   <h3 className="font-bold text-gray-900">나의 코칭 목표</h3>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-sm text-blue-600 font-medium">
+                  <span className="text-sm text-emerald-600 font-medium">
                     {confirmedGoal.goals?.length || 0}개 목표
                   </span>
                   {showGoalDetail ? (
@@ -136,11 +136,11 @@ export function MessagesPage() {
                 {confirmedGoal.goals?.map((goal, idx) => (
                   <div
                     key={goal.id || idx}
-                    className="flex items-center gap-2 px-3 py-1.5 bg-white rounded-full border border-blue-200"
+                    className="flex items-center gap-2 px-3 py-1.5 bg-white rounded-full border border-emerald-200"
                   >
-                    <Target className="w-3.5 h-3.5 text-blue-500" />
+                    <Target className="w-3.5 h-3.5 text-emerald-500" />
                     <span className="text-sm font-medium text-gray-700">{goal.topic}</span>
-                    <span className="text-xs text-blue-600 font-bold">
+                    <span className="text-xs text-emerald-600 font-bold">
                       {goal.currentScore} → {goal.targetScore}
                     </span>
                   </div>
@@ -150,13 +150,13 @@ export function MessagesPage() {
 
             {/* 목표 상세 (펼쳤을 때) */}
             {showGoalDetail && (
-              <div className="mt-4 pt-4 border-t border-blue-200 space-y-3">
+              <div className="mt-4 pt-4 border-t border-emerald-200 space-y-3">
                 {confirmedGoal.goals?.map((goal, idx) => (
                   <GoalProgressCard key={goal.id || idx} goal={goal} index={idx} />
                 ))}
 
                 <div className="pt-2">
-                  <p className="text-xs text-center text-blue-600">
+                  <p className="text-xs text-center text-emerald-600">
                     목표를 향해 한 걸음씩 나아가고 있어요!
                   </p>
                 </div>
@@ -213,18 +213,18 @@ function GoalProgressCard({ goal, index }) {
   const progressWidth = Math.min(progress, 100)
 
   return (
-    <div className="bg-white rounded-xl p-4 border border-blue-100">
+    <div className="bg-white rounded-xl p-4 border border-emerald-100">
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-center gap-2">
-          <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center">
-            <span className="text-xs font-bold text-blue-600">{index + 1}</span>
+          <div className="w-6 h-6 bg-emerald-100 rounded-full flex items-center justify-center">
+            <span className="text-xs font-bold text-emerald-600">{index + 1}</span>
           </div>
           <h4 className="font-medium text-gray-900">{goal.topic}</h4>
         </div>
         <div className="flex items-center gap-1 text-sm">
           <span className="text-gray-500">{goal.currentScore}점</span>
           <TrendingUp className="w-4 h-4 text-green-500" />
-          <span className="text-blue-600 font-bold">{goal.targetScore}점</span>
+          <span className="text-emerald-600 font-bold">{goal.targetScore}점</span>
         </div>
       </div>
 
@@ -232,7 +232,7 @@ function GoalProgressCard({ goal, index }) {
       <div className="mb-2">
         <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
           <div
-            className="h-full bg-gradient-to-r from-blue-400 to-blue-600 rounded-full transition-all duration-500"
+            className="h-full bg-gradient-to-r from-emerald-400 to-emerald-600 rounded-full transition-all duration-500"
             style={{ width: `${progressWidth}%` }}
           />
         </div>

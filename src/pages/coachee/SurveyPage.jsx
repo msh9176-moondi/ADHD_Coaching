@@ -157,7 +157,7 @@ export function SurveyPage() {
 
             <div className="mt-6 pt-4 border-t border-gray-100 flex justify-between items-center">
               <span className="font-medium text-gray-700">전체 평균</span>
-              <span className="text-xl font-bold text-blue-600">
+              <span className="text-xl font-bold text-emerald-600">
                 {scores.total?.toFixed(1) || '-'}
               </span>
             </div>
@@ -191,11 +191,11 @@ export function SurveyPage() {
         <CardContent className="p-4">
           <div className="flex justify-between items-center mb-2">
             <span className="text-sm font-medium text-gray-700">진행률</span>
-            <span className="text-sm font-bold text-blue-600">{answeredCount} / {totalQuestions}</span>
+            <span className="text-sm font-bold text-emerald-600">{answeredCount} / {totalQuestions}</span>
           </div>
           <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
             <div
-              className="h-full bg-blue-500 rounded-full transition-all duration-300"
+              className="h-full bg-emerald-500 rounded-full transition-all duration-300"
               style={{ width: `${progress}%` }}
             />
           </div>
@@ -206,8 +206,8 @@ export function SurveyPage() {
       </Card>
 
       {/* 안내 */}
-      <div className="p-4 bg-blue-50 border border-blue-100 rounded-xl">
-        <p className="text-sm text-blue-700">
+      <div className="p-4 bg-emerald-50 border border-emerald-100 rounded-xl">
+        <p className="text-sm text-emerald-700">
           <strong>설문 안내</strong><br />
           이 설문 결과는 자기보고식 참고 자료이며 의학적 판단 근거가 아닙니다.
           코칭 효과를 측정하기 위한 기초 데이터로만 활용됩니다.
@@ -246,7 +246,7 @@ export function SurveyPage() {
                             onClick={() => handleSelect(q.id, option.value)}
                             className={`flex-1 py-3 rounded-lg border-2 font-medium transition-all ${
                               isSelected
-                                ? 'border-blue-500 bg-blue-50 text-blue-700'
+                                ? 'border-emerald-500 bg-emerald-50 text-emerald-700'
                                 : 'border-gray-200 text-gray-500 hover:border-gray-300'
                             }`}
                           >
@@ -294,7 +294,7 @@ export function SurveyPage() {
                             onClick={() => handleExtraSelect(q.id, option.value)}
                             className={`flex-1 py-3 rounded-lg border-2 font-medium transition-all ${
                               isSelected
-                                ? 'border-blue-500 bg-blue-50 text-blue-700'
+                                ? 'border-emerald-500 bg-emerald-50 text-emerald-700'
                                 : 'border-gray-200 text-gray-500 hover:border-gray-300'
                             }`}
                           >
@@ -325,7 +325,7 @@ export function SurveyPage() {
                 <textarea
                   value={openText.bestPart}
                   onChange={(e) => setOpenText(prev => ({ ...prev, bestPart: e.target.value }))}
-                  className="w-full p-3 border border-gray-200 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full p-3 border border-gray-200 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                   rows={3}
                   placeholder="자유롭게 작성해주세요"
                 />
@@ -338,7 +338,7 @@ export function SurveyPage() {
                 <textarea
                   value={openText.regret}
                   onChange={(e) => setOpenText(prev => ({ ...prev, regret: e.target.value }))}
-                  className="w-full p-3 border border-gray-200 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full p-3 border border-gray-200 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                   rows={3}
                   placeholder="자유롭게 작성해주세요"
                 />

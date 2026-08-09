@@ -47,7 +47,7 @@ export function CoachingReportPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
+        <Loader2 className="w-8 h-8 animate-spin text-emerald-500" />
         <span className="ml-3 text-gray-500">보고서 생성 중...</span>
       </div>
     )
@@ -92,14 +92,14 @@ export function CoachingReportPage() {
       {/* 뒤로가기 */}
       <button
         onClick={() => navigate(-1)}
-        className="flex items-center gap-1 text-blue-600 hover:text-blue-700"
+        className="flex items-center gap-1 text-emerald-600 hover:text-emerald-700"
       >
         <ChevronLeft className="w-4 h-4" />
         돌아가기
       </button>
 
       {/* 헤더 */}
-      <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl p-6 text-white">
+      <div className="bg-gradient-to-r from-emerald-600 to-indigo-600 rounded-2xl p-6 text-white">
         <div className="flex items-center gap-3 mb-4">
           <div className="w-14 h-14 bg-white/20 rounded-xl flex items-center justify-center">
             <Award className="w-8 h-8" />
@@ -134,7 +134,7 @@ export function CoachingReportPage() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Target className="w-5 h-5 text-blue-600" />
+            <Target className="w-5 h-5 text-emerald-600" />
             주제별 성장
           </CardTitle>
         </CardHeader>
@@ -155,7 +155,7 @@ export function CoachingReportPage() {
                 <ArrowRight className="w-4 h-4 text-gray-300" />
                 <div className="text-center">
                   <p className="text-xs text-gray-500">현재</p>
-                  <span className="text-lg font-semibold text-blue-600">{topic.currentScore}</span>
+                  <span className="text-lg font-semibold text-emerald-600">{topic.currentScore}</span>
                 </div>
                 <div className="flex-1" />
                 <div className="text-center">
@@ -166,7 +166,7 @@ export function CoachingReportPage() {
               <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
                 <div
                   className={`h-full rounded-full transition-all ${
-                    topic.achievementRate >= 100 ? 'bg-green-500' : 'bg-blue-500'
+                    topic.achievementRate >= 100 ? 'bg-green-500' : 'bg-emerald-500'
                   }`}
                   style={{ width: `${Math.min(topic.achievementRate, 100)}%` }}
                 />
@@ -220,7 +220,7 @@ export function CoachingReportPage() {
                     )}
                     {session.reflection && (
                       <div className="mt-3 p-3 bg-white rounded-lg border border-gray-200">
-                        <div className="flex items-center gap-1 text-xs text-blue-600 mb-1">
+                        <div className="flex items-center gap-1 text-xs text-emerald-600 mb-1">
                           <BookOpen className="w-3 h-3" />
                           성찰일지
                         </div>
@@ -290,7 +290,7 @@ export function CoachingReportPage() {
       </Card>
 
       {/* 다음 단계 안내 */}
-      <Card className="border-2 border-blue-200 bg-blue-50">
+      <Card className="border-2 border-emerald-200 bg-emerald-50">
         <CardContent className="py-6">
           <div className="text-center">
             <Star className="w-10 h-10 text-yellow-500 mx-auto mb-3" />

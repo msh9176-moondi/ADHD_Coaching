@@ -24,7 +24,7 @@ export function LoadingSpinner({
 
   const colorClasses = {
     white: 'text-white',
-    blue: 'text-blue-500',
+    blue: 'text-emerald-500',
     gray: 'text-gray-400'
   }
 

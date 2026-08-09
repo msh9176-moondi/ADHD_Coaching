@@ -20,7 +20,7 @@ const TYPE_COLORS = {
   inattention: { bg: 'bg-purple-100', text: 'text-purple-600', accent: 'purple' },
   hyperactivity: { bg: 'bg-orange-100', text: 'text-orange-600', accent: 'orange' },
   impulsivity: { bg: 'bg-red-100', text: 'text-red-600', accent: 'red' },
-  combined: { bg: 'bg-blue-100', text: 'text-blue-600', accent: 'blue' }
+  combined: { bg: 'bg-emerald-100', text: 'text-emerald-600', accent: 'blue' }
 }
 
 
@@ -57,7 +57,7 @@ export function MyAnalysisResult() {
           </p>
           <Link
             to="/onboarding"
-            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm font-medium hover:bg-emerald-700 transition-colors"
           >
             <Sparkles className="w-4 h-4" />
             설문 시작하기
@@ -72,7 +72,7 @@ export function MyAnalysisResult() {
       {/* 섹션 헤더 */}
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-          <PieChart className="w-5 h-5 text-blue-600" />
+          <PieChart className="w-5 h-5 text-emerald-600" />
           나의 분석 결과
         </h2>
       </div>
@@ -227,7 +227,7 @@ export function MyAnalysisResult() {
 
       {/* 추천 전략 */}
       {typeInfo && (
-        <Card className="bg-gradient-to-r from-blue-500 to-blue-600 text-white">
+        <Card className="bg-gradient-to-r from-amber-500 to-emerald-600 text-white">
           <CardContent className="p-5">
             <div className="flex items-start gap-4">
               <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center flex-shrink-0">
@@ -276,7 +276,7 @@ export function MyAnalysisResult() {
             </Link>
             <Link
               to="/coachee/survey?type=pre"
-              className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-blue-50 text-blue-700 rounded-xl text-sm font-medium hover:bg-blue-100 transition-colors border border-blue-200"
+              className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-emerald-50 text-emerald-700 rounded-xl text-sm font-medium hover:bg-emerald-100 transition-colors border border-emerald-200"
             >
               <ClipboardList className="w-4 h-4" />
               설문 재검사

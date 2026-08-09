@@ -16,7 +16,7 @@ export function NotificationCard() {
   const getNotificationIcon = (type) => {
     switch (type) {
       case 'task_reminder':
-        return <ClipboardList className="w-5 h-5 text-blue-500" />
+        return <ClipboardList className="w-5 h-5 text-emerald-500" />
       default:
         return <Bell className="w-5 h-5 text-gray-500" />
     }
@@ -36,12 +36,12 @@ export function NotificationCard() {
   }
 
   return (
-    <Card className="border-blue-200 bg-blue-50">
+    <Card className="border-emerald-200 bg-emerald-50">
       <CardHeader className="py-3">
         <div className="flex items-center justify-between">
           <CardTitle className="text-base flex items-center gap-2">
             <div className="relative">
-              <Bell className="w-5 h-5 text-blue-600" />
+              <Bell className="w-5 h-5 text-emerald-600" />
               <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[10px] rounded-full flex items-center justify-center">
                 {unreadNotifications.length}
               </span>
@@ -53,7 +53,7 @@ export function NotificationCard() {
               variant="ghost"
               size="sm"
               onClick={markAllNotificationsRead}
-              className="text-xs text-blue-600 hover:text-blue-700"
+              className="text-xs text-emerald-600 hover:text-emerald-700"
             >
               모두 읽음
             </Button>
@@ -64,7 +64,7 @@ export function NotificationCard() {
         {unreadNotifications.map((notification) => (
           <div
             key={notification.id}
-            className="p-3 bg-white rounded-lg border border-blue-100 shadow-sm"
+            className="p-3 bg-white rounded-lg border border-emerald-100 shadow-sm"
           >
             <div className="flex items-start gap-3">
               <div className="flex-shrink-0 mt-0.5">

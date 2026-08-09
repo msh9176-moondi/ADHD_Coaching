@@ -4,8 +4,8 @@ import { Card } from './Card'
 export function SidePanel({
   title,
   icon: Icon,
-  iconColor = 'text-blue-600',
-  headerBg = 'bg-blue-50',
+  iconColor = 'text-emerald-600',
+  headerBg = 'bg-emerald-50',
   headerTextColor = 'text-blue-900',
   onClose,
   children,

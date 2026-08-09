@@ -35,8 +35,8 @@ export function MatchCompletePage() {
         <Card className="mb-6">
           <CardContent className="p-6">
             <div className="flex items-center gap-4 mb-4">
-              <div className="w-16 h-16 rounded-2xl bg-blue-100 flex items-center justify-center">
-                <Target className="w-8 h-8 text-blue-600" />
+              <div className="w-16 h-16 rounded-2xl bg-emerald-100 flex items-center justify-center">
+                <Target className="w-8 h-8 text-emerald-600" />
               </div>
               <div>
                 <h2 className="text-xl font-bold text-gray-900">FLOCA 코칭</h2>
@@ -54,7 +54,7 @@ export function MatchCompletePage() {
         <Card className="mb-6">
           <CardContent className="p-6">
             <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
-              <FileText className="w-5 h-5 text-blue-500" />
+              <FileText className="w-5 h-5 text-emerald-500" />
               나의 분석 요약
             </h3>
 
@@ -77,38 +77,38 @@ export function MatchCompletePage() {
         </Card>
 
         {/* 다음 단계 안내 */}
-        <Card className="bg-blue-50 border-blue-100 mb-8">
+        <Card className="bg-emerald-50 border-emerald-100 mb-8">
           <CardContent className="p-6">
             <h3 className="font-semibold text-blue-900 mb-4">이제 시작해볼까요?</h3>
 
             <div className="space-y-3">
               <div className="flex items-start gap-3">
-                <div className="w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0">
+                <div className="w-6 h-6 bg-emerald-500 text-white rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0">
                   1
                 </div>
                 <div>
                   <p className="text-sm font-medium text-blue-900">오늘의 할 일을 확인하세요</p>
-                  <p className="text-xs text-blue-700">대시보드에서 맞춤 과제를 확인합니다</p>
+                  <p className="text-xs text-emerald-700">대시보드에서 맞춤 과제를 확인합니다</p>
                 </div>
               </div>
 
               <div className="flex items-start gap-3">
-                <div className="w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0">
+                <div className="w-6 h-6 bg-emerald-500 text-white rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0">
                   2
                 </div>
                 <div>
                   <p className="text-sm font-medium text-blue-900">매일 체크인으로 기록하세요</p>
-                  <p className="text-xs text-blue-700">오늘의 컨디션과 목표를 체크합니다</p>
+                  <p className="text-xs text-emerald-700">오늘의 컨디션과 목표를 체크합니다</p>
                 </div>
               </div>
 
               <div className="flex items-start gap-3">
-                <div className="w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0">
+                <div className="w-6 h-6 bg-emerald-500 text-white rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0">
                   3
                 </div>
                 <div>
                   <p className="text-sm font-medium text-blue-900">꾸준히 성장을 확인하세요</p>
-                  <p className="text-xs text-blue-700">분석 결과로 나의 변화를 추적합니다</p>
+                  <p className="text-xs text-emerald-700">분석 결과로 나의 변화를 추적합니다</p>
                 </div>
               </div>
             </div>

@@ -61,7 +61,7 @@ export function Sidebar({ isOpen, onClose }) {
     >
       <div className="px-6 py-5 border-b border-gray-100 flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-bold text-blue-600">FLOCA</h1>
+          <h1 className="text-xl font-bold text-emerald-600">FLOCA</h1>
           <p className="text-xs text-gray-500 mt-0.5">ADHD 실행회복 코칭</p>
         </div>
         {/* 모바일 닫기 버튼 */}
@@ -83,7 +83,7 @@ export function Sidebar({ isOpen, onClose }) {
             className={({ isActive }) =>
               `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                 isActive
-                  ? 'bg-blue-50 text-blue-700'
+                  ? 'bg-emerald-50 text-emerald-700'
                   : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
               }`
             }

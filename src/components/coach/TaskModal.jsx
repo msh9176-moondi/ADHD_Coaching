@@ -91,7 +91,7 @@ export function TaskModal({ isOpen, onClose, coachee, task, onSave, onDelete }) 
               value={formData.title}
               onChange={(e) => setFormData({ ...formData, title: e.target.value })}
               placeholder="예: 아침 기상 후 물 한 잔 마시기"
-              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
             />
           </div>
 
@@ -105,7 +105,7 @@ export function TaskModal({ isOpen, onClose, coachee, task, onSave, onDelete }) 
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               placeholder="과제에 대한 추가 설명이나 팁..."
               rows={2}
-              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-none"
             />
           </div>
 
@@ -120,7 +120,7 @@ export function TaskModal({ isOpen, onClose, coachee, task, onSave, onDelete }) 
                 type="date"
                 value={formData.dueDate}
                 onChange={(e) => setFormData({ ...formData, dueDate: e.target.value })}
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
               />
             </div>
 
@@ -136,7 +136,7 @@ export function TaskModal({ isOpen, onClose, coachee, task, onSave, onDelete }) 
                     onClick={() => setFormData({ ...formData, priority: opt.value })}
                     className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
                       formData.priority === opt.value
-                        ? opt.color + ' ring-2 ring-offset-1 ring-blue-500'
+                        ? opt.color + ' ring-2 ring-offset-1 ring-emerald-500'
                         : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                     }`}
                   >
@@ -156,7 +156,7 @@ export function TaskModal({ isOpen, onClose, coachee, task, onSave, onDelete }) 
             <select
               value={formData.sessionNumber}
               onChange={(e) => setFormData({ ...formData, sessionNumber: Number(e.target.value) })}
-              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
             >
               {Array.from({ length: coachee?.totalSessions || 10 }, (_, i) => i + 1).map((num) => (
                 <option key={num} value={num}>{num}회기</option>

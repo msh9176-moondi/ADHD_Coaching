@@ -71,7 +71,7 @@ export function TaskDetailModal({ task, onClose, onEdit, onComplete, onSubmit })
               <div className="h-3 bg-gray-100 rounded-full overflow-hidden">
                 <div
                   className={`h-full rounded-full transition-all ${
-                    isCompleted ? 'bg-green-500' : 'bg-blue-500'
+                    isCompleted ? 'bg-green-500' : 'bg-emerald-500'
                   }`}
                   style={{ width: `${(task.completedCount / task.targetCount) * 100}%` }}
                 />

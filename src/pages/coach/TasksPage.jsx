@@ -22,7 +22,7 @@ import {
 // 패키지 색상 설정
 const packageColors = {
   starter: 'bg-green-100 text-green-700',
-  basic: 'bg-blue-100 text-blue-700',
+  basic: 'bg-emerald-100 text-emerald-700',
   premium: 'bg-purple-100 text-purple-700'
 }
 
@@ -537,10 +537,10 @@ function CoacheeDrawer({ coachee, isExpanded, onToggle, onCompleteTask, onAssign
       >
         {/* 펼침/접힘 아이콘 */}
         <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${
-          isExpanded ? 'bg-blue-100' : 'bg-gray-100'
+          isExpanded ? 'bg-emerald-100' : 'bg-gray-100'
         }`}>
           {isExpanded ? (
-            <ChevronDown className={`w-5 h-5 ${isExpanded ? 'text-blue-600' : 'text-gray-500'}`} />
+            <ChevronDown className={`w-5 h-5 ${isExpanded ? 'text-emerald-600' : 'text-gray-500'}`} />
           ) : (
             <ChevronRight className="w-5 h-5 text-gray-500" />
           )}
@@ -649,7 +649,7 @@ function TaskRow({ task, coacheeUserId, onComplete, onSendReminder }) {
 
   const statusConfig = {
     completed: { label: '완료', color: 'bg-green-100 text-green-700', icon: CheckCircle },
-    in_progress: { label: '진행 중', color: 'bg-blue-100 text-blue-700', icon: Clock },
+    in_progress: { label: '진행 중', color: 'bg-emerald-100 text-emerald-700', icon: Clock },
     not_started: { label: isRoutine ? '시작 전' : '미제출', color: 'bg-gray-100 text-gray-600', icon: AlertCircle }
   }
 
@@ -668,7 +668,7 @@ function TaskRow({ task, coacheeUserId, onComplete, onSendReminder }) {
     <div className="bg-white">
       <div
         onClick={() => setIsExpanded(!isExpanded)}
-        className="flex items-center gap-4 p-4 pl-16 hover:bg-blue-50 cursor-pointer transition-colors"
+        className="flex items-center gap-4 p-4 pl-16 hover:bg-emerald-50 cursor-pointer transition-colors"
       >
         {/* 펼침 아이콘 */}
         <div className="w-6 h-6 flex items-center justify-center">
@@ -684,7 +684,7 @@ function TaskRow({ task, coacheeUserId, onComplete, onSendReminder }) {
           <div className="flex items-center gap-2 mb-0.5 flex-wrap">
             {/* 과제 타입 */}
             <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
-              isRoutine ? 'bg-blue-50 text-blue-600' : 'bg-purple-50 text-purple-600'
+              isRoutine ? 'bg-emerald-50 text-emerald-600' : 'bg-purple-50 text-purple-600'
             }`}>
               {isRoutine ? '🔄 루틴' : '📝 기록'}
             </span>
@@ -719,7 +719,7 @@ function TaskRow({ task, coacheeUserId, onComplete, onSendReminder }) {
               <div className="flex items-center gap-1">
                 <div className="w-16 h-1.5 bg-gray-200 rounded-full overflow-hidden">
                   <div
-                    className={`h-full rounded-full ${task.status === 'completed' ? 'bg-green-500' : 'bg-blue-500'}`}
+                    className={`h-full rounded-full ${task.status === 'completed' ? 'bg-green-500' : 'bg-emerald-500'}`}
                     style={{ width: `${progressPercent}%` }}
                   />
                 </div>
@@ -776,8 +776,8 @@ function TaskRow({ task, coacheeUserId, onComplete, onSendReminder }) {
                     제출: {new Date(task.submission.submittedAt).toLocaleString('ko-KR')}
                   </p>
                   {task.submission.feedback && (
-                    <div className="mt-3 p-2 bg-blue-50 border border-blue-200 rounded-lg">
-                      <p className="text-xs text-blue-600 font-medium mb-1">💬 내 피드백</p>
+                    <div className="mt-3 p-2 bg-emerald-50 border border-emerald-200 rounded-lg">
+                      <p className="text-xs text-emerald-600 font-medium mb-1">💬 내 피드백</p>
                       <p className="text-sm text-gray-700">{task.submission.feedback}</p>
                     </div>
                   )}
@@ -915,7 +915,7 @@ function TaskAssignModal({ coachees = [], preselectedCoacheeId = null, onClose, 
             <select
               value={selectedCoachee}
               onChange={(e) => setSelectedCoachee(e.target.value)}
-              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
             >
               <option value="">선택하세요</option>
               {coachees.map(coachee => (
@@ -937,18 +937,18 @@ function TaskAssignModal({ coachees = [], preselectedCoacheeId = null, onClose, 
                 onClick={() => setTaskType('routine')}
                 className={`p-4 rounded-xl border-2 transition-all text-left ${
                   taskType === 'routine'
-                    ? 'border-blue-500 bg-blue-50'
+                    ? 'border-emerald-500 bg-emerald-50'
                     : 'border-gray-200 hover:border-gray-300'
                 }`}
               >
                 <div className="flex items-center gap-2 mb-1">
-                  <Target className="w-5 h-5 text-blue-600" />
+                  <Target className="w-5 h-5 text-emerald-600" />
                   <span className="font-medium text-gray-900">루틴 과제</span>
                 </div>
                 <p className="text-xs text-gray-500">
                   반복 실행 (예: 물 마시기 7회)
                 </p>
-                <p className="text-xs text-blue-600 mt-1">
+                <p className="text-xs text-emerald-600 mt-1">
                   → 실행과제 페이지 + 대시보드
                 </p>
               </button>
@@ -985,7 +985,7 @@ function TaskAssignModal({ coachees = [], preselectedCoacheeId = null, onClose, 
                 <button
                   key={idx}
                   onClick={() => applyTemplate(template)}
-                  className="p-2.5 text-left text-xs bg-gray-50 hover:bg-blue-50 border border-gray-200 hover:border-blue-300 rounded-lg transition-colors"
+                  className="p-2.5 text-left text-xs bg-gray-50 hover:bg-emerald-50 border border-gray-200 hover:border-emerald-300 rounded-lg transition-colors"
                 >
                   <span className="text-gray-700 line-clamp-2">{template.title}</span>
                 </button>
@@ -1003,7 +1003,7 @@ function TaskAssignModal({ coachees = [], preselectedCoacheeId = null, onClose, 
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="예: 아침 기상 후 물 한 잔 마시기"
-              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
             />
           </div>
 
@@ -1017,7 +1017,7 @@ function TaskAssignModal({ coachees = [], preselectedCoacheeId = null, onClose, 
               onChange={(e) => setDescription(e.target.value)}
               placeholder="과제에 대한 자세한 설명이나 가이드를 적어주세요."
               rows={3}
-              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-none"
             />
           </div>
 
@@ -1032,7 +1032,7 @@ function TaskAssignModal({ coachees = [], preselectedCoacheeId = null, onClose, 
                 value={dueDate}
                 onChange={(e) => setDueDate(e.target.value)}
                 min={today}
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
               />
             </div>
             {taskType === 'routine' && (
@@ -1047,7 +1047,7 @@ function TaskAssignModal({ coachees = [], preselectedCoacheeId = null, onClose, 
                     onChange={(e) => setTargetCount(Math.max(1, parseInt(e.target.value) || 1))}
                     min="1"
                     max="100"
-                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
                   />
                   <span className="text-gray-500 whitespace-nowrap">회</span>
                 </div>
@@ -1057,12 +1057,12 @@ function TaskAssignModal({ coachees = [], preselectedCoacheeId = null, onClose, 
 
           {/* 안내 메시지 */}
           <div className={`flex items-center gap-2 p-3 rounded-lg ${
-            taskType === 'routine' ? 'bg-blue-50' : 'bg-purple-50'
+            taskType === 'routine' ? 'bg-emerald-50' : 'bg-purple-50'
           }`}>
             {taskType === 'routine' ? (
               <>
-                <Target className="w-4 h-4 text-blue-600 flex-shrink-0" />
-                <span className="text-sm text-blue-700">
+                <Target className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+                <span className="text-sm text-emerald-700">
                   루틴 과제: 실행과제 페이지에서 완료 체크, 대시보드에 표시됩니다
                 </span>
               </>

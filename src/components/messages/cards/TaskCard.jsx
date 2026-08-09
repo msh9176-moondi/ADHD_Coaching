@@ -67,14 +67,14 @@ export function TaskCard({ message, userRole, onComplete, onSubmit }) {
 
         {/* 제출된 내용 미리보기 */}
         {hasSubmission && (
-          <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded-lg">
-            <div className="flex items-center gap-1 text-xs text-blue-600 mb-1">
+          <div className="mt-2 p-2 bg-emerald-50 border border-emerald-200 rounded-lg">
+            <div className="flex items-center gap-1 text-xs text-emerald-600 mb-1">
               <FileText className="w-3 h-3" />
               제출 완료
             </div>
             <p className="text-xs text-gray-600 line-clamp-2">{submission.content}</p>
             {submission.images?.length > 0 && (
-              <p className="text-xs text-blue-500 mt-1">
+              <p className="text-xs text-emerald-500 mt-1">
                 + 이미지 {submission.images.length}개
               </p>
             )}

@@ -84,7 +84,7 @@ export function PackageProgress() {
               onClick={() => setSelectedType(key)}
               className={`w-full flex items-center justify-between p-3 rounded-lg transition-all ${
                 selectedType === key
-                  ? 'bg-blue-500 text-white'
+                  ? 'bg-emerald-500 text-white'
                   : 'bg-white/10 hover:bg-white/20 text-white/80'
               }`}
             >

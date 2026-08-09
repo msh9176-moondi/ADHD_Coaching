@@ -141,7 +141,7 @@ export function CoachDashboard() {
         <Card className="lg:col-span-2">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Calendar className="w-5 h-5 text-blue-600" />
+              <Calendar className="w-5 h-5 text-emerald-600" />
               오늘의 상담
             </CardTitle>
           </CardHeader>
@@ -170,7 +170,7 @@ export function CoachDashboard() {
           <CardTitle>담당 피코치</CardTitle>
           <button
             onClick={() => navigate('/coach/coachees')}
-            className="text-sm text-blue-600 hover:text-blue-700"
+            className="text-sm text-emerald-600 hover:text-emerald-700"
           >
             전체보기
           </button>

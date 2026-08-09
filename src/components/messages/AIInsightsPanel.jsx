@@ -83,7 +83,7 @@ export function AIInsightsPanel({ coachee, messages, onClose }) {
         max-h-[85vh] lg:max-h-full
       `}>
         {/* 헤더 */}
-        <div className="p-3 border-b flex items-center justify-between bg-gradient-to-r from-purple-50 to-indigo-50 rounded-t-2xl lg:rounded-t-xl">
+        <div className="p-3 border-b flex items-center justify-between bg-gradient-to-r from-purple-50 to-orange-50 rounded-t-2xl lg:rounded-t-xl">
           <div className="flex items-center gap-2">
             <Sparkles className="w-4 h-4 text-purple-600" />
             <h3 className="font-semibold text-sm text-gray-900">AI 인사이트</h3>
@@ -173,11 +173,11 @@ export function AIInsightsPanel({ coachee, messages, onClose }) {
               <button
                 onClick={() => toggleSection('summary')}
                 className={`w-full px-3 py-2 flex items-center justify-between text-left ${
-                  expandedSections.summary ? 'bg-blue-50' : 'bg-gray-50'
+                  expandedSections.summary ? 'bg-emerald-50' : 'bg-gray-50'
                 }`}
               >
                 <div className="flex items-center gap-2">
-                  <MessageSquare className="w-4 h-4 text-blue-600" />
+                  <MessageSquare className="w-4 h-4 text-emerald-600" />
                   <span className="font-medium text-sm text-gray-800">대화 요약</span>
                 </div>
                 {expandedSections.summary ? (
@@ -347,7 +347,7 @@ export function AIInsightsPanel({ coachee, messages, onClose }) {
                       <p className="text-xs font-medium text-gray-500 mb-1">다룰 주제</p>
                       <div className="flex flex-wrap gap-1">
                         {analysis.suggestions.topics.map((item, idx) => (
-                          <span key={idx} className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded">
+                          <span key={idx} className="text-xs bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded">
                             {item}
                           </span>
                         ))}

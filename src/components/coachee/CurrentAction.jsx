@@ -93,13 +93,13 @@ export function CurrentAction() {
 
   if (!coachingStatus.goalAgreementCompleted) {
     return (
-      <div id="current-action" className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-2xl p-6">
+      <div id="current-action" className="bg-gradient-to-r from-amber-50 to-orange-50 border border-emerald-200 rounded-2xl p-6">
         <div className="flex items-start gap-4">
-          <div className="p-3 bg-blue-100 rounded-xl">
-            <Target className="w-6 h-6 text-blue-600" />
+          <div className="p-3 bg-emerald-100 rounded-xl">
+            <Target className="w-6 h-6 text-emerald-600" />
           </div>
           <div className="flex-1">
-            <p className="text-sm text-blue-600 font-medium mb-1">다음 단계</p>
+            <p className="text-sm text-emerald-600 font-medium mb-1">다음 단계</p>
             <h2 className="text-xl font-bold text-gray-900 mb-2">
               목표합의서가 도착했습니다
             </h2>

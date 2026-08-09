@@ -15,7 +15,7 @@ export function CoachMessage() {
       <Card>
         <CardHeader>
           <CardTitle className="text-base flex items-center gap-2">
-            <MessageSquare className="w-4 h-4 text-blue-600" />
+            <MessageSquare className="w-4 h-4 text-emerald-600" />
             코치 메시지
           </CardTitle>
         </CardHeader>
@@ -42,7 +42,7 @@ export function CoachMessage() {
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="text-base flex items-center gap-2">
-          <MessageSquare className="w-4 h-4 text-blue-600" />
+          <MessageSquare className="w-4 h-4 text-emerald-600" />
           코치 메시지
         </CardTitle>
         {lastCoachMessage.unreadCount > 0 && (

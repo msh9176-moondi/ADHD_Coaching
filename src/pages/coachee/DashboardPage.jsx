@@ -250,7 +250,7 @@ export function CoacheeDashboardPage() {
     return (
       <div className="max-w-4xl mx-auto flex items-center justify-center py-20">
         <div className="text-center">
-          <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <div className="w-8 h-8 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
           <p className="text-gray-500">데이터를 불러오는 중...</p>
         </div>
       </div>
@@ -302,7 +302,7 @@ export function CoacheeDashboardPage() {
         <Card>
           <CardHeader>
             <CardTitle className="text-base flex items-center gap-2">
-              <Calendar className="w-4 h-4 text-blue-600" />
+              <Calendar className="w-4 h-4 text-emerald-600" />
               오늘의 일정
             </CardTitle>
           </CardHeader>

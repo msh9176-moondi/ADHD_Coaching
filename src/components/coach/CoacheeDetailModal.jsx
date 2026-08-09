@@ -49,8 +49,8 @@ export function CoacheeDetailModal({ isOpen, onClose, coachee }) {
         {/* 헤더 */}
         <div className="flex items-center justify-between p-6 border-b border-gray-100">
           <div className="flex items-center gap-4">
-            <div className="w-14 h-14 bg-blue-100 rounded-full flex items-center justify-center">
-              <User className="w-7 h-7 text-blue-600" />
+            <div className="w-14 h-14 bg-emerald-100 rounded-full flex items-center justify-center">
+              <User className="w-7 h-7 text-emerald-600" />
             </div>
             <div>
               <h2 className="text-xl font-bold text-gray-900">{coacheeUser?.name || '피코치'}</h2>
@@ -168,7 +168,7 @@ export function CoacheeDetailModal({ isOpen, onClose, coachee }) {
             <Card>
               <CardContent className="p-4">
                 <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                  <ClipboardList className="w-4 h-4 text-blue-500" />
+                  <ClipboardList className="w-4 h-4 text-emerald-500" />
                   코칭 설문 결과
                 </h3>
 
@@ -196,7 +196,7 @@ export function CoacheeDetailModal({ isOpen, onClose, coachee }) {
 
                 <div className="mt-4 pt-4 border-t border-gray-100 flex justify-between items-center">
                   <span className="font-medium text-gray-700">전체 평균</span>
-                  <span className="text-xl font-bold text-blue-600">
+                  <span className="text-xl font-bold text-emerald-600">
                     {preSurvey.categoryScores?.total?.toFixed(1) || '-'}
                   </span>
                 </div>
@@ -251,7 +251,7 @@ export function CoacheeDetailModal({ isOpen, onClose, coachee }) {
 
           {/* 추천 코칭 방향 */}
           {typeInfo && (
-            <Card className="bg-blue-50 border-blue-100">
+            <Card className="bg-emerald-50 border-emerald-100">
               <CardContent className="p-4">
                 <h3 className="font-semibold text-blue-900 mb-3 flex items-center gap-2">
                   <TrendingUp className="w-4 h-4" />
@@ -260,7 +260,7 @@ export function CoacheeDetailModal({ isOpen, onClose, coachee }) {
                 <p className="text-sm text-blue-800 mb-3">{typeInfo.coachingDirection}</p>
                 <div className="space-y-1">
                   {typeInfo.recommendedActions.slice(0, 3).map((action, idx) => (
-                    <div key={idx} className="flex items-center gap-2 text-sm text-blue-700">
+                    <div key={idx} className="flex items-center gap-2 text-sm text-emerald-700">
                       <CheckCircle className="w-3 h-3" />
                       {action}
                     </div>

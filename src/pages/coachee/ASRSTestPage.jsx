@@ -104,7 +104,7 @@ export function ASRSTestPage() {
     return (
       <div className="max-w-xl mx-auto space-y-6">
         <div className="text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-100 text-blue-700 rounded-full text-sm font-medium mb-4">
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-100 text-emerald-700 rounded-full text-sm font-medium mb-4">
             <Brain className="w-4 h-4" />
             WHO ASRS 기반
           </div>
@@ -120,7 +120,7 @@ export function ASRSTestPage() {
         <Card>
           <CardContent className="p-6">
             <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
-              <FileText className="w-5 h-5 text-blue-500" />
+              <FileText className="w-5 h-5 text-emerald-500" />
               검사 안내
             </h3>
             <ul className="space-y-2 text-sm text-gray-600">
@@ -165,7 +165,7 @@ export function ASRSTestPage() {
           </div>
           <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
             <div
-              className="h-full bg-blue-500 rounded-full transition-all duration-300"
+              className="h-full bg-emerald-500 rounded-full transition-all duration-300"
               style={{ width: `${progress}%` }}
             />
           </div>
@@ -183,7 +183,7 @@ export function ASRSTestPage() {
         <Card>
           <CardContent className="p-6 space-y-6">
             {/* 질문 번호 */}
-            <span className="inline-block px-3 py-1 bg-blue-500 text-white text-sm font-medium rounded-lg">
+            <span className="inline-block px-3 py-1 bg-emerald-500 text-white text-sm font-medium rounded-lg">
               Q{currentQuestion + 1}
             </span>
 
@@ -206,12 +206,12 @@ export function ASRSTestPage() {
                     onClick={() => handleSelect(option.value)}
                     className={`w-full flex items-center gap-4 p-4 rounded-xl border-2 transition-all text-left ${
                       isSelected
-                        ? 'border-blue-500 bg-blue-50'
+                        ? 'border-emerald-500 bg-emerald-50'
                         : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
                     }`}
                   >
                     <span className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
-                      isSelected ? 'border-blue-500 bg-blue-500' : 'border-gray-300'
+                      isSelected ? 'border-emerald-500 bg-emerald-500' : 'border-gray-300'
                     }`}>
                       {isSelected && <span className="w-2 h-2 bg-white rounded-full" />}
                     </span>
@@ -243,7 +243,7 @@ export function ASRSTestPage() {
       <div className="max-w-xl mx-auto">
         <Card>
           <CardContent className="p-12 text-center">
-            <div className="w-16 h-16 border-4 border-blue-200 border-t-blue-500 rounded-full animate-spin mx-auto mb-6" />
+            <div className="w-16 h-16 border-4 border-emerald-200 border-t-blue-500 rounded-full animate-spin mx-auto mb-6" />
             <h2 className="text-xl font-bold text-gray-900 mb-2">
               응답을 분석하고 있어요
             </h2>
@@ -314,7 +314,7 @@ export function ASRSTestPage() {
 
             {/* 점수 */}
             <div className="text-center p-6 bg-gray-50 rounded-xl">
-              <span className="text-5xl font-bold text-blue-600">{scores.totalScore}</span>
+              <span className="text-5xl font-bold text-emerald-600">{scores.totalScore}</span>
               <span className="text-xl text-gray-400"> / {scores.maxScore}</span>
               <p className="text-sm text-gray-500 mt-2">
                 총점 ({testMode === 'quick' ? '간편 검사' : '전체 검사'})

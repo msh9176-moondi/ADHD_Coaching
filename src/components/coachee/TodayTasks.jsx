@@ -9,7 +9,7 @@ import {
 
 const STATUS_CONFIG = {
   not_started: { icon: Circle, color: 'text-gray-400', bg: 'bg-gray-100', label: '시작 전' },
-  started: { icon: Play, color: 'text-blue-500', bg: 'bg-blue-100', label: '진행 중' },
+  started: { icon: Play, color: 'text-emerald-500', bg: 'bg-emerald-100', label: '진행 중' },
   partial: { icon: Clock, color: 'text-amber-500', bg: 'bg-amber-100', label: '일부 진행' },
   completed: { icon: CheckCircle2, color: 'text-green-500', bg: 'bg-green-100', label: '완료' },
 }
@@ -68,7 +68,7 @@ export function TodayTasks() {
               onChange={(e) => setNewTaskTitle(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleAddTask()}
               placeholder="무엇을 할까요?"
-              className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
               autoFocus
             />
             <Button size="sm" onClick={handleAddTask} disabled={!newTaskTitle.trim()}>
@@ -129,7 +129,7 @@ function TaskItem({ task, isMenuOpen, onMenuToggle, onStatusChange, onDelete }) 
         </span>
 
         {task.isCoachingTask && (
-          <span className="text-xs px-2 py-0.5 bg-blue-100 text-blue-600 rounded-full">
+          <span className="text-xs px-2 py-0.5 bg-emerald-100 text-emerald-600 rounded-full">
             코칭
           </span>
         )}
@@ -149,7 +149,7 @@ function TaskItem({ task, isMenuOpen, onMenuToggle, onStatusChange, onDelete }) 
             onClick={() => onStatusChange('started')}
             className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50"
           >
-            <Play className="w-4 h-4 text-blue-500" />
+            <Play className="w-4 h-4 text-emerald-500" />
             시작하기
           </button>
           <button

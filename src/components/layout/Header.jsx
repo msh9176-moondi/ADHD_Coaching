@@ -27,7 +27,7 @@ export function Header({ onMenuClick }) {
           <input
             type="text"
             placeholder="검색..."
-            className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
           />
         </div>
 
@@ -80,7 +80,7 @@ export function Header({ onMenuClick }) {
                       <div
                         key={notification.id}
                         className={`p-3 border-b border-gray-50 hover:bg-gray-50 ${
-                          !notification.read ? 'bg-blue-50' : ''
+                          !notification.read ? 'bg-emerald-50' : ''
                         }`}
                       >
                         <div className="flex items-start gap-2">
@@ -99,7 +99,7 @@ export function Header({ onMenuClick }) {
                                 className="p-1 hover:bg-gray-200 rounded"
                                 title="읽음 표시"
                               >
-                                <CheckCircle className="w-3.5 h-3.5 text-blue-500" />
+                                <CheckCircle className="w-3.5 h-3.5 text-emerald-500" />
                               </button>
                             )}
                             <button
@@ -140,7 +140,7 @@ export function Header({ onMenuClick }) {
               type="text"
               placeholder="검색..."
               autoFocus
-              className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
             />
           </div>
         </div>

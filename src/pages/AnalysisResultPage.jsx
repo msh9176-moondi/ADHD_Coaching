@@ -24,7 +24,7 @@ const TYPE_COLORS = {
   inattention: { bg: 'bg-purple-100', text: 'text-purple-600', border: 'border-purple-200' },
   hyperactivity: { bg: 'bg-orange-100', text: 'text-orange-600', border: 'border-orange-200' },
   impulsivity: { bg: 'bg-red-100', text: 'text-red-600', border: 'border-red-200' },
-  combined: { bg: 'bg-blue-100', text: 'text-blue-600', border: 'border-blue-200' }
+  combined: { bg: 'bg-emerald-100', text: 'text-emerald-600', border: 'border-emerald-200' }
 }
 
 const STEPS = [
@@ -94,7 +94,7 @@ export function AnalysisResultPage() {
   const isLastStep = currentStep === STEPS.length - 1
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white py-8 px-4">
+    <div className="min-h-screen bg-gradient-to-b from-amber-50 to-white py-8 px-4">
       <div className="max-w-2xl mx-auto">
         {/* 진행 표시 */}
         <div className="mb-8">
@@ -102,7 +102,7 @@ export function AnalysisResultPage() {
             <span className="text-sm text-gray-500">
               {currentStep + 1} / {STEPS.length}
             </span>
-            <span className="text-sm font-medium text-blue-600">
+            <span className="text-sm font-medium text-emerald-600">
               {STEPS[currentStep].label}
             </span>
           </div>
@@ -111,7 +111,7 @@ export function AnalysisResultPage() {
               <div
                 key={step.id}
                 className={`h-1.5 flex-1 rounded-full transition-all duration-300 ${
-                  idx <= currentStep ? 'bg-blue-500' : 'bg-gray-200'
+                  idx <= currentStep ? 'bg-emerald-500' : 'bg-gray-200'
                 }`}
               />
             ))}
@@ -124,7 +124,7 @@ export function AnalysisResultPage() {
             <div className="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
               <Sparkles className="w-12 h-12 text-green-600" />
             </div>
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-100 text-blue-700 rounded-full text-sm font-medium mb-4">
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-100 text-emerald-700 rounded-full text-sm font-medium mb-4">
               <CheckCircle className="w-4 h-4" />
               분석 완료
             </div>

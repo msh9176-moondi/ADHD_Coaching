@@ -25,7 +25,7 @@ import { AIInsightsPanel } from '../../components/messages/AIInsightsPanel'
 // 패키지 색상 설정
 const packageColors = {
   starter: 'bg-green-100 text-green-700',
-  basic: 'bg-blue-100 text-blue-700',
+  basic: 'bg-emerald-100 text-emerald-700',
   premium: 'bg-purple-100 text-purple-700'
 }
 
@@ -241,7 +241,7 @@ export function CoachMessagesPage() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="피코치 검색..."
-              className="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
             />
           </div>
         </div>
@@ -256,7 +256,7 @@ export function CoachMessagesPage() {
                 key={coachee.id}
                 onClick={() => handleSelectCoachee(coachee.id)}
                 className={`w-full p-3 flex items-start gap-3 text-left hover:bg-gray-50 transition-colors border-b border-gray-100 ${
-                  isSelected ? 'bg-blue-50' : ''
+                  isSelected ? 'bg-emerald-50' : ''
                 }`}
               >
                 <div className="relative">
@@ -266,7 +266,7 @@ export function CoachMessagesPage() {
 
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between mb-0.5">
-                    <span className={`font-medium text-sm ${isSelected ? 'text-blue-700' : 'text-gray-900'}`}>
+                    <span className={`font-medium text-sm ${isSelected ? 'text-emerald-700' : 'text-gray-900'}`}>
                       {coachee.name}
                     </span>
                     {lastMsg && (
@@ -703,7 +703,7 @@ function SessionNotePanel({ coachee, onClose }) {
           max-h-[85vh] lg:max-h-full
         `}>
           <div className="flex items-center justify-center h-64">
-            <Loader2 className="w-6 h-6 animate-spin text-blue-500" />
+            <Loader2 className="w-6 h-6 animate-spin text-emerald-500" />
             <span className="ml-2 text-gray-600 text-sm">세션일지를 불러오는 중...</span>
           </div>
         </Card>
@@ -722,16 +722,16 @@ function SessionNotePanel({ coachee, onClose }) {
         max-h-[85vh] lg:max-h-full
       `}>
         {/* 헤더 */}
-        <div className="flex items-center justify-between p-3 border-b bg-blue-50 rounded-t-2xl lg:rounded-t-xl">
+        <div className="flex items-center justify-between p-3 border-b bg-emerald-50 rounded-t-2xl lg:rounded-t-xl">
           <div className="flex items-center gap-2">
-            <FileText className="w-5 h-5 text-blue-600" />
+            <FileText className="w-5 h-5 text-emerald-600" />
             <div>
               <h3 className="font-semibold text-blue-900 text-sm">{sessionNumber}회기 세션 일지</h3>
-              <p className="text-xs text-blue-600">{coachee.name}</p>
+              <p className="text-xs text-emerald-600">{coachee.name}</p>
             </div>
           </div>
-          <button onClick={onClose} className="p-1.5 hover:bg-blue-100 rounded-lg">
-            <X className="w-5 h-5 text-blue-600" />
+          <button onClick={onClose} className="p-1.5 hover:bg-emerald-100 rounded-lg">
+            <X className="w-5 h-5 text-emerald-600" />
           </button>
         </div>
 
@@ -746,7 +746,7 @@ function SessionNotePanel({ coachee, onClose }) {
               value={note.coachingGoal}
               onChange={(e) => handleChange('coachingGoal', e.target.value)}
               placeholder="이번 코칭 전체의 목표"
-              className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
             />
           </div>
           <div>
@@ -756,7 +756,7 @@ function SessionNotePanel({ coachee, onClose }) {
               value={note.sessionTopic}
               onChange={(e) => handleChange('sessionTopic', e.target.value)}
               placeholder="오늘 다룬 주제"
-              className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
             />
           </div>
         </div>
@@ -773,7 +773,7 @@ function SessionNotePanel({ coachee, onClose }) {
               <select
                 value={note.mood}
                 onChange={(e) => handleChange('mood', e.target.value)}
-                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
               >
                 <option value="">선택하세요</option>
                 <option value="good">좋음</option>
@@ -788,7 +788,7 @@ function SessionNotePanel({ coachee, onClose }) {
                 value={note.emotion}
                 onChange={(e) => handleChange('emotion', e.target.value)}
                 placeholder="불안, 피로, 무기력..."
-                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
               />
             </div>
             <div>
@@ -798,7 +798,7 @@ function SessionNotePanel({ coachee, onClose }) {
                 value={note.bodyResponse}
                 onChange={(e) => handleChange('bodyResponse', e.target.value)}
                 placeholder="두통, 피로감..."
-                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
               />
             </div>
           </div>
@@ -815,7 +815,7 @@ function SessionNotePanel({ coachee, onClose }) {
             onChange={(e) => handleChange('taskReview', e.target.value)}
             placeholder="지난 회기 과제 수행 여부와 결과"
             rows={2}
-            className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+            className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-none"
           />
         </div>
 
@@ -830,7 +830,7 @@ function SessionNotePanel({ coachee, onClose }) {
             onChange={(e) => handleChange('content', e.target.value)}
             placeholder="오늘 상담에서 다룬 핵심 내용"
             rows={4}
-            className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+            className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-none"
           />
         </div>
 
@@ -843,7 +843,7 @@ function SessionNotePanel({ coachee, onClose }) {
               onChange={(e) => handleChange('autoThought', e.target.value)}
               placeholder="피코치에게서 관찰된 자동적 사고"
               rows={2}
-              className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+              className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-none"
             />
           </div>
           <div>
@@ -853,7 +853,7 @@ function SessionNotePanel({ coachee, onClose }) {
               onChange={(e) => handleChange('avoidance', e.target.value)}
               placeholder="관찰된 회피 행동 패턴"
               rows={2}
-              className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+              className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-none"
             />
           </div>
         </div>
@@ -869,7 +869,7 @@ function SessionNotePanel({ coachee, onClose }) {
             onChange={(e) => handleChange('helpfulAction', e.target.value)}
             placeholder="피코치에게 효과적이었던 전략이나 행동"
             rows={2}
-            className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+            className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-none"
           />
         </div>
 
@@ -882,7 +882,7 @@ function SessionNotePanel({ coachee, onClose }) {
               onChange={(e) => handleChange('achievement', e.target.value)}
               placeholder="이번 회기에서 얻은 성과"
               rows={2}
-              className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+              className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-none"
             />
           </div>
           <div>
@@ -892,7 +892,7 @@ function SessionNotePanel({ coachee, onClose }) {
               onChange={(e) => handleChange('desiredResult', e.target.value)}
               placeholder="앞으로 기대하는 변화"
               rows={2}
-              className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+              className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-none"
             />
           </div>
         </div>
@@ -900,7 +900,7 @@ function SessionNotePanel({ coachee, onClose }) {
         {/* 다음 실행 과제 */}
         <div>
           <label className="text-xs font-medium text-gray-700 mb-1 flex items-center gap-2">
-            <Rocket className="w-4 h-4 text-blue-500" />
+            <Rocket className="w-4 h-4 text-emerald-500" />
             다음 실행 과제
           </label>
           <textarea
@@ -908,7 +908,7 @@ function SessionNotePanel({ coachee, onClose }) {
             onChange={(e) => handleChange('nextTask', e.target.value)}
             placeholder="다음 회기까지 수행할 과제"
             rows={2}
-            className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+            className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-none"
           />
         </div>
 
@@ -1029,8 +1029,8 @@ function SessionEndModal({ coachee, onClose, onConfirm }) {
       <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
         <div className="bg-white rounded-2xl w-full max-w-md mx-4 shadow-xl overflow-hidden">
           <div className="p-6">
-            <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 bg-blue-100 rounded-full">
-              <CheckCircle2 className="w-8 h-8 text-blue-600" />
+            <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 bg-emerald-100 rounded-full">
+              <CheckCircle2 className="w-8 h-8 text-emerald-600" />
             </div>
             <h2 className="text-xl font-bold text-center text-gray-900 mb-2">
               코칭이 완료되었습니다
@@ -1042,7 +1042,7 @@ function SessionEndModal({ coachee, onClose, onConfirm }) {
           <div className="flex border-t border-gray-100">
             <button
               onClick={onClose}
-              className="flex-1 px-4 py-3 text-blue-600 font-medium hover:bg-blue-50 transition-colors"
+              className="flex-1 px-4 py-3 text-emerald-600 font-medium hover:bg-emerald-50 transition-colors"
             >
               확인
             </button>
@@ -1087,16 +1087,16 @@ function SessionEndModal({ coachee, onClose, onConfirm }) {
           </div>
 
           {/* 진행률 */}
-          <div className="bg-blue-50 rounded-xl p-4">
+          <div className="bg-emerald-50 rounded-xl p-4">
             <div className="flex items-center justify-between text-sm mb-2">
-              <span className="text-blue-700">진행률</span>
+              <span className="text-emerald-700">진행률</span>
               <span className="font-semibold text-blue-900">
                 {currentSession} / {totalSessions} 회기
               </span>
             </div>
             <div className="h-2 bg-blue-200 rounded-full overflow-hidden">
               <div
-                className="h-full bg-blue-500 rounded-full"
+                className="h-full bg-emerald-500 rounded-full"
                 style={{ width: `${(currentSession / totalSessions) * 100}%` }}
               />
             </div>
@@ -1135,7 +1135,7 @@ function CollapsibleSection({ title, icon: Icon, color, expanded, onToggle, chil
   const colorClasses = {
     purple: { bg: 'bg-purple-50', border: 'border-purple-200', icon: 'text-purple-600' },
     green: { bg: 'bg-green-50', border: 'border-green-200', icon: 'text-green-600' },
-    blue: { bg: 'bg-blue-50', border: 'border-blue-200', icon: 'text-blue-600' },
+    blue: { bg: 'bg-emerald-50', border: 'border-emerald-200', icon: 'text-emerald-600' },
     yellow: { bg: 'bg-yellow-50', border: 'border-yellow-200', icon: 'text-yellow-600' },
     teal: { bg: 'bg-teal-50', border: 'border-teal-200', icon: 'text-teal-600' },
     amber: { bg: 'bg-amber-50', border: 'border-amber-200', icon: 'text-amber-600' },
@@ -1268,7 +1268,7 @@ function CoacheeInfoPanel({ coachee, onClose }) {
         {/* 헤더 */}
         <div className="p-3 border-b flex items-center justify-between bg-gray-50 rounded-t-2xl lg:rounded-t-xl">
           <div className="flex items-center gap-2">
-            <User className="w-4 h-4 text-blue-600" />
+            <User className="w-4 h-4 text-emerald-600" />
             <h3 className="font-semibold text-sm text-gray-900">피코치 정보</h3>
           </div>
           <button
@@ -1283,7 +1283,7 @@ function CoacheeInfoPanel({ coachee, onClose }) {
       <div className="flex-1 overflow-y-auto p-3 space-y-3">
         {loading ? (
           <div className="flex items-center justify-center py-8">
-            <Loader2 className="w-5 h-5 animate-spin text-blue-500" />
+            <Loader2 className="w-5 h-5 animate-spin text-emerald-500" />
             <span className="ml-2 text-sm text-gray-500">불러오는 중...</span>
           </div>
         ) : !detail ? (
@@ -1352,11 +1352,11 @@ function CoacheeInfoPanel({ coachee, onClose }) {
                 <button
                   onClick={() => toggleSection('asrs')}
                   className={`w-full px-3 py-2 flex items-center justify-between text-left ${
-                    expandedSections.asrs ? 'bg-blue-50' : 'bg-gray-50'
+                    expandedSections.asrs ? 'bg-emerald-50' : 'bg-gray-50'
                   }`}
                 >
                   <div className="flex items-center gap-2">
-                    <Brain className="w-4 h-4 text-blue-600" />
+                    <Brain className="w-4 h-4 text-emerald-600" />
                     <span className="font-medium text-sm text-gray-800">ADHD 분석결과</span>
                     <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${getAsrsLevelColor(detail.asrs_result.level)}`}>
                       {getAsrsLevelText(detail.asrs_result.level)}
@@ -1379,7 +1379,7 @@ function CoacheeInfoPanel({ coachee, onClose }) {
                     <div className="grid grid-cols-3 gap-2">
                       <div className="text-center p-2 bg-gray-50 rounded">
                         <p className="text-[10px] text-gray-500">주의력결핍</p>
-                        <p className="font-semibold text-blue-600">{detail.asrs_result.inattentionScore || '-'}</p>
+                        <p className="font-semibold text-emerald-600">{detail.asrs_result.inattentionScore || '-'}</p>
                       </div>
                       <div className="text-center p-2 bg-gray-50 rounded">
                         <p className="text-[10px] text-gray-500">과잉행동</p>
@@ -1391,7 +1391,7 @@ function CoacheeInfoPanel({ coachee, onClose }) {
                       </div>
                     </div>
                     {detail.asrs_result.interpretation && (
-                      <p className="text-gray-600 bg-blue-50 p-2 rounded">
+                      <p className="text-gray-600 bg-emerald-50 p-2 rounded">
                         {detail.asrs_result.interpretation}
                       </p>
                     )}

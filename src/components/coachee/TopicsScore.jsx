@@ -13,7 +13,7 @@ export function TopicsScore() {
     <Card>
       <CardHeader>
         <CardTitle className="text-base flex items-center gap-2">
-          <BarChart3 className="w-4 h-4 text-blue-600" />
+          <BarChart3 className="w-4 h-4 text-emerald-600" />
           주제별 점수
         </CardTitle>
       </CardHeader>
@@ -47,7 +47,7 @@ export function TopicsScore() {
                     </span>
                   )}
                   <span>
-                    현재 <span className="font-bold text-blue-600">{currentScore}</span>점 / 목표 {targetScore}점
+                    현재 <span className="font-bold text-emerald-600">{currentScore}</span>점 / 목표 {targetScore}점
                   </span>
                 </div>
               </div>

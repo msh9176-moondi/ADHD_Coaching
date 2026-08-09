@@ -23,7 +23,7 @@ import {
 // 패키지 색상 설정
 const packageColors = {
   starter: 'bg-green-100 text-green-700',
-  basic: 'bg-blue-100 text-blue-700',
+  basic: 'bg-emerald-100 text-emerald-700',
   premium: 'bg-purple-100 text-purple-700'
 }
 
@@ -450,10 +450,10 @@ function CoacheeDrawer({ coachee, isExpanded, onToggle, onSelectSession, onCreat
       >
         {/* 펼침/접힘 아이콘 */}
         <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${
-          isExpanded ? 'bg-blue-100' : 'bg-gray-100'
+          isExpanded ? 'bg-emerald-100' : 'bg-gray-100'
         }`}>
           {isExpanded ? (
-            <ChevronDown className={`w-5 h-5 ${isExpanded ? 'text-blue-600' : 'text-gray-500'}`} />
+            <ChevronDown className={`w-5 h-5 ${isExpanded ? 'text-emerald-600' : 'text-gray-500'}`} />
           ) : (
             <ChevronRight className="w-5 h-5 text-gray-500" />
           )}
@@ -562,8 +562,8 @@ function SessionRow({ session, onClick }) {
     },
     in_progress: {
       label: '진행 중',
-      bgColor: 'bg-blue-50',
-      badgeColor: 'bg-blue-100 text-blue-700',
+      bgColor: 'bg-emerald-50',
+      badgeColor: 'bg-emerald-100 text-emerald-700',
       icon: Play
     }
   }
@@ -574,12 +574,12 @@ function SessionRow({ session, onClick }) {
   return (
     <div
       onClick={onClick}
-      className={`flex items-center gap-4 p-4 pl-16 hover:bg-blue-50 cursor-pointer transition-colors ${config.bgColor}`}
+      className={`flex items-center gap-4 p-4 pl-16 hover:bg-emerald-50 cursor-pointer transition-colors ${config.bgColor}`}
     >
       {/* 회기 번호 */}
-      <div className="w-12 h-12 bg-blue-100 rounded-lg flex flex-col items-center justify-center flex-shrink-0">
-        <span className="text-base font-bold text-blue-600">{session.sessionNumber}</span>
-        <span className="text-[10px] text-blue-500">회기</span>
+      <div className="w-12 h-12 bg-emerald-100 rounded-lg flex flex-col items-center justify-center flex-shrink-0">
+        <span className="text-base font-bold text-emerald-600">{session.sessionNumber}</span>
+        <span className="text-[10px] text-emerald-500">회기</span>
       </div>
 
       {/* 세션 정보 */}

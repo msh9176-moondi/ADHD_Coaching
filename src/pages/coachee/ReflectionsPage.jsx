@@ -144,7 +144,7 @@ export function ReflectionsPage() {
       <div className="max-w-2xl mx-auto">
         <button
           onClick={() => setShowNewReflection(false)}
-          className="flex items-center gap-1 text-blue-600 hover:text-blue-700 mb-4"
+          className="flex items-center gap-1 text-emerald-600 hover:text-emerald-700 mb-4"
         >
           <ChevronLeft className="w-4 h-4" />
           목록으로
@@ -160,7 +160,7 @@ export function ReflectionsPage() {
       <div className="max-w-2xl mx-auto">
         <button
           onClick={handleCancelEdit}
-          className="flex items-center gap-1 text-blue-600 hover:text-blue-700 mb-4"
+          className="flex items-center gap-1 text-emerald-600 hover:text-emerald-700 mb-4"
         >
           <ChevronLeft className="w-4 h-4" />
           상세보기로 돌아가기
@@ -182,22 +182,22 @@ export function ReflectionsPage() {
       <div className="max-w-2xl mx-auto">
         <button
           onClick={() => setSelectedReflection(null)}
-          className="flex items-center gap-1 text-blue-600 hover:text-blue-700 mb-4"
+          className="flex items-center gap-1 text-emerald-600 hover:text-emerald-700 mb-4"
         >
           <ChevronLeft className="w-4 h-4" />
           목록으로
         </button>
 
         <Card>
-          <CardHeader className="border-b bg-gradient-to-r from-blue-50 to-indigo-50">
+          <CardHeader className="border-b bg-gradient-to-r from-amber-50 to-orange-50">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
-                  <span className="text-xl font-bold text-blue-600">{selectedReflection.sessionNumber}</span>
+                <div className="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center">
+                  <span className="text-xl font-bold text-emerald-600">{selectedReflection.sessionNumber}</span>
                 </div>
                 <div>
                   <CardTitle className="flex items-center gap-2">
-                    <BookOpen className="w-5 h-5 text-blue-600" />
+                    <BookOpen className="w-5 h-5 text-emerald-600" />
                     {selectedReflection.sessionNumber}회기 성찰일지
                   </CardTitle>
                   <div className="flex items-center gap-2 mt-1 text-sm text-gray-500">
@@ -212,7 +212,7 @@ export function ReflectionsPage() {
 
           <CardContent className="space-y-6 py-6">
             {/* 코칭 주제 */}
-            <div className="bg-blue-50 rounded-xl p-4">
+            <div className="bg-emerald-50 rounded-xl p-4">
               <h3 className="text-sm font-medium text-blue-800 mb-1">코칭 주제</h3>
               <p className="text-lg font-semibold text-blue-900">{selectedReflection.topic}</p>
             </div>
@@ -272,10 +272,10 @@ export function ReflectionsPage() {
             {/* 액션플랜 */}
             <div className="space-y-2">
               <div className="flex items-center gap-2">
-                <Rocket className="w-4 h-4 text-blue-500" />
+                <Rocket className="w-4 h-4 text-emerald-500" />
                 <h3 className="text-sm font-medium text-gray-700">액션플랜</h3>
               </div>
-              <div className="bg-blue-50 rounded-xl p-4">
+              <div className="bg-emerald-50 rounded-xl p-4">
                 <p className="text-gray-700 whitespace-pre-wrap leading-relaxed">
                   {selectedReflection.actionPlan}
                 </p>
@@ -317,7 +317,7 @@ export function ReflectionsPage() {
         </div>
         <button
           onClick={() => setShowNewReflection(true)}
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors"
         >
           새 성찰일지 작성
         </button>
@@ -325,7 +325,7 @@ export function ReflectionsPage() {
 
       {loading ? (
         <div className="flex items-center justify-center py-12">
-          <Loader2 className="w-6 h-6 animate-spin text-blue-500" />
+          <Loader2 className="w-6 h-6 animate-spin text-emerald-500" />
           <span className="ml-2 text-gray-500">불러오는 중...</span>
         </div>
       ) : reflections.length === 0 ? (
@@ -349,8 +349,8 @@ export function ReflectionsPage() {
             >
               <CardContent className="py-4">
                 <div className="flex items-center gap-4">
-                  <div className="flex-shrink-0 w-12 h-12 bg-blue-100 rounded-xl flex flex-col items-center justify-center">
-                    <span className="text-lg font-bold text-blue-600">{reflection.sessionNumber}</span>
+                  <div className="flex-shrink-0 w-12 h-12 bg-emerald-100 rounded-xl flex flex-col items-center justify-center">
+                    <span className="text-lg font-bold text-emerald-600">{reflection.sessionNumber}</span>
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">

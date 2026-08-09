@@ -47,14 +47,14 @@ export function TopicScoreInput({ topic, onChange }) {
         <div className="text-gray-300">→</div>
         <div className="text-center">
           <p className="text-xs text-gray-500">현재</p>
-          <span className="text-lg font-semibold text-blue-600">{topic.currentScore || 0}</span>
+          <span className="text-lg font-semibold text-emerald-600">{topic.currentScore || 0}</span>
         </div>
         <div className="text-gray-300">→</div>
         <div className="text-center">
           <p className="text-xs text-gray-500">이번 회기</p>
           <span className={`text-lg font-bold ${
             score > topic.currentScore ? 'text-green-600' :
-            score < topic.currentScore ? 'text-red-600' : 'text-blue-600'
+            score < topic.currentScore ? 'text-red-600' : 'text-emerald-600'
           }`}>{score}</span>
         </div>
         <div className="text-gray-300">/</div>
@@ -90,7 +90,7 @@ export function TopicScoreInput({ topic, onChange }) {
         <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
           <div
             className={`h-full rounded-full transition-all ${
-              score >= (topic.targetScore || 10) ? 'bg-green-500' : 'bg-blue-500'
+              score >= (topic.targetScore || 10) ? 'bg-green-500' : 'bg-emerald-500'
             }`}
             style={{ width: `${Math.min((score / (topic.targetScore || 10)) * 100, 100)}%` }}
           />

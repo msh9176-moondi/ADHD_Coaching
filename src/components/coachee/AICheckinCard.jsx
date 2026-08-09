@@ -79,7 +79,7 @@ export function AICheckinCard({ userName, currentGoal, currentTask }) {
   // 닫힌 상태 - 시작 버튼
   if (!isOpen) {
     return (
-      <Card className="bg-gradient-to-br from-purple-50 to-indigo-50 border-purple-200">
+      <Card className="bg-gradient-to-br from-purple-50 to-orange-50 border-purple-200">
         <CardContent className="py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -107,7 +107,7 @@ export function AICheckinCard({ userName, currentGoal, currentTask }) {
   // 열린 상태 - 채팅 UI
   return (
     <Card className="border-purple-200">
-      <CardHeader className="py-3 bg-gradient-to-r from-purple-50 to-indigo-50 border-b">
+      <CardHeader className="py-3 bg-gradient-to-r from-purple-50 to-orange-50 border-b">
         <div className="flex items-center justify-between">
           <CardTitle className="text-sm flex items-center gap-2">
             <Sparkles className="w-4 h-4 text-purple-600" />

@@ -11,7 +11,7 @@ export function SessionDetailModal({ isOpen, onClose, coachee, session, onEdit }
 
   const conditionLabels = {
     excellent: { label: '매우 좋음', color: 'bg-green-100 text-green-700' },
-    good: { label: '좋음', color: 'bg-blue-100 text-blue-700' },
+    good: { label: '좋음', color: 'bg-emerald-100 text-emerald-700' },
     normal: { label: '보통', color: 'bg-gray-100 text-gray-700' },
     tired: { label: '지침', color: 'bg-yellow-100 text-yellow-700' },
     difficult: { label: '어려움', color: 'bg-red-100 text-red-700' }
@@ -25,8 +25,8 @@ export function SessionDetailModal({ isOpen, onClose, coachee, session, onEdit }
         {/* 헤더 */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
-              <span className="text-lg font-bold text-blue-600">{session.session}</span>
+            <div className="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center">
+              <span className="text-lg font-bold text-emerald-600">{session.session}</span>
             </div>
             <div>
               <div className="flex items-center gap-2">
@@ -56,7 +56,7 @@ export function SessionDetailModal({ isOpen, onClose, coachee, session, onEdit }
           {/* 세션 요약 */}
           <div className="p-4 bg-gray-50 rounded-xl">
             <h4 className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-1">
-              <MessageCircle className="w-4 h-4 text-blue-500" />
+              <MessageCircle className="w-4 h-4 text-emerald-500" />
               세션 요약
             </h4>
             <p className="text-gray-700 leading-relaxed">
@@ -77,9 +77,9 @@ export function SessionDetailModal({ isOpen, onClose, coachee, session, onEdit }
 
           {/* 실행 과제 */}
           {session.nextActions && (
-            <div className="p-4 bg-blue-50 rounded-xl border border-blue-100">
+            <div className="p-4 bg-emerald-50 rounded-xl border border-emerald-100">
               <h4 className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-1">
-                <CheckCircle className="w-4 h-4 text-blue-500" />
+                <CheckCircle className="w-4 h-4 text-emerald-500" />
                 다음 실행 과제
               </h4>
               <p className="text-gray-700 leading-relaxed">{session.nextActions}</p>

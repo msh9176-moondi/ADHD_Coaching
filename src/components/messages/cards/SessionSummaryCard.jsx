@@ -20,24 +20,24 @@ export function SessionSummaryCard({ message, userRole }) {
 
   return (
     <div className={`w-72 rounded-xl border-2 overflow-hidden text-sm ${
-      isLastSession ? 'border-yellow-300 bg-gradient-to-b from-yellow-50 to-orange-50' : 'border-blue-200 bg-white'
+      isLastSession ? 'border-yellow-300 bg-gradient-to-b from-yellow-50 to-orange-50' : 'border-emerald-200 bg-white'
     }`}>
       {/* 헤더 */}
       <div className={`px-3 py-2 flex items-center justify-between ${
-        isLastSession ? 'bg-gradient-to-r from-yellow-100 to-orange-100' : 'bg-blue-50'
+        isLastSession ? 'bg-gradient-to-r from-yellow-100 to-orange-100' : 'bg-emerald-50'
       }`}>
         <div className="flex items-center gap-1.5">
           {isLastSession ? (
             <Award className="w-4 h-4 text-yellow-600" />
           ) : (
-            <PartyPopper className="w-4 h-4 text-blue-600" />
+            <PartyPopper className="w-4 h-4 text-emerald-600" />
           )}
           <span className={`font-medium ${isLastSession ? 'text-yellow-800' : 'text-blue-800'}`}>
             {isLastSession ? '코칭 완료!' : `${sessionNumber}회기 종료`}
           </span>
         </div>
         <span className={`text-xs px-1.5 py-0.5 rounded-full ${
-          isLastSession ? 'bg-yellow-200 text-yellow-700' : 'bg-blue-100 text-blue-700'
+          isLastSession ? 'bg-yellow-200 text-yellow-700' : 'bg-emerald-100 text-emerald-700'
         }`}>
           {sessionNumber}회기
         </span>
@@ -85,7 +85,7 @@ export function SessionSummaryCard({ message, userRole }) {
           <div className="space-y-1.5 pt-1">
             <button
               onClick={handleReflectionClick}
-              className="w-full py-1.5 bg-blue-600 text-white rounded-lg text-xs font-medium hover:bg-blue-700 transition-colors flex items-center justify-center gap-1"
+              className="w-full py-1.5 bg-emerald-600 text-white rounded-lg text-xs font-medium hover:bg-emerald-700 transition-colors flex items-center justify-center gap-1"
             >
               <BookOpen className="w-3.5 h-3.5" />
               성찰일지 작성하기

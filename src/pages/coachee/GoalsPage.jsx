@@ -34,7 +34,7 @@ export function GoalsPage() {
   if (loading) {
     return (
       <div className="max-w-3xl mx-auto flex items-center justify-center py-12">
-        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+        <Loader2 className="w-8 h-8 animate-spin text-emerald-600" />
       </div>
     )
   }
@@ -51,8 +51,8 @@ export function GoalsPage() {
       {confirmedGoals.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center">
-            <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Target className="w-8 h-8 text-blue-600" />
+            <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Target className="w-8 h-8 text-emerald-600" />
             </div>
             <h3 className="text-lg font-semibold text-gray-900 mb-2">
               아직 합의된 목표가 없어요
@@ -62,7 +62,7 @@ export function GoalsPage() {
             </p>
             <Link
               to="/coachee/messages"
-              className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors"
             >
               <MessageSquare className="w-4 h-4" />
               채팅으로 이동
@@ -101,8 +101,8 @@ export function GoalsPage() {
                           {goal.topic || `목표 ${idx + 1}`}
                         </h4>
                         <div className="flex items-center gap-1 text-sm">
-                          <TrendingUp className="w-4 h-4 text-blue-500" />
-                          <span className="text-blue-600 font-medium">
+                          <TrendingUp className="w-4 h-4 text-emerald-500" />
+                          <span className="text-emerald-600 font-medium">
                             {goal.currentScore} → {goal.targetScore}
                           </span>
                         </div>
@@ -121,7 +121,7 @@ export function GoalsPage() {
                         </div>
                         <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
                           <div
-                            className="h-full bg-gradient-to-r from-blue-500 to-blue-600 rounded-full transition-all"
+                            className="h-full bg-gradient-to-r from-amber-500 to-emerald-600 rounded-full transition-all"
                             style={{
                               width: `${Math.min(100, (goal.currentScore / goal.targetScore) * 100)}%`
                             }}

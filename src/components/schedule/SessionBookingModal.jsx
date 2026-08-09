@@ -211,7 +211,7 @@ export function SessionBookingModal() {
                   coacheeName: selected?.name || ''
                 }))
               }}
-              className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
             >
               <option value="">피코치를 선택하세요</option>
               {coachees.map((coachee) => (
@@ -236,7 +236,7 @@ export function SessionBookingModal() {
               value={formData.date}
               onChange={handleChange}
               min={today}
-              className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
             />
           </div>
           <div>
@@ -249,7 +249,7 @@ export function SessionBookingModal() {
               name="time"
               value={formData.time}
               onChange={handleChange}
-              className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
             />
           </div>
         </div>
@@ -264,7 +264,7 @@ export function SessionBookingModal() {
               name="duration"
               value={formData.duration}
               onChange={handleChange}
-              className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
             >
               <option value={30}>30분</option>
               <option value={60}>60분</option>
@@ -275,7 +275,7 @@ export function SessionBookingModal() {
             <label className="block text-sm font-medium text-gray-700 mb-1.5">
               상담 유형
             </label>
-            <div className="flex items-center gap-2 px-3 py-2.5 bg-blue-50 border border-blue-200 rounded-lg text-blue-600">
+            <div className="flex items-center gap-2 px-3 py-2.5 bg-emerald-50 border border-emerald-200 rounded-lg text-emerald-600">
               <MessageSquare className="w-4 h-4" />
               <span className="font-medium">메시지 상담</span>
             </div>
@@ -294,7 +294,7 @@ export function SessionBookingModal() {
             onChange={handleChange}
             min={1}
             max={20}
-            className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
           />
         </div>
 
@@ -307,7 +307,7 @@ export function SessionBookingModal() {
             name="topic"
             value={formData.topic}
             onChange={handleChange}
-            className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
           >
             <option value="">주제를 선택하세요</option>
             {SESSION_TOPICS.map((topic) => (
@@ -330,7 +330,7 @@ export function SessionBookingModal() {
               value={formData.customTopic}
               onChange={handleChange}
               placeholder="상담 주제를 입력하세요"
-              className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
             />
           </div>
         )}

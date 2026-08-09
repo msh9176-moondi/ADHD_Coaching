@@ -94,9 +94,9 @@ export function RoutineTasksCard() {
 
   if (loading) {
     return (
-      <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200">
+      <Card className="bg-gradient-to-br from-amber-50 to-orange-50 border-emerald-200">
         <CardContent className="py-8 flex items-center justify-center">
-          <Loader2 className="w-5 h-5 animate-spin text-blue-500" />
+          <Loader2 className="w-5 h-5 animate-spin text-emerald-500" />
         </CardContent>
       </Card>
     )
@@ -107,7 +107,7 @@ export function RoutineTasksCard() {
   }
 
   return (
-    <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200">
+    <Card className="bg-gradient-to-br from-amber-50 to-orange-50 border-emerald-200">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="text-base flex items-center gap-2 text-blue-800">
@@ -118,7 +118,7 @@ export function RoutineTasksCard() {
             variant="ghost"
             size="sm"
             onClick={() => navigate('/coachee/tasks')}
-            className="text-blue-600 hover:text-blue-700 -mr-2"
+            className="text-emerald-600 hover:text-emerald-700 -mr-2"
           >
             전체보기
             <ChevronRight className="w-4 h-4 ml-1" />
@@ -132,11 +132,11 @@ export function RoutineTasksCard() {
           return (
             <div
               key={task.id}
-              className="bg-white rounded-xl p-4 border border-blue-100 shadow-sm"
+              className="bg-white rounded-xl p-4 border border-emerald-100 shadow-sm"
             >
               <div className="flex items-center justify-between mb-2">
                 <h4 className="font-medium text-gray-900 text-sm">{task.title}</h4>
-                <span className="text-xs text-blue-600 font-medium">
+                <span className="text-xs text-emerald-600 font-medium">
                   {task.completedCount}/{task.targetCount}회
                 </span>
               </div>
@@ -144,7 +144,7 @@ export function RoutineTasksCard() {
               {/* 진행률 바 */}
               <div className="relative h-2 bg-gray-100 rounded-full overflow-hidden mb-3">
                 <div
-                  className="absolute left-0 top-0 h-full bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full transition-all duration-300"
+                  className="absolute left-0 top-0 h-full bg-gradient-to-r from-amber-500 to-orange-500 rounded-full transition-all duration-300"
                   style={{ width: `${progress}%` }}
                 />
               </div>
@@ -158,9 +158,9 @@ export function RoutineTasksCard() {
                     disabled={i !== task.completedCount}
                     className={`w-7 h-7 rounded-full flex items-center justify-center transition-all ${
                       i < task.completedCount
-                        ? 'bg-blue-500 text-white'
+                        ? 'bg-emerald-500 text-white'
                         : i === task.completedCount
-                        ? 'bg-blue-100 text-blue-600 hover:bg-blue-200 cursor-pointer'
+                        ? 'bg-emerald-100 text-emerald-600 hover:bg-blue-200 cursor-pointer'
                         : 'bg-gray-100 text-gray-300'
                     }`}
                   >

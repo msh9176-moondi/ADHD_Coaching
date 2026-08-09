@@ -19,7 +19,7 @@ export function GoalAgreementCard({ message, userRole, isOwn, onView, onAgree })
   const getStatusStyle = () => {
     if (isConfirmed) return { border: 'border-green-200', bg: 'bg-green-50', header: 'bg-green-100', icon: 'text-green-600', text: 'text-green-800' }
     if (isRevised) return { border: 'border-gray-200', bg: 'bg-gray-50', header: 'bg-gray-100', icon: 'text-gray-400', text: 'text-gray-500' }
-    return { border: 'border-blue-200', bg: 'bg-white', header: 'bg-blue-50', icon: 'text-blue-600', text: 'text-blue-800' }
+    return { border: 'border-emerald-200', bg: 'bg-white', header: 'bg-emerald-50', icon: 'text-emerald-600', text: 'text-blue-800' }
   }
   const style = getStatusStyle()
 
@@ -46,7 +46,7 @@ export function GoalAgreementCard({ message, userRole, isOwn, onView, onAgree })
       <div className="p-3 space-y-2">
         {goals.map((goal, index) => (
           <div key={goal.id || index} className="flex items-center gap-2 text-xs text-gray-600">
-            <span className="w-1.5 h-1.5 bg-blue-400 rounded-full flex-shrink-0" />
+            <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full flex-shrink-0" />
             <span className="truncate">{goal.topic || `목표 ${index + 1}`}</span>
           </div>
         ))}
@@ -54,7 +54,7 @@ export function GoalAgreementCard({ message, userRole, isOwn, onView, onAgree })
         {!isConfirmed && !isRevised && agreedBy.length > 0 && (
           <div className="flex gap-1.5 text-xs pt-1">
             {agreedBy.includes('coach') && (
-              <span className="px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded-full">코치 동의</span>
+              <span className="px-1.5 py-0.5 bg-emerald-100 text-emerald-700 rounded-full">코치 동의</span>
             )}
             {agreedBy.includes('coachee') && (
               <span className="px-1.5 py-0.5 bg-purple-100 text-purple-700 rounded-full">피코치 동의</span>
@@ -74,7 +74,7 @@ export function GoalAgreementCard({ message, userRole, isOwn, onView, onAgree })
             </button>
             <button
               onClick={onAgree}
-              className="flex-1 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-medium hover:bg-blue-700 transition-colors flex items-center justify-center gap-1"
+              className="flex-1 py-1.5 bg-emerald-600 text-white rounded-lg text-xs font-medium hover:bg-emerald-700 transition-colors flex items-center justify-center gap-1"
             >
               <CheckCircle className="w-3.5 h-3.5" />
               동의
@@ -84,7 +84,7 @@ export function GoalAgreementCard({ message, userRole, isOwn, onView, onAgree })
 
         {/* 이미 동의한 경우 */}
         {!isConfirmed && !isRevised && hasAgreed && (
-          <div className="text-center text-xs text-blue-600 pt-1">
+          <div className="text-center text-xs text-emerald-600 pt-1">
             상대방 확인 대기중
           </div>
         )}

@@ -131,29 +131,29 @@ export function MatchingCard() {
   if (status === 'pending' && !isEditing) {
     const pkg = PACKAGES[coachingPackage?.type || selectedPackage]
     return (
-      <Card className="border-blue-200 bg-blue-50">
+      <Card className="border-emerald-200 bg-emerald-50">
         <CardContent className="p-6">
           <div className="flex items-start gap-4">
-            <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
-              <Clock className="w-6 h-6 text-blue-600 animate-pulse" />
+            <div className="w-12 h-12 bg-emerald-100 rounded-full flex items-center justify-center flex-shrink-0">
+              <Clock className="w-6 h-6 text-emerald-600 animate-pulse" />
             </div>
             <div className="flex-1">
               <div className="flex items-start justify-between mb-1">
                 <h3 className="font-semibold text-gray-900">코치 매칭 대기중</h3>
                 <button
                   onClick={() => setIsEditing(true)}
-                  className="flex items-center gap-1 px-3 py-1 text-sm text-blue-600 hover:text-blue-800 hover:bg-blue-100 rounded-lg transition-colors"
+                  className="flex items-center gap-1 px-3 py-1 text-sm text-emerald-600 hover:text-blue-800 hover:bg-emerald-100 rounded-lg transition-colors"
                 >
                   <Edit3 className="w-4 h-4" />
                   패키지 변경
                 </button>
               </div>
               <p className="text-sm text-gray-600 mb-3">
-                <span className="font-medium text-blue-700">{pkg?.name} 패키지 ({pkg?.sessions}회기)</span>를 신청하셨습니다.<br />
+                <span className="font-medium text-emerald-700">{pkg?.name} 패키지 ({pkg?.sessions}회기)</span>를 신청하셨습니다.<br />
                 코치님이 곧 연락드릴 예정입니다.
               </p>
-              <div className="flex items-center gap-2 text-xs text-blue-600">
-                <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
+              <div className="flex items-center gap-2 text-xs text-emerald-600">
+                <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
                 담당 코치 배정 중...
               </div>
             </div>
@@ -170,12 +170,12 @@ export function MatchingCard() {
         <CardTitle className="flex items-center gap-2">
           {isEditing ? (
             <>
-              <Edit3 className="w-5 h-5 text-blue-600" />
+              <Edit3 className="w-5 h-5 text-emerald-600" />
               패키지 변경
             </>
           ) : (
             <>
-              <Package className="w-5 h-5 text-blue-600" />
+              <Package className="w-5 h-5 text-emerald-600" />
               코칭 패키지 선택
             </>
           )}
@@ -196,22 +196,22 @@ export function MatchingCard() {
               onClick={() => setSelectedPackage(pkg.id)}
               className={`relative p-4 rounded-xl border-2 cursor-pointer transition-all ${
                 selectedPackage === pkg.id
-                  ? 'border-blue-500 bg-blue-50'
+                  ? 'border-emerald-500 bg-emerald-50'
                   : pkg.recommended
-                  ? 'border-blue-300 bg-white hover:border-blue-400'
+                  ? 'border-emerald-300 bg-white hover:border-blue-400'
                   : 'border-gray-200 bg-white hover:border-gray-300'
               }`}
             >
               {/* 추천 배지 */}
               {pkg.recommended && (
-                <div className="absolute -top-2.5 left-4 px-2 py-0.5 bg-blue-500 text-white text-xs font-bold rounded">
+                <div className="absolute -top-2.5 left-4 px-2 py-0.5 bg-emerald-500 text-white text-xs font-bold rounded">
                   추천
                 </div>
               )}
 
               {/* 선택 체크 */}
               {selectedPackage === pkg.id && (
-                <div className="absolute top-4 right-4 w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
+                <div className="absolute top-4 right-4 w-6 h-6 bg-emerald-500 rounded-full flex items-center justify-center">
                   <Check className="w-4 h-4 text-white" />
                 </div>
               )}
@@ -224,7 +224,7 @@ export function MatchingCard() {
                 <div className="flex-1">
                   <div className="flex items-baseline gap-2 mb-1">
                     <h3 className="font-bold text-gray-900">{pkg.name}</h3>
-                    <span className="text-xl font-black text-blue-600">{pkg.sessions}</span>
+                    <span className="text-xl font-black text-emerald-600">{pkg.sessions}</span>
                     <span className="text-sm text-gray-500">회기</span>
                   </div>
                   <p className="text-sm text-gray-600 mb-2">{pkg.description}</p>

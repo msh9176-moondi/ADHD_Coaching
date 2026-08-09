@@ -3,7 +3,7 @@ import { SURVEY_CATEGORIES } from '../../data/surveyData'
 import { BarChart3, TrendingUp, TrendingDown } from 'lucide-react'
 
 const CATEGORY_COLORS = {
-  execution: { bg: 'bg-blue-500', light: 'bg-blue-100' },
+  execution: { bg: 'bg-emerald-500', light: 'bg-emerald-100' },
   routine: { bg: 'bg-green-500', light: 'bg-green-100' },
   time: { bg: 'bg-amber-500', light: 'bg-amber-100' },
   efficacy: { bg: 'bg-purple-500', light: 'bg-purple-100' },
@@ -16,7 +16,7 @@ export function CategoryScoresCard({ preSurvey, postSurvey, title = '영역별 �
       <Card>
         <CardHeader className="pb-2">
           <CardTitle className="text-base flex items-center gap-2">
-            <BarChart3 className="w-4 h-4 text-blue-600" />
+            <BarChart3 className="w-4 h-4 text-emerald-600" />
             {title}
           </CardTitle>
         </CardHeader>
@@ -35,7 +35,7 @@ export function CategoryScoresCard({ preSurvey, postSurvey, title = '영역별 �
     <Card>
       <CardHeader className="pb-2">
         <CardTitle className="text-base flex items-center gap-2">
-          <BarChart3 className="w-4 h-4 text-blue-600" />
+          <BarChart3 className="w-4 h-4 text-emerald-600" />
           {title}
           {postSurvey && (
             <span className="ml-auto text-xs font-normal text-green-600 bg-green-50 px-2 py-0.5 rounded-full">
@@ -96,7 +96,7 @@ export function CategoryScoresCard({ preSurvey, postSurvey, title = '영역별 �
         <div className="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between">
           <span className="text-sm text-gray-500">전체 평균</span>
           <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-bold text-blue-600">
+            <span className="text-2xl font-bold text-emerald-600">
               {(() => {
                 const total = preSurvey.categoryScores?.total
                 const value = typeof total === 'object' ? total.average : total

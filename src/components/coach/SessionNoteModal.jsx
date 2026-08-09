@@ -21,7 +21,7 @@ export function SessionNoteModal({ isOpen, onClose, coachee, sessionNumber, exis
 
   const conditionOptions = [
     { value: 'excellent', label: '매우 좋음', color: 'bg-green-100 text-green-700' },
-    { value: 'good', label: '좋음', color: 'bg-blue-100 text-blue-700' },
+    { value: 'good', label: '좋음', color: 'bg-emerald-100 text-emerald-700' },
     { value: 'normal', label: '보통', color: 'bg-gray-100 text-gray-700' },
     { value: 'tired', label: '지침', color: 'bg-yellow-100 text-yellow-700' },
     { value: 'difficult', label: '어려움', color: 'bg-red-100 text-red-700' }
@@ -45,8 +45,8 @@ export function SessionNoteModal({ isOpen, onClose, coachee, sessionNumber, exis
         {/* 헤더 */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
-              <FileText className="w-5 h-5 text-blue-600" />
+            <div className="w-10 h-10 bg-emerald-100 rounded-xl flex items-center justify-center">
+              <FileText className="w-5 h-5 text-emerald-600" />
             </div>
             <div>
               <h2 className="text-lg font-bold text-gray-900">세션 일지 작성</h2>
@@ -73,7 +73,7 @@ export function SessionNoteModal({ isOpen, onClose, coachee, sessionNumber, exis
               value={note.topic}
               onChange={(e) => setNote({ ...note, topic: e.target.value })}
               placeholder="예: 아침 루틴 점검, 실행 전략 수정"
-              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
             />
           </div>
 
@@ -88,7 +88,7 @@ export function SessionNoteModal({ isOpen, onClose, coachee, sessionNumber, exis
               onChange={(e) => setNote({ ...note, summary: e.target.value })}
               placeholder="이번 세션에서 나눈 주요 내용을 요약해주세요..."
               rows={3}
-              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-none"
             />
           </div>
 
@@ -103,7 +103,7 @@ export function SessionNoteModal({ isOpen, onClose, coachee, sessionNumber, exis
               onChange={(e) => setNote({ ...note, progress: e.target.value })}
               placeholder="지난 세션 이후 피코치의 변화나 성과..."
               rows={2}
-              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-none"
             />
           </div>
 
@@ -118,7 +118,7 @@ export function SessionNoteModal({ isOpen, onClose, coachee, sessionNumber, exis
               onChange={(e) => setNote({ ...note, nextActions: e.target.value })}
               placeholder="다음 세션까지 피코치가 실행할 과제들..."
               rows={2}
-              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-none"
             />
           </div>
 
@@ -136,7 +136,7 @@ export function SessionNoteModal({ isOpen, onClose, coachee, sessionNumber, exis
                     onClick={() => setNote({ ...note, coacheeCondition: opt.value })}
                     className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
                       note.coacheeCondition === opt.value
-                        ? opt.color + ' ring-2 ring-offset-1 ring-blue-500'
+                        ? opt.color + ' ring-2 ring-offset-1 ring-emerald-500'
                         : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                     }`}
                   >
@@ -157,7 +157,7 @@ export function SessionNoteModal({ isOpen, onClose, coachee, sessionNumber, exis
                   max="5"
                   value={note.scoreChange}
                   onChange={(e) => setNote({ ...note, scoreChange: Number(e.target.value) })}
-                  className="w-20 px-3 py-2 border border-gray-300 rounded-lg text-center focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-20 px-3 py-2 border border-gray-300 rounded-lg text-center focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 />
                 <span className="text-sm text-gray-500">점</span>
                 {note.scoreChange > 0 && (
