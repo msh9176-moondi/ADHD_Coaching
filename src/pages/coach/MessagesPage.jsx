@@ -1020,14 +1020,21 @@ function SessionNotePanel({ coachee, onClose }) {
 
 // 회기 종료 확인 모달 (간소화)
 function SessionEndModal({ coachee, onClose, onConfirm }) {
+  const [isLoading, setIsLoading] = useState(false)
   const currentSession = coachee.currentSession
   const totalSessions = coachee.totalSessions
   const isLastSession = currentSession >= totalSessions
   const isCompleted = currentSession > totalSessions
 
-  // 종료 처리
-  const handleConfirm = () => {
-    onConfirm({ isLastSession })
+  // 종료 처리 (중복 클릭 방지)
+  const handleConfirm = async () => {
+    if (isLoading) return
+    setIsLoading(true)
+    try {
+      await onConfirm({ isLastSession })
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   // 이미 모든 회기가 완료된 경우
@@ -1120,15 +1127,17 @@ function SessionEndModal({ coachee, onClose, onConfirm }) {
           <div className="flex gap-3">
             <button
               onClick={onClose}
-              className="flex-1 px-4 py-2.5 text-gray-600 font-medium hover:bg-gray-100 rounded-lg transition-colors"
+              disabled={isLoading}
+              className="flex-1 px-4 py-2.5 text-gray-600 font-medium hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50"
             >
               취소
             </button>
             <button
               onClick={handleConfirm}
-              className="flex-1 px-4 py-2.5 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 transition-colors"
+              disabled={isLoading}
+              className="flex-1 px-4 py-2.5 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              종료하기
+              {isLoading ? '처리 중...' : '종료하기'}
             </button>
           </div>
         </div>
