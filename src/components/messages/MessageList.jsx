@@ -1007,19 +1007,19 @@ export function MessageList({
   const hasOpenPanel = showGoalPanel || viewingGoalMessage || showDeclarationCreatePanel || viewingDeclaration || showTaskPanel || showTaskSubmitPanel
 
   return (
-    <div className="flex gap-3">
-      <Card className={`h-[calc(100vh-180px)] min-h-[400px] max-h-[800px] flex flex-col transition-all duration-300 ${hasOpenPanel ? 'flex-1' : 'w-full'}`}>
-        <CardHeader className="flex-shrink-0 border-b py-3">
-          <div className="flex items-center gap-3">
+    <div className="flex gap-3 relative">
+      <Card className={`h-[calc(100vh-140px)] md:h-[calc(100vh-180px)] min-h-[300px] md:min-h-[400px] max-h-[800px] flex flex-col transition-all duration-300 w-full ${hasOpenPanel ? 'lg:flex-1' : ''}`}>
+        <CardHeader className="flex-shrink-0 border-b py-2 md:py-3">
+          <div className="flex items-center gap-2 md:gap-3">
             <Avatar name={otherSenderName} size="sm" />
             <div>
-              <CardTitle className="text-sm">{otherSenderName}</CardTitle>
-              <p className="text-xs text-green-500">온라인</p>
+              <CardTitle className="text-xs md:text-sm">{otherSenderName}</CardTitle>
+              <p className="text-[10px] md:text-xs text-green-500">온라인</p>
             </div>
           </div>
         </CardHeader>
 
-        <CardContent className="flex-1 overflow-y-auto p-3 space-y-3">
+        <CardContent className="flex-1 overflow-y-auto p-2 md:p-3 space-y-2 md:space-y-3">
           {messages.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-center">
               <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
@@ -1055,8 +1055,8 @@ export function MessageList({
         </CardContent>
 
         {userRole === 'coach' && (
-          <div className="px-3 py-2 border-t bg-gray-50">
-            <div className="flex gap-2 overflow-x-auto pb-1">
+          <div className="px-2 md:px-3 py-1.5 md:py-2 border-t bg-gray-50">
+            <div className="flex gap-1.5 md:gap-2 overflow-x-auto pb-1 scrollbar-hide">
               {!declarationCompleted && (
                 <QuickAction label="참여 선언서" icon={ScrollText} onClick={handleStartDeclaration} primary />
               )}
@@ -1072,19 +1072,19 @@ export function MessageList({
           </div>
         )}
 
-        <div className="p-3 border-t flex gap-2">
+        <div className="p-2 md:p-3 border-t flex gap-2">
           <input
             type="text"
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
             onKeyPress={(e) => e.key === 'Enter' && handleSend()}
             placeholder="메시지 입력..."
-            className="flex-1 px-3 py-2 text-sm bg-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="flex-1 min-w-0 px-3 py-2 text-sm bg-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
           <button
             onClick={handleSend}
             disabled={!newMessage.trim()}
-            className="p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors"
+            className="p-2 flex-shrink-0 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors"
           >
             <Send className="w-4 h-4" />
           </button>

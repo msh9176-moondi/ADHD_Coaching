@@ -73,20 +73,28 @@ export function AIInsightsPanel({ coachee, messages, onClose }) {
   }
 
   return (
-    <Card className="w-80 flex-shrink-0 flex flex-col max-h-full">
-      {/* 헤더 */}
-      <div className="p-3 border-b flex items-center justify-between bg-gradient-to-r from-purple-50 to-indigo-50">
-        <div className="flex items-center gap-2">
-          <Sparkles className="w-4 h-4 text-purple-600" />
-          <h3 className="font-semibold text-sm text-gray-900">AI 인사이트</h3>
+    <>
+      {/* 모바일 오버레이 */}
+      <div className="fixed inset-0 bg-black/50 z-40 lg:hidden" onClick={onClose} />
+      <Card className={`
+        w-full lg:w-80 flex-shrink-0 flex flex-col
+        fixed lg:relative inset-x-0 bottom-0 lg:inset-auto
+        z-50 lg:z-auto rounded-t-2xl lg:rounded-xl
+        max-h-[85vh] lg:max-h-full
+      `}>
+        {/* 헤더 */}
+        <div className="p-3 border-b flex items-center justify-between bg-gradient-to-r from-purple-50 to-indigo-50 rounded-t-2xl lg:rounded-t-xl">
+          <div className="flex items-center gap-2">
+            <Sparkles className="w-4 h-4 text-purple-600" />
+            <h3 className="font-semibold text-sm text-gray-900">AI 인사이트</h3>
+          </div>
+          <button
+            onClick={onClose}
+            className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-white/50 rounded-lg"
+          >
+            <X className="w-5 h-5" />
+          </button>
         </div>
-        <button
-          onClick={onClose}
-          className="p-1 text-gray-400 hover:text-gray-600 rounded"
-        >
-          <X className="w-4 h-4" />
-        </button>
-      </div>
 
       {/* 내용 */}
       <div className="flex-1 overflow-y-auto p-3 space-y-3">
@@ -377,5 +385,6 @@ export function AIInsightsPanel({ coachee, messages, onClose }) {
         )}
       </div>
     </Card>
+    </>
   )
 }

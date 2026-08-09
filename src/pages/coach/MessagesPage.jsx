@@ -18,7 +18,7 @@ import {
   AlertTriangle, ChevronDown, ChevronUp, Plus, Calendar,
   CheckCircle2, Loader2, CheckCircle, AlertCircle,
   Trash2, RotateCcw, TrendingUp, User, Target, TrendingDown,
-  Sparkles
+  Sparkles, ArrowLeft, Menu, MoreVertical
 } from 'lucide-react'
 import { AIInsightsPanel } from '../../components/messages/AIInsightsPanel'
 
@@ -46,6 +46,7 @@ export function CoachMessagesPage() {
   const [showCoacheeInfo, setShowCoacheeInfo] = useState(false) // 피코치 정보 패널
   const [showAIInsights, setShowAIInsights] = useState(false) // AI 분석 패널
   const [conversationId, setConversationId] = useState(null)
+  const [showConversationList, setShowConversationList] = useState(true) // 모바일에서 대화 목록 표시 여부
 
   // 피코치 데이터 로드
   useEffect(() => {
@@ -214,10 +215,23 @@ export function CoachMessagesPage() {
     }
   }
 
+  // 모바일에서 대화 선택 시 목록 숨기기
+  const handleSelectCoachee = (coacheeId) => {
+    if (coacheeId !== selectedCoacheeId) {
+      setConversationId(null)
+      setSelectedCoacheeId(coacheeId)
+    }
+    setShowConversationList(false) // 모바일에서 메시지 화면으로 전환
+  }
+
   return (
-    <div className="flex gap-4 h-[calc(100vh-120px)]">
-      {/* 대화 목록 */}
-      <Card className="w-72 flex-shrink-0 flex flex-col">
+    <div className="flex gap-2 lg:gap-4 h-[calc(100vh-140px)] md:h-[calc(100vh-120px)] relative">
+      {/* 대화 목록 - 모바일에서는 전체 화면, 데스크톱에서는 사이드바 */}
+      <Card className={`
+        ${showConversationList ? 'flex' : 'hidden'} lg:flex
+        w-full lg:w-72 flex-shrink-0 flex-col
+        absolute lg:relative inset-0 lg:inset-auto z-10 lg:z-auto
+      `}>
         <div className="p-3 border-b">
           <h2 className="text-base font-bold text-gray-900 mb-2">메시지</h2>
           <div className="relative">
@@ -240,12 +254,7 @@ export function CoachMessagesPage() {
             return (
               <button
                 key={coachee.id}
-                onClick={() => {
-                  if (coachee.id !== selectedCoacheeId) {
-                    setConversationId(null) // 대화방 ID 즉시 초기화
-                    setSelectedCoacheeId(coachee.id)
-                  }
-                }}
+                onClick={() => handleSelectCoachee(coachee.id)}
                 className={`w-full p-3 flex items-start gap-3 text-left hover:bg-gray-50 transition-colors border-b border-gray-100 ${
                   isSelected ? 'bg-blue-50' : ''
                 }`}
@@ -297,33 +306,48 @@ export function CoachMessagesPage() {
         </div>
       </Card>
 
-      {/* 대화 영역 */}
-      <div className="flex-1 flex flex-col min-w-0">
+      {/* 대화 영역 - 모바일에서는 목록이 숨겨져 있을 때만 표시 */}
+      <div className={`
+        ${showConversationList ? 'hidden' : 'flex'} lg:flex
+        flex-1 flex-col min-w-0
+      `}>
         {selectedCoachee ? (
           <>
             {/* 피코치 정보 헤더 */}
-            <Card className="mb-3 flex-shrink-0">
-              <CardContent className="py-2.5">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <Avatar name={selectedCoachee.name} size="sm" />
-                    <div>
+            <Card className="mb-2 lg:mb-3 flex-shrink-0">
+              <CardContent className="py-2 lg:py-2.5">
+                <div className="flex items-center justify-between gap-2">
+                  {/* 왼쪽: 뒤로가기(모바일) + 피코치 정보 */}
+                  <div className="flex items-center gap-2 lg:gap-3 min-w-0">
+                    {/* 모바일 뒤로가기 버튼 */}
+                    <button
+                      onClick={() => setShowConversationList(true)}
+                      className="lg:hidden p-1.5 -ml-1 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg"
+                    >
+                      <ArrowLeft className="w-5 h-5" />
+                    </button>
+                    <Avatar name={selectedCoachee.name} size="sm" className="flex-shrink-0" />
+                    <div className="min-w-0">
                       <div className="flex items-center gap-2">
-                        <h3 className="font-semibold text-gray-900 text-sm">{selectedCoachee.name}</h3>
+                        <h3 className="font-semibold text-gray-900 text-sm truncate">{selectedCoachee.name}</h3>
                         {selectedCoachee.packageType && PACKAGES[selectedCoachee.packageType] && (
-                          <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-medium ${packageColors[selectedCoachee.packageType]}`}>
+                          <span className={`hidden sm:inline px-1.5 py-0.5 rounded-full text-[10px] font-medium flex-shrink-0 ${packageColors[selectedCoachee.packageType]}`}>
                             {PACKAGES[selectedCoachee.packageType].icon} {PACKAGES[selectedCoachee.packageType].name}
                           </span>
                         )}
                       </div>
-                      <p className="text-xs text-gray-500">
+                      <p className="text-xs text-gray-500 truncate">
                         {Math.min(selectedCoachee.currentSession, selectedCoachee.totalSessions)}/{selectedCoachee.totalSessions}회기
                         {selectedCoachee.currentSession > selectedCoachee.totalSessions && ' (완료)'}
-                        {selectedCoachee.currentSession <= selectedCoachee.totalSessions && ` · 다음: ${selectedCoachee.nextSession}`}
+                        <span className="hidden sm:inline">
+                          {selectedCoachee.currentSession <= selectedCoachee.totalSessions && ` · 다음: ${selectedCoachee.nextSession}`}
+                        </span>
                       </p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
+
+                  {/* 오른쪽: 버튼들 - 데스크톱 */}
+                  <div className="hidden lg:flex items-center gap-2 flex-shrink-0">
                     {selectedCoachee.topics?.slice(0, 2).map((topic, idx) => (
                       <Badge key={idx} variant="default" className="text-xs">{topic}</Badge>
                     ))}
@@ -373,14 +397,54 @@ export function CoachMessagesPage() {
                       AI 분석
                     </Button>
                   </div>
+
+                  {/* 오른쪽: 버튼들 - 모바일 (아이콘만) */}
+                  <div className="flex lg:hidden items-center gap-1 flex-shrink-0">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setShowSessionEndModal(true)}
+                      disabled={selectedCoachee.currentSession > selectedCoachee.totalSessions}
+                      className={`p-2 ${selectedCoachee.currentSession > selectedCoachee.totalSessions
+                        ? "text-gray-400 border-gray-200"
+                        : "text-green-600 border-green-300"
+                      }`}
+                    >
+                      <CheckCircle2 className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      variant={showSessionNote ? 'primary' : 'outline'}
+                      size="sm"
+                      onClick={() => setShowSessionNote(!showSessionNote)}
+                      className="p-2"
+                    >
+                      <FileText className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      variant={showCoacheeInfo ? 'primary' : 'outline'}
+                      size="sm"
+                      onClick={() => setShowCoacheeInfo(!showCoacheeInfo)}
+                      className="p-2"
+                    >
+                      <User className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      variant={showAIInsights ? 'primary' : 'outline'}
+                      size="sm"
+                      onClick={() => setShowAIInsights(!showAIInsights)}
+                      className={`p-2 ${showAIInsights ? '' : 'text-purple-600 border-purple-300'}`}
+                    >
+                      <Sparkles className="w-4 h-4" />
+                    </Button>
+                  </div>
                 </div>
               </CardContent>
             </Card>
 
             {/* 메시지 + 세션일지 영역 */}
-            <div className="flex-1 flex gap-3 min-h-0">
+            <div className="flex-1 flex gap-2 lg:gap-3 min-h-0 relative">
               {/* 메시지 리스트 */}
-              <div className={`flex-1 min-w-0 transition-all ${showSessionNote ? '' : ''}`}>
+              <div className="flex-1 min-w-0">
                 <MessageList
                   key={selectedCoacheeId}
                   userRole="coach"
@@ -394,7 +458,7 @@ export function CoachMessagesPage() {
                 />
               </div>
 
-              {/* 세션 일지 패널 */}
+              {/* 세션 일지 패널 - 데스크톱에서는 사이드, 모바일에서는 바텀시트 */}
               {showSessionNote && (
                 <SessionNotePanel
                   coachee={selectedCoachee}
@@ -402,7 +466,7 @@ export function CoachMessagesPage() {
                 />
               )}
 
-              {/* 피코치 정보 패널 */}
+              {/* 피코치 정보 패널 - 데스크톱에서는 사이드, 모바일에서는 바텀시트 */}
               {showCoacheeInfo && (
                 <CoacheeInfoPanel
                   coachee={selectedCoachee}
@@ -410,7 +474,7 @@ export function CoachMessagesPage() {
                 />
               )}
 
-              {/* AI 분석 패널 */}
+              {/* AI 분석 패널 - 데스크톱에서는 사이드, 모바일에서는 바텀시트 */}
               {showAIInsights && (
                 <AIInsightsPanel
                   coachee={selectedCoachee}
@@ -629,30 +693,47 @@ function SessionNotePanel({ coachee, onClose }) {
   // 로딩 상태
   if (isLoading) {
     return (
-      <Card className="w-[420px] flex-shrink-0 flex flex-col overflow-hidden">
-        <div className="flex items-center justify-center h-64">
-          <Loader2 className="w-6 h-6 animate-spin text-blue-500" />
-          <span className="ml-2 text-gray-600 text-sm">세션일지를 불러오는 중...</span>
-        </div>
-      </Card>
+      <>
+        {/* 모바일 오버레이 */}
+        <div className="fixed inset-0 bg-black/50 z-40 lg:hidden" onClick={onClose} />
+        <Card className={`
+          w-full lg:w-[420px] flex-shrink-0 flex flex-col overflow-hidden
+          fixed lg:relative inset-x-0 bottom-0 lg:inset-auto
+          z-50 lg:z-auto rounded-t-2xl lg:rounded-xl
+          max-h-[85vh] lg:max-h-full
+        `}>
+          <div className="flex items-center justify-center h-64">
+            <Loader2 className="w-6 h-6 animate-spin text-blue-500" />
+            <span className="ml-2 text-gray-600 text-sm">세션일지를 불러오는 중...</span>
+          </div>
+        </Card>
+      </>
     )
   }
 
   return (
-    <Card className="w-[420px] flex-shrink-0 flex flex-col overflow-hidden">
-      {/* 헤더 */}
-      <div className="flex items-center justify-between p-3 border-b bg-blue-50">
-        <div className="flex items-center gap-2">
-          <FileText className="w-5 h-5 text-blue-600" />
-          <div>
-            <h3 className="font-semibold text-blue-900 text-sm">{sessionNumber}회기 세션 일지</h3>
-            <p className="text-xs text-blue-600">{coachee.name}</p>
+    <>
+      {/* 모바일 오버레이 */}
+      <div className="fixed inset-0 bg-black/50 z-40 lg:hidden" onClick={onClose} />
+      <Card className={`
+        w-full lg:w-[420px] flex-shrink-0 flex flex-col overflow-hidden
+        fixed lg:relative inset-x-0 bottom-0 lg:inset-auto
+        z-50 lg:z-auto rounded-t-2xl lg:rounded-xl
+        max-h-[85vh] lg:max-h-full
+      `}>
+        {/* 헤더 */}
+        <div className="flex items-center justify-between p-3 border-b bg-blue-50 rounded-t-2xl lg:rounded-t-xl">
+          <div className="flex items-center gap-2">
+            <FileText className="w-5 h-5 text-blue-600" />
+            <div>
+              <h3 className="font-semibold text-blue-900 text-sm">{sessionNumber}회기 세션 일지</h3>
+              <p className="text-xs text-blue-600">{coachee.name}</p>
+            </div>
           </div>
+          <button onClick={onClose} className="p-1.5 hover:bg-blue-100 rounded-lg">
+            <X className="w-5 h-5 text-blue-600" />
+          </button>
         </div>
-        <button onClick={onClose} className="p-1 hover:bg-blue-100 rounded">
-          <X className="w-4 h-4 text-blue-600" />
-        </button>
-      </div>
 
       {/* 내용 - 스크롤 영역 */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
@@ -926,6 +1007,7 @@ function SessionNotePanel({ coachee, onClose }) {
         </div>
       </div>
     </Card>
+    </>
   )
 }
 
@@ -1174,20 +1256,28 @@ function CoacheeInfoPanel({ coachee, onClose }) {
   }
 
   return (
-    <Card className="w-80 flex-shrink-0 flex flex-col max-h-full">
-      {/* 헤더 */}
-      <div className="p-3 border-b flex items-center justify-between bg-gray-50">
-        <div className="flex items-center gap-2">
-          <User className="w-4 h-4 text-blue-600" />
-          <h3 className="font-semibold text-sm text-gray-900">피코치 정보</h3>
+    <>
+      {/* 모바일 오버레이 */}
+      <div className="fixed inset-0 bg-black/50 z-40 lg:hidden" onClick={onClose} />
+      <Card className={`
+        w-full lg:w-80 flex-shrink-0 flex flex-col
+        fixed lg:relative inset-x-0 bottom-0 lg:inset-auto
+        z-50 lg:z-auto rounded-t-2xl lg:rounded-xl
+        max-h-[85vh] lg:max-h-full
+      `}>
+        {/* 헤더 */}
+        <div className="p-3 border-b flex items-center justify-between bg-gray-50 rounded-t-2xl lg:rounded-t-xl">
+          <div className="flex items-center gap-2">
+            <User className="w-4 h-4 text-blue-600" />
+            <h3 className="font-semibold text-sm text-gray-900">피코치 정보</h3>
+          </div>
+          <button
+            onClick={onClose}
+            className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg"
+          >
+            <X className="w-5 h-5" />
+          </button>
         </div>
-        <button
-          onClick={onClose}
-          className="p-1 text-gray-400 hover:text-gray-600 rounded"
-        >
-          <X className="w-4 h-4" />
-        </button>
-      </div>
 
       {/* 내용 */}
       <div className="flex-1 overflow-y-auto p-3 space-y-3">
@@ -1458,5 +1548,6 @@ function CoacheeInfoPanel({ coachee, onClose }) {
         )}
       </div>
     </Card>
+    </>
   )
 }
