@@ -416,3 +416,96 @@ export async function getTodaySessions(coachId) {
 
   return data || []
 }
+
+// 구독자 세션 예약
+export async function bookSubscriberSession(subscriptionId, coachId, coacheeId, bookingData) {
+  if (!isSupabaseConfigured()) throw new Error('LOCAL_MODE')
+
+  // 1. 구독 정보 확인
+  const { data: subscription, error: subError } = await supabase
+    .from('subscriptions')
+    .select('*')
+    .eq('id', subscriptionId)
+    .single()
+
+  if (subError) throw subError
+
+  // 2. 세션 사용 가능 여부 체크
+  if (subscription.sessions_used_this_month >= subscription.sessions_per_month) {
+    throw new Error('이번 달 세션을 모두 사용했습니다')
+  }
+
+  // 3. 세션 생성
+  const { data: session, error: sessionError } = await supabase
+    .from('sessions')
+    .insert({
+      coach_id: coachId,
+      coachee_id: coacheeId,
+      session_number: 0, // 구독 세션은 0
+      date: bookingData.date,
+      time: bookingData.time,
+      topic: bookingData.topic || '사후관리 세션',
+      status: 'scheduled',
+      is_subscriber_session: true
+    })
+    .select()
+    .single()
+
+  if (sessionError) throw sessionError
+
+  // 4. 구독 세션 사용량 증가
+  const { error: updateError } = await supabase
+    .from('subscriptions')
+    .update({
+      sessions_used_this_month: subscription.sessions_used_this_month + 1
+    })
+    .eq('id', subscriptionId)
+
+  if (updateError) {
+    // 롤백: 세션 삭제
+    await supabase.from('sessions').delete().eq('id', session.id)
+    throw updateError
+  }
+
+  return session
+}
+
+// 피코치의 예정된 세션 조회
+export async function getUpcomingSessions(coacheeId) {
+  if (!isSupabaseConfigured()) throw new Error('LOCAL_MODE')
+
+  const today = getToday()
+
+  const { data, error } = await supabase
+    .from('sessions')
+    .select('*')
+    .eq('coachee_id', coacheeId)
+    .gte('date', today)
+    .eq('status', 'scheduled')
+    .order('date', { ascending: true })
+    .order('time', { ascending: true })
+
+  if (error) throw error
+  return data || []
+}
+
+// 피코치의 지난 세션 조회
+export async function getPastSessions(coacheeId, limit = 5) {
+  if (!isSupabaseConfigured()) throw new Error('LOCAL_MODE')
+
+  const today = getToday()
+
+  const { data, error } = await supabase
+    .from('sessions')
+    .select(`
+      *,
+      session_notes (*)
+    `)
+    .eq('coachee_id', coacheeId)
+    .or(`date.lt.${today},status.eq.completed`)
+    .order('date', { ascending: false })
+    .limit(limit)
+
+  if (error) throw error
+  return data || []
+}

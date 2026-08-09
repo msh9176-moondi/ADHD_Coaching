@@ -15,24 +15,39 @@ import { PACKAGE_COLORS } from '../../constants/styles'
 import { coacheeService } from '../../lib'
 import {
   Users, TrendingUp, Calendar,
-  ChevronRight, AlertTriangle, CalendarPlus
+  ChevronRight, AlertTriangle, CalendarPlus, Crown
 } from 'lucide-react'
+import { getCoachSubscribers } from '../../lib/subscriptionService'
+
+const TABS = [
+  { id: 'active', label: '진행 중', icon: Users },
+  { id: 'subscriber', label: '구독자', icon: Crown },
+  { id: 'completed', label: '완료', icon: null }
+]
 
 export function CoacheesPage() {
   const navigate = useNavigate()
   const [searchQuery, setSearchQuery] = useState('')
+  const [activeTab, setActiveTab] = useState('active')
   const [coachees, setCoachees] = useState([])
+  const [subscribers, setSubscribers] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const { user, openBookingModal } = useStore()
 
   useEffect(() => {
-    async function loadCoachees() {
+    async function loadData() {
       try {
         setLoading(true)
-        const data = await coacheeService.getCoachCoachees(user?.id)
+
+        // 피코치 목록과 구독자 목록 병렬 로드
+        const [coacheesData, subscribersData] = await Promise.all([
+          coacheeService.getCoachCoachees(user?.id),
+          getCoachSubscribers(user?.id)
+        ])
+
         // 뷰 데이터를 컴포넌트가 기대하는 형태로 변환
-        const formatted = data.map(c => ({
+        const formatted = coacheesData.map(c => ({
           id: c.user_id || c.id,  // user_id를 기본 id로 사용
           name: c.name,
           email: c.email,
@@ -50,6 +65,20 @@ export function CoacheesPage() {
           topics: c.topics || []
         }))
         setCoachees(formatted)
+
+        // 구독자 데이터 변환
+        const formattedSubscribers = subscribersData.map(s => ({
+          id: s.user_id,
+          name: s.user?.name || '구독자',
+          email: s.user?.email || '',
+          avatarUrl: s.user?.avatar_url,
+          planType: s.plan_type,
+          sessionsPerMonth: s.sessions_per_month,
+          sessionsUsed: s.sessions_used_this_month,
+          periodEnd: s.current_period_end,
+          status: s.status
+        }))
+        setSubscribers(formattedSubscribers)
       } catch (err) {
         if (err.message === 'LOCAL_MODE') {
           setError('Supabase가 설정되지 않았습니다. 피코치를 등록해주세요.')
@@ -60,13 +89,32 @@ export function CoacheesPage() {
         setLoading(false)
       }
     }
-    loadCoachees()
+    loadData()
   }, [user?.id])
 
-  const filteredCoachees = coachees.filter(c =>
-    c.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    c.email?.toLowerCase().includes(searchQuery.toLowerCase())
-  )
+  // 탭별 필터링
+  const getFilteredData = () => {
+    if (activeTab === 'subscriber') {
+      return subscribers.filter(s =>
+        s.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        s.email?.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    }
+
+    const statusFilter = activeTab === 'completed' ? 'completed' : 'active'
+    return coachees.filter(c =>
+      (c.status === statusFilter || (activeTab === 'active' && c.status === 'pending')) &&
+      (c.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+       c.email?.toLowerCase().includes(searchQuery.toLowerCase()))
+    )
+  }
+
+  const filteredData = getFilteredData()
+
+  // 탭별 카운트
+  const activeCount = coachees.filter(c => c.status === 'active' || c.status === 'pending').length
+  const completedCount = coachees.filter(c => c.status === 'completed').length
+  const subscriberCount = subscribers.length
 
   if (loading) {
     return <LoadingContainer text="피코치 목록을 불러오는 중..." />
@@ -95,6 +143,38 @@ export function CoacheesPage() {
         </div>
       )}
 
+      {/* 탭 */}
+      <div className="flex items-center gap-1 mb-4 border-b border-gray-200">
+        {TABS.map((tab) => {
+          const count = tab.id === 'active' ? activeCount
+            : tab.id === 'subscriber' ? subscriberCount
+            : completedCount
+          const TabIcon = tab.icon
+
+          return (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors ${
+                activeTab === tab.id
+                  ? 'border-emerald-600 text-emerald-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              {TabIcon && <TabIcon className="w-4 h-4" />}
+              {tab.label}
+              <span className={`ml-1 px-1.5 py-0.5 rounded-full text-xs ${
+                activeTab === tab.id
+                  ? 'bg-emerald-100 text-emerald-700'
+                  : 'bg-gray-100 text-gray-600'
+              }`}>
+                {count}
+              </span>
+            </button>
+          )
+        })}
+      </div>
+
       {/* 검색 */}
       <div className="mb-6">
         <SearchInput
@@ -105,16 +185,38 @@ export function CoacheesPage() {
         />
       </div>
 
-      {/* 피코치 목록 */}
-      {coachees.length === 0 && !error ? (
+      {/* 목록 */}
+      {filteredData.length === 0 && !error ? (
         <EmptyState
-          icon={Users}
-          title="등록된 피코치가 없습니다"
-          description="아직 등록된 피코치가 없습니다."
+          icon={activeTab === 'subscriber' ? Crown : Users}
+          title={
+            activeTab === 'subscriber'
+              ? '구독 중인 피코치가 없습니다'
+              : activeTab === 'completed'
+              ? '완료된 피코치가 없습니다'
+              : '등록된 피코치가 없습니다'
+          }
+          description={
+            activeTab === 'subscriber'
+              ? '코칭을 완료한 피코치가 구독으로 전환하면 여기에 표시됩니다.'
+              : activeTab === 'completed'
+              ? '코칭이 완료된 피코치가 없습니다.'
+              : '아직 등록된 피코치가 없습니다.'
+          }
         />
+      ) : activeTab === 'subscriber' ? (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {filteredData.map((subscriber) => (
+            <SubscriberCard
+              key={subscriber.id}
+              subscriber={subscriber}
+              onClick={() => navigate(`/coach/coachees/${subscriber.id}`)}
+            />
+          ))}
+        </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          {filteredCoachees.map((coachee) => (
+          {filteredData.map((coachee) => (
             <CoacheeCard
               key={coachee.id}
               coachee={coachee}
@@ -212,6 +314,72 @@ function CoacheeCard({ coachee, onBookSession, onClick }) {
                 <CalendarPlus className="w-3.5 h-3.5" />
                 예약
               </Button>
+            </div>
+          </div>
+
+          <ChevronRight className="w-5 h-5 text-gray-400" />
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
+
+function SubscriberCard({ subscriber, onClick }) {
+  const planLabels = {
+    monthly: '월간',
+    quarterly: '분기',
+    yearly: '연간'
+  }
+
+  const sessionsRemaining = subscriber.sessionsPerMonth - subscriber.sessionsUsed
+  const periodEndDate = subscriber.periodEnd
+    ? new Date(subscriber.periodEnd).toLocaleDateString('ko-KR', {
+        month: 'long',
+        day: 'numeric'
+      })
+    : '-'
+
+  return (
+    <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={onClick}>
+      <CardContent className="py-5">
+        <div className="flex items-start gap-4">
+          <Avatar name={subscriber.name} size="lg" />
+
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 mb-1">
+              <h3 className="font-semibold text-gray-900">{subscriber.name}</h3>
+              <span className="px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-700 flex items-center gap-1">
+                <Crown className="w-3 h-3" />
+                {planLabels[subscriber.planType] || '월간'} 구독
+              </span>
+            </div>
+            <p className="text-sm text-gray-500 mb-3">{subscriber.email}</p>
+
+            {/* 세션 사용량 */}
+            <div className="mb-3">
+              <div className="flex items-center justify-between text-sm mb-1">
+                <span className="text-gray-500">이번 달 세션</span>
+                <span className="font-medium">
+                  {subscriber.sessionsUsed}/{subscriber.sessionsPerMonth}회 사용
+                </span>
+              </div>
+              <ProgressBar
+                current={subscriber.sessionsUsed}
+                total={subscriber.sessionsPerMonth}
+                color="yellow"
+                size="md"
+              />
+            </div>
+
+            {/* 갱신일 & 남은 세션 */}
+            <div className="flex items-center justify-between text-sm">
+              <div className="flex items-center gap-1 text-gray-600">
+                <Calendar className="w-4 h-4" />
+                <span>갱신: {periodEndDate}</span>
+              </div>
+              <span className={`font-medium ${sessionsRemaining > 0 ? 'text-emerald-600' : 'text-gray-400'}`}>
+                {sessionsRemaining > 0 ? `${sessionsRemaining}회 남음` : '완료'}
+              </span>
             </div>
           </div>
 

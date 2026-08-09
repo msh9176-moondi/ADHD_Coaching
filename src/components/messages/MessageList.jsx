@@ -95,6 +95,8 @@ export function MessageList({
   const [feedbackingTaskId, setFeedbackingTaskId] = useState(null)
   const [feedbackText, setFeedbackText] = useState('')
   const messagesEndRef = useRef(null)
+  const messagesContainerRef = useRef(null)
+  const inputRef = useRef(null)
   const navigate = useNavigate()
 
   // 성찰일지 페이지로 이동 핸들러
@@ -106,13 +108,27 @@ export function MessageList({
     m => m.type === 'declaration' && m.declarationData?.status === 'completed'
   )
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  const scrollToBottom = (smooth = true) => {
+    if (messagesContainerRef.current) {
+      messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight
+    }
   }
 
   useEffect(() => {
     scrollToBottom()
   }, [messages])
+
+  // 모바일 키보드 대응: 입력창 포커스 시 스크롤 위치 유지
+  const handleInputFocus = () => {
+    // 현재 스크롤 위치 저장 후 복원
+    const container = messagesContainerRef.current
+    if (container) {
+      const scrollTop = container.scrollTop
+      setTimeout(() => {
+        container.scrollTop = scrollTop
+      }, 100)
+    }
+  }
 
   // Supabase에서 메시지 로드 및 실시간 구독
   useEffect(() => {
@@ -1019,7 +1035,7 @@ export function MessageList({
           </div>
         </CardHeader>
 
-        <CardContent className="flex-1 overflow-y-auto p-2 md:p-3 space-y-2 md:space-y-3">
+        <CardContent ref={messagesContainerRef} className="flex-1 overflow-y-auto p-2 md:p-3 space-y-2 md:space-y-3 chat-container">
           {messages.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-center">
               <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
@@ -1074,10 +1090,12 @@ export function MessageList({
 
         <div className="p-2 md:p-3 border-t flex gap-2">
           <input
+            ref={inputRef}
             type="text"
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
             onKeyPress={(e) => e.key === 'Enter' && handleSend()}
+            onFocus={handleInputFocus}
             placeholder="메시지 입력..."
             className="flex-1 min-w-0 px-3 py-2 text-sm bg-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
           />

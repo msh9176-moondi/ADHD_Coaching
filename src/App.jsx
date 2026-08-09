@@ -20,6 +20,7 @@ import { ASRSTestPage } from './pages/coachee/ASRSTestPage'
 import { SurveyPage } from './pages/coachee/SurveyPage'
 import { CoachingReportPage } from './pages/coachee/CoachingReportPage'
 import { ExecutionGuidePage } from './pages/coachee/ExecutionGuidePage'
+import { SubscriptionPlansPage } from './pages/coachee/SubscriptionPlansPage'
 
 // Coach Pages
 import { CoachDashboardPage } from './pages/coach/DashboardPage'
@@ -134,6 +135,7 @@ function App() {
         <Route path="survey" element={<SurveyPage />} />
         <Route path="report" element={<CoachingReportPage />} />
         <Route path="guide" element={<ExecutionGuidePage />} />
+        <Route path="subscribe" element={<SubscriptionPlansPage />} />
       </Route>
 
       {/* Coach Routes */}

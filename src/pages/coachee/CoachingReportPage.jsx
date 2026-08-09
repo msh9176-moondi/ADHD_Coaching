@@ -6,9 +6,11 @@ import { Button } from '../../components/common/Button'
 import { useStore } from '../../store/useStore'
 import { reportService } from '../../lib'
 import { isSupabaseConfigured } from '../../lib/supabase'
+import { getActiveSubscription, SUBSCRIPTION_PLANS } from '../../lib/subscriptionService'
+import { SubscriptionStatusCard } from '../../components/coachee/SubscriptionStatusCard'
 import {
   Award, TrendingUp, Target, CheckCircle, BookOpen, ClipboardList,
-  ChevronLeft, Loader2, Star, Sparkles, Calendar, ArrowRight
+  ChevronLeft, Loader2, Star, Sparkles, Calendar, ArrowRight, Crown, Zap
 } from 'lucide-react'
 
 function formatDate(dateString) {
@@ -19,30 +21,37 @@ function formatDate(dateString) {
 
 export function CoachingReportPage() {
   const navigate = useNavigate()
-  const { user } = useStore()
+  const { user, subscription, setSubscription } = useStore()
   const [report, setReport] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
   useEffect(() => {
-    async function loadReport() {
+    async function loadData() {
       if (!user?.id || !isSupabaseConfigured()) {
         setLoading(false)
         return
       }
       try {
         setLoading(true)
-        const data = await reportService.generateReportData(user.id)
-        setReport(data)
+        // 리포트와 구독 정보 병렬 로드
+        const [reportData, subscriptionData] = await Promise.all([
+          reportService.generateReportData(user.id),
+          getActiveSubscription(user.id)
+        ])
+        setReport(reportData)
+        if (subscriptionData) {
+          setSubscription(subscriptionData)
+        }
       } catch (err) {
-        console.error('보고서 로드 실패:', err)
+        console.error('데이터 로드 실패:', err)
         setError('보고서를 불러오는데 실패했습니다.')
       } finally {
         setLoading(false)
       }
     }
-    loadReport()
-  }, [user?.id])
+    loadData()
+  }, [user?.id, setSubscription])
 
   if (loading) {
     return (
@@ -289,30 +298,104 @@ export function CoachingReportPage() {
         </CardContent>
       </Card>
 
-      {/* 다음 단계 안내 */}
-      <Card className="border-2 border-emerald-200 bg-emerald-50">
-        <CardContent className="py-6">
-          <div className="text-center">
-            <Star className="w-10 h-10 text-yellow-500 mx-auto mb-3" />
-            <h3 className="text-lg font-bold text-gray-900 mb-2">
-              축하합니다! 코칭을 완료했습니다
-            </h3>
-            <p className="text-gray-600 mb-4">
-              1개월 후 사후관리 세션에서 다시 만나요.
-              <br />
-              그동안 실행기능 사용 설명서를 참고하여 꾸준히 실천해보세요.
-            </p>
-            <div className="flex gap-3 justify-center">
-              <Button onClick={() => navigate('/coachee/guide')}>
-                실행기능 사용 설명서
-              </Button>
-              <Button variant="outline" onClick={() => navigate('/coachee')}>
-                대시보드로 이동
-              </Button>
+      {/* 구독 상태에 따른 다음 단계 */}
+      {subscription?.status === 'active' ? (
+        // 구독자용: 구독 상태 카드
+        <div className="space-y-4">
+          <SubscriptionStatusCard subscription={subscription} />
+          <Card>
+            <CardContent className="py-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h4 className="font-medium text-gray-900">실행기능 사용 설명서</h4>
+                  <p className="text-sm text-gray-500">꾸준히 실천하며 성장을 유지하세요</p>
+                </div>
+                <Button variant="outline" onClick={() => navigate('/coachee/guide')}>
+                  보기
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      ) : (
+        // 비구독자용: 구독 전환 CTA
+        <Card className="overflow-hidden">
+          <div className="bg-gradient-to-r from-amber-500 to-emerald-600 p-6 text-white">
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center">
+                <Crown className="w-8 h-8" />
+              </div>
+              <div>
+                <h3 className="text-xl font-bold">성장을 계속 이어가세요</h3>
+                <p className="text-white/80">
+                  {coachee.coachName} 코치와 함께하는 월간 사후관리 구독
+                </p>
+              </div>
             </div>
           </div>
-        </CardContent>
-      </Card>
+          <CardContent className="py-6">
+            <div className="grid grid-cols-3 gap-4 mb-6">
+              <div className="text-center p-3 bg-gray-50 rounded-xl">
+                <Calendar className="w-5 h-5 text-emerald-600 mx-auto mb-1" />
+                <p className="text-sm font-medium text-gray-900">매월 2회</p>
+                <p className="text-xs text-gray-500">사후관리 세션</p>
+              </div>
+              <div className="text-center p-3 bg-gray-50 rounded-xl">
+                <Zap className="w-5 h-5 text-amber-600 mx-auto mb-1" />
+                <p className="text-sm font-medium text-gray-900">담당 코치</p>
+                <p className="text-xs text-gray-500">연속성 유지</p>
+              </div>
+              <div className="text-center p-3 bg-gray-50 rounded-xl">
+                <TrendingUp className="w-5 h-5 text-purple-600 mx-auto mb-1" />
+                <p className="text-sm font-medium text-gray-900">목표 관리</p>
+                <p className="text-xs text-gray-500">지속적 성장</p>
+              </div>
+            </div>
+
+            <div className="flex gap-3">
+              <Button
+                className="flex-1"
+                onClick={() => navigate('/coachee/subscribe')}
+              >
+                <Crown className="w-4 h-4 mr-2" />
+                구독 시작하기
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => navigate('/coachee')}
+              >
+                나중에
+              </Button>
+            </div>
+
+            <p className="text-xs text-gray-400 text-center mt-4">
+              월 {SUBSCRIPTION_PLANS.monthly.price.toLocaleString()}원부터 시작
+            </p>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* 실행기능 안내 (구독자가 아닐 때만) */}
+      {!subscription?.status && (
+        <Card>
+          <CardContent className="py-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-emerald-100 rounded-xl flex items-center justify-center">
+                  <BookOpen className="w-5 h-5 text-emerald-600" />
+                </div>
+                <div>
+                  <h4 className="font-medium text-gray-900">실행기능 사용 설명서</h4>
+                  <p className="text-sm text-gray-500">혼자서도 꾸준히 실천할 수 있어요</p>
+                </div>
+              </div>
+              <Button variant="outline" onClick={() => navigate('/coachee/guide')}>
+                보기
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }

@@ -243,6 +243,14 @@ export const useStore = create(
       matchedCoach: null,
       setMatchedCoach: (coach) => set({ matchedCoach: coach }),
 
+      // 피코치 프로필 정보
+      coacheeProfile: null,
+      setCoacheeProfile: (profile) => set({ coacheeProfile: profile }),
+
+      // 구독 정보
+      subscription: null,
+      setSubscription: (subscription) => set({ subscription: subscription }),
+
       // 전체 초기화 (로그아웃 시)
       resetAll: () => set({
         user: null,
@@ -250,7 +258,9 @@ export const useStore = create(
         preSurvey: null,
         postSurvey: null,
         onboardingStatus: { step: null, completed: false },
-        matchedCoach: null
+        matchedCoach: null,
+        coacheeProfile: null,
+        subscription: null
       }),
     }),
     {
@@ -263,7 +273,9 @@ export const useStore = create(
         onboardingStatus: state.onboardingStatus,
         selfIntro: state.selfIntro,
         matchedCoach: state.matchedCoach,
-        coachingPackage: state.coachingPackage
+        coachingPackage: state.coachingPackage,
+        coacheeProfile: state.coacheeProfile,
+        subscription: state.subscription
       }),
     }
   )

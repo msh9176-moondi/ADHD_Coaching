@@ -186,14 +186,21 @@ export function CoachMessagesPage() {
         current_session: sessionNumber + 1
       })
 
-      // 마지막 회기인 경우 사후관리 세션 예약
+      // 마지막 회기인 경우 상태 변경 및 사후관리 세션 예약
       if (isLastSession) {
         try {
+          // 피코치 상태를 'completed'로 변경
+          await coacheeService.updateCoacheeById(selectedCoachee.id, {
+            status: 'completed'
+          })
+          console.log('피코치 상태 completed로 변경')
+
+          // 사후관리 세션 예약
           await scheduleFollowUpSession(user.id, selectedCoachee.userId)
           console.log('사후관리 세션 예약 완료')
         } catch (err) {
-          console.error('사후관리 세션 예약 실패:', err)
-          // 사후관리 세션 예약 실패는 회기 종료를 막지 않음
+          console.error('마지막 회기 처리 실패:', err)
+          // 실패해도 회기 종료를 막지 않음
         }
       }
 

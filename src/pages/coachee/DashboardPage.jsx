@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react'
+import { useLocation } from 'react-router-dom'
 import { useStore } from '../../store/useStore'
 import { getASRSResult, getSurveyResult } from '../../lib/surveyService'
 import { getCoacheePackage, getCoacheeProfile, getCoachingTopics, getCoachingGoal } from '../../lib/coacheeService'
 import { getCoacheeTasks } from '../../lib/taskService'
 import { getCoachingProgressStatus, getLastCoachMessage, getConfirmedGoals } from '../../lib/messageService'
 import { getSessionsForCoachee } from '../../lib/sessionService'
+import { getActiveSubscription } from '../../lib/subscriptionService'
 import { isSupabaseConfigured, supabase } from '../../lib/supabase'
 import { CurrentAction } from '../../components/coachee/CurrentAction'
 import { TodayTasks } from '../../components/coachee/TodayTasks'
@@ -22,15 +24,23 @@ import { RoutineTasksCard } from '../../components/coachee/RoutineTasksCard'
 import { NotificationCard } from '../../components/coachee/NotificationCard'
 import { MatchingCard } from '../../components/coachee/MatchingCard'
 import { AICheckinCard } from '../../components/coachee/AICheckinCard'
+import { SubscriptionStatusCard } from '../../components/coachee/SubscriptionStatusCard'
+import { PastSessionsCard } from '../../components/coachee/PastSessionsCard'
+import { CoachInfoCard } from '../../components/coachee/CoachInfoCard'
+import { CoachingCompletionModal } from '../../components/modals/CoachingCompletionModal'
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/common/Card'
-import { Calendar, Clock } from 'lucide-react'
+import { Calendar, Clock, CalendarCheck } from 'lucide-react'
+import { getUpcomingSessions } from '../../lib/sessionService'
 
 export function CoacheeDashboardPage() {
+  const location = useLocation()
   const {
     user,
     sessions,
     matchedCoach,
     coachingPackage,
+    subscription,
+    coacheeProfile,
     setASRSResult,
     setPreSurvey,
     setPostSurvey,
@@ -41,11 +51,44 @@ export function CoacheeDashboardPage() {
     setCoachingStatus,
     setLastCoachMessage,
     setCoachingAction,
-    setSessions
+    setSessions,
+    setCoacheeProfile,
+    setSubscription
   } = useStore()
   const userName = user?.name || '다나'
   const [isLoading, setIsLoading] = useState(true)
   const [hasCoach, setHasCoach] = useState(!!matchedCoach)
+  const [showSubscriptionSuccess, setShowSubscriptionSuccess] = useState(false)
+  const [showCompletionModal, setShowCompletionModal] = useState(false)
+
+  // 코칭 완료 모달 표시 체크
+  useEffect(() => {
+    // 코칭이 완료되었고 구독이 없는 경우 모달 표시
+    if (coacheeProfile?.status === 'completed' && !subscription) {
+      // 이미 모달을 본 적이 있는지 로컬 스토리지 체크
+      const hasSeenModal = localStorage.getItem(`completion_modal_seen_${user?.id}`)
+      if (!hasSeenModal) {
+        setShowCompletionModal(true)
+      }
+    }
+  }, [coacheeProfile?.status, subscription, user?.id])
+
+  const handleCloseCompletionModal = () => {
+    setShowCompletionModal(false)
+    // 모달을 봤다고 기록
+    if (user?.id) {
+      localStorage.setItem(`completion_modal_seen_${user.id}`, 'true')
+    }
+  }
+
+  // 구독 성공 알림 체크
+  useEffect(() => {
+    if (location.state?.subscriptionSuccess) {
+      setShowSubscriptionSuccess(true)
+      // URL 상태 제거
+      window.history.replaceState({}, document.title)
+    }
+  }, [location.state])
 
   // Supabase에서 데이터 로드
   useEffect(() => {
@@ -67,9 +110,10 @@ export function CoacheeDashboardPage() {
           getCoacheeProfile(user.id)
         ])
 
-        // 코치 매칭 상태 확인
+        // 코치 매칭 상태 확인 및 프로필 저장
         if (profileData.status === 'fulfilled' && profileData.value) {
           const profile = profileData.value
+          setCoacheeProfile(profile) // 프로필 저장
           if (profile.coach_id) {
             setHasCoach(true)
             // 코치 이름 조회
@@ -96,6 +140,16 @@ export function CoacheeDashboardPage() {
           } else {
             setHasCoach(false)
           }
+        }
+
+        // 구독 정보 로드
+        try {
+          const subscriptionData = await getActiveSubscription(user.id)
+          if (subscriptionData) {
+            setSubscription(subscriptionData)
+          }
+        } catch (err) {
+          console.warn('구독 정보 로드 실패:', err)
         }
 
         // ASRS 결과
@@ -284,8 +338,45 @@ export function CoacheeDashboardPage() {
         />
       )}
 
-      {/* 패키지 진행 현황 (코치 매칭 후에만 표시) */}
-      {hasCoach && <PackageProgress />}
+      {/* 구독 성공 알림 */}
+      {showSubscriptionSuccess && (
+        <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center">
+                <span className="text-lg">🎉</span>
+              </div>
+              <div>
+                <h3 className="font-semibold text-emerald-800">구독이 시작되었습니다!</h3>
+                <p className="text-sm text-emerald-600">이제 매월 사후관리 세션을 이용하실 수 있어요.</p>
+              </div>
+            </div>
+            <button
+              onClick={() => setShowSubscriptionSuccess(false)}
+              className="text-emerald-500 hover:text-emerald-700"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* 구독자 전용 섹션 */}
+      {subscription?.status === 'active' && (
+        <>
+          {/* 구독 상태 카드 */}
+          <SubscriptionStatusCard subscription={subscription} />
+
+          {/* 구독자 2열 그리드: 코치 정보 & 지난 세션 */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+            <CoachInfoCard />
+            <PastSessionsCard />
+          </div>
+        </>
+      )}
+
+      {/* 패키지 진행 현황 (코치 매칭 후, 구독자가 아닐 때만 표시) */}
+      {hasCoach && !subscription?.status && <PackageProgress />}
 
       {/* 다음 회기까지 과제 */}
       <SessionTasksCard />
@@ -361,6 +452,15 @@ export function CoacheeDashboardPage() {
 
       {/* 복귀 버튼 (항상 표시) */}
       <ReturnButton />
+
+      {/* 코칭 완료 모달 */}
+      <CoachingCompletionModal
+        isOpen={showCompletionModal}
+        onClose={handleCloseCompletionModal}
+        coacheeName={userName}
+        completedSessions={coachingPackage?.totalSessions || 5}
+        coachName={matchedCoach?.coachName}
+      />
     </div>
   )
 }

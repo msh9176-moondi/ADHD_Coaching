@@ -23,7 +23,12 @@
       "Bash(git branch:*)",
       "Bash(git push:*)",
       "Bash(gh repo create:*)",
-      "Bash(npx vercel:*)"
+      "Bash(npx vercel:*)",
+      "Bash(git commit:*)",
+      "Bash(npx vite build)",
+      "Bash(powershell -Command:*)",
+      "Bash(node -e:*)",
+      "Bash(npx eslint:*)"
     ]
   }
 }
