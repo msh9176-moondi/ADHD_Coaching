@@ -138,14 +138,14 @@ export function OnboardingPage() {
     return (
       <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white flex items-center justify-center p-4">
         <div className="max-w-lg w-full text-center">
-          <div className="mb-8">
-            <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
-              <Sparkles className="w-10 h-10 text-blue-600" />
+          <div className="mb-6 md:mb-8">
+            <div className="w-16 h-16 md:w-20 md:h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4 md:mb-6">
+              <Sparkles className="w-8 h-8 md:w-10 md:h-10 text-blue-600" />
             </div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-3">
+            <h1 className="text-xl md:text-2xl font-bold text-gray-900 mb-2 md:mb-3">
               {user?.name || '회원'}님, 환영합니다!
             </h1>
-            <p className="text-gray-600 leading-relaxed">
+            <p className="text-sm md:text-base text-gray-600 leading-relaxed">
               코칭을 시작하기 전에<br />
               지금의 상태를 파악하는 시간을 가질게요.
             </p>
@@ -251,14 +251,14 @@ export function OnboardingPage() {
                             {q.text}
                           </p>
 
-                          <div className="flex gap-2">
+                          <div className="flex gap-1.5 md:gap-2">
                             {SCALE_OPTIONS.map(option => {
                               const isSelected = surveyAnswers[q.id] === option.value
                               return (
                                 <button
                                   key={option.value}
                                   onClick={() => handleSurveySelect(q.id, option.value)}
-                                  className={`flex-1 py-3 rounded-lg border-2 font-medium transition-all ${
+                                  className={`flex-1 py-2.5 md:py-3 rounded-lg border-2 text-sm md:text-base font-medium transition-all ${
                                     isSelected
                                       ? 'border-purple-500 bg-purple-50 text-purple-700'
                                       : 'border-gray-200 text-gray-500 hover:border-gray-300'

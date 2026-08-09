@@ -258,13 +258,13 @@ export function CoacheeDashboardPage() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <div className="max-w-4xl mx-auto space-y-4 md:space-y-6">
       {/* 환영 메시지 */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">
+        <h1 className="text-xl md:text-2xl font-bold text-gray-900">
           안녕하세요, {userName}님.
         </h1>
-        <p className="text-gray-600 mt-1">
+        <p className="text-sm md:text-base text-gray-600 mt-1">
           오늘은 무엇부터 시작해 볼까요?
         </p>
       </div>
@@ -297,7 +297,7 @@ export function CoacheeDashboardPage() {
       <CurrentAction />
 
       {/* 2열 그리드: 오늘의 일정 & 오늘의 할 일 */}
-      <div className="grid grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
         {/* 오늘의 일정 */}
         <Card>
           <CardHeader>
@@ -339,7 +339,7 @@ export function CoacheeDashboardPage() {
       </div>
 
       {/* 2열 그리드: 코칭 진행 상태 & 코치 메시지 */}
-      <div className="grid grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
         <CoachingProgress />
         <CoachMessage />
       </div>

@@ -204,16 +204,16 @@ export function SignupPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4">
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center py-8 md:py-12 px-4">
       <div className="max-w-md w-full">
         {/* 로고 */}
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-blue-600">FLOCA</h1>
-          <p className="text-gray-600 mt-2">ADHD 실행회복 코칭</p>
+        <div className="text-center mb-6 md:mb-8">
+          <h1 className="text-2xl md:text-3xl font-bold text-blue-600">FLOCA</h1>
+          <p className="text-sm md:text-base text-gray-600 mt-1 md:mt-2">ADHD 실행회복 코칭</p>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
-          <h2 className="text-xl font-bold text-gray-900 mb-6">회원가입</h2>
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 md:p-8">
+          <h2 className="text-lg md:text-xl font-bold text-gray-900 mb-5 md:mb-6">회원가입</h2>
 
           <form onSubmit={handleSubmit} className="space-y-5">
             {/* 역할 선택 */}
@@ -221,36 +221,36 @@ export function SignupPage() {
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 가입 유형 <span className="text-red-500">*</span>
               </label>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-2 md:gap-3">
                 <button
                   type="button"
                   onClick={() => setFormData(prev => ({ ...prev, role: 'coachee' }))}
-                  className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all ${
+                  className={`flex flex-col items-center gap-1.5 md:gap-2 p-3 md:p-4 rounded-xl border-2 transition-all ${
                     formData.role === 'coachee'
                       ? 'border-blue-500 bg-blue-50'
                       : 'border-gray-200 hover:border-gray-300'
                   }`}
                 >
-                  <User className={`w-6 h-6 ${formData.role === 'coachee' ? 'text-blue-600' : 'text-gray-400'}`} />
-                  <span className={`font-medium ${formData.role === 'coachee' ? 'text-blue-700' : 'text-gray-600'}`}>
+                  <User className={`w-5 h-5 md:w-6 md:h-6 ${formData.role === 'coachee' ? 'text-blue-600' : 'text-gray-400'}`} />
+                  <span className={`text-sm md:text-base font-medium ${formData.role === 'coachee' ? 'text-blue-700' : 'text-gray-600'}`}>
                     피코치
                   </span>
-                  <span className="text-xs text-gray-500">코칭을 받고 싶어요</span>
+                  <span className="text-[10px] md:text-xs text-gray-500">코칭을 받고 싶어요</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => setFormData(prev => ({ ...prev, role: 'coach' }))}
-                  className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all ${
+                  className={`flex flex-col items-center gap-1.5 md:gap-2 p-3 md:p-4 rounded-xl border-2 transition-all ${
                     formData.role === 'coach'
                       ? 'border-blue-500 bg-blue-50'
                       : 'border-gray-200 hover:border-gray-300'
                   }`}
                 >
-                  <Users className={`w-6 h-6 ${formData.role === 'coach' ? 'text-blue-600' : 'text-gray-400'}`} />
-                  <span className={`font-medium ${formData.role === 'coach' ? 'text-blue-700' : 'text-gray-600'}`}>
+                  <Users className={`w-5 h-5 md:w-6 md:h-6 ${formData.role === 'coach' ? 'text-blue-600' : 'text-gray-400'}`} />
+                  <span className={`text-sm md:text-base font-medium ${formData.role === 'coach' ? 'text-blue-700' : 'text-gray-600'}`}>
                     코치
                   </span>
-                  <span className="text-xs text-gray-500">코칭을 제공해요</span>
+                  <span className="text-[10px] md:text-xs text-gray-500">코칭을 제공해요</span>
                 </button>
               </div>
               {errors.role && (

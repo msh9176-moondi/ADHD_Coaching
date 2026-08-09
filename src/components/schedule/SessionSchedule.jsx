@@ -191,13 +191,24 @@ function SessionCard({ session, formatDate, showCoacheeName = false, onViewDetai
   const coacheeName = session.coachee_name || session.coacheeName
 
   return (
-    <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-xl">
-      <div className="flex-shrink-0 w-14 h-14 bg-blue-100 rounded-xl flex flex-col items-center justify-center">
-        <span className="text-lg font-bold text-blue-600">{sessionNumber}</span>
-        <span className="text-xs text-blue-500">회기</span>
+    <div className="flex flex-col md:flex-row md:items-center gap-3 md:gap-4 p-3 md:p-4 bg-gray-50 rounded-xl">
+      <div className="flex items-center gap-3 md:gap-4">
+        <div className="flex-shrink-0 w-12 h-12 md:w-14 md:h-14 bg-blue-100 rounded-xl flex flex-col items-center justify-center">
+          <span className="text-base md:text-lg font-bold text-blue-600">{sessionNumber}</span>
+          <span className="text-[10px] md:text-xs text-blue-500">회기</span>
+        </div>
+
+        <div className="flex-1 min-w-0 md:hidden">
+          <div className="flex items-center gap-2 mb-1 flex-wrap">
+            <h4 className="font-medium text-gray-900 text-sm">{session.topic}</h4>
+            <Badge variant={session.status === 'scheduled' ? 'primary' : 'success'} className="text-xs">
+              {session.status === 'scheduled' ? '예정' : '완료'}
+            </Badge>
+          </div>
+        </div>
       </div>
 
-      <div className="flex-1 min-w-0">
+      <div className="flex-1 min-w-0 hidden md:block">
         <div className="flex items-center gap-2 mb-1">
           <h4 className="font-medium text-gray-900">{session.topic}</h4>
           {showCoacheeName && coacheeName && (
@@ -222,12 +233,24 @@ function SessionCard({ session, formatDate, showCoacheeName = false, onViewDetai
         </div>
       </div>
 
-      <div className="flex gap-2">
-        <Button variant="outline" size="sm" onClick={() => onViewDetail(session)}>
+      {/* 모바일 날짜/시간 정보 */}
+      <div className="flex items-center gap-3 text-xs text-gray-500 md:hidden ml-15 -mt-1">
+        <span className="flex items-center gap-1">
+          <Calendar className="w-3 h-3" />
+          {formatDate(session.date)}
+        </span>
+        <span className="flex items-center gap-1">
+          <Clock className="w-3 h-3" />
+          {session.time}
+        </span>
+      </div>
+
+      <div className="flex gap-2 ml-15 md:ml-0">
+        <Button variant="outline" size="sm" onClick={() => onViewDetail(session)} className="text-xs md:text-sm">
           상세보기
         </Button>
         {session.status === 'scheduled' && (
-          <Button size="sm" onClick={() => onEnterSession(session)}>
+          <Button size="sm" onClick={() => onEnterSession(session)} className="text-xs md:text-sm">
             입장하기
           </Button>
         )}

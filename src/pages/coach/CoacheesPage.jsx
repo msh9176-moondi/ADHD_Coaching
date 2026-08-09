@@ -74,15 +74,15 @@ export function CoacheesPage() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">피코치 관리</h1>
-          <p className="text-gray-600">
+          <h1 className="text-xl md:text-2xl font-bold text-gray-900 mb-1 md:mb-2">피코치 관리</h1>
+          <p className="text-sm md:text-base text-gray-600">
             담당 피코치 목록과 진행 상황을 확인하세요.
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <Badge variant="primary" className="text-base px-4 py-2">
+          <Badge variant="primary" className="text-sm md:text-base px-3 md:px-4 py-1.5 md:py-2">
             <Users className="w-4 h-4 mr-2" />
             총 {coachees.length}명
           </Badge>
@@ -113,7 +113,7 @@ export function CoacheesPage() {
           description="아직 등록된 피코치가 없습니다."
         />
       ) : (
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {filteredCoachees.map((coachee) => (
             <CoacheeCard
               key={coachee.id}

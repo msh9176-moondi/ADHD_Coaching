@@ -18,7 +18,12 @@
       "Bash(echo:*)",
       "Bash(git remote:*)",
       "Bash(git rev-parse:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nInitial commit: FLOCA ADHD 코칭 플랫폼\n\n- React + Vite 기반 SPA\n- Supabase 백엔드 연동\n- 코치/피코치 역할 구분\n- 사전설문, ASRS 검사, 온보딩 플로우\n- 코치 초대 코드 시스템 추가\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(git branch:*)",
+      "Bash(git push:*)",
+      "Bash(gh repo create:*)",
+      "Bash(npx vercel:*)"
     ]
   }
 }

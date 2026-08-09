@@ -162,18 +162,18 @@ export function AnalysisResultPage() {
               </div>
 
               {/* 점수 시각화 */}
-              <div className="grid grid-cols-3 gap-4 mb-6">
+              <div className="grid grid-cols-3 gap-2 md:gap-4 mb-6">
                 {[
                   { label: '주의력', value: asrsResult.inattentionScore, max: 36, color: 'purple' },
                   { label: '과잉행동', value: asrsResult.hyperactivityScore, max: 20, color: 'orange' },
                   { label: '충동성', value: asrsResult.impulsivityScore, max: 16, color: 'red' }
                 ].map(item => (
-                  <div key={item.label} className="text-center p-4 bg-gray-50 rounded-xl">
-                    <div className={`text-3xl font-bold text-${item.color}-600`}>
+                  <div key={item.label} className="text-center p-2 md:p-4 bg-gray-50 rounded-xl">
+                    <div className={`text-2xl md:text-3xl font-bold text-${item.color}-600`}>
                       {item.value}
                     </div>
-                    <div className="text-sm text-gray-500 mt-1">{item.label}</div>
-                    <div className="mt-3 h-2 bg-gray-200 rounded-full overflow-hidden">
+                    <div className="text-xs md:text-sm text-gray-500 mt-1">{item.label}</div>
+                    <div className="mt-2 md:mt-3 h-1.5 md:h-2 bg-gray-200 rounded-full overflow-hidden">
                       <div
                         className={`h-full bg-${item.color}-500 rounded-full transition-all duration-500`}
                         style={{ width: `${(item.value / item.max) * 100}%` }}

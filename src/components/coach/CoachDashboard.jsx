@@ -90,9 +90,9 @@ export function CoachDashboard() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 md:space-y-6">
       {/* 요약 카드들 */}
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
         <StatCard
           icon={Users}
           label="담당 피코치"
@@ -136,9 +136,9 @@ export function CoachDashboard() {
         </Card>
       )}
 
-      <div className="grid grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
         {/* 오늘의 상담 */}
-        <Card className="col-span-2">
+        <Card className="lg:col-span-2">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Calendar className="w-5 h-5 text-blue-600" />

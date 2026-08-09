@@ -66,28 +66,28 @@ export function MessagesPage() {
   }, [messages])
 
   return (
-    <div className="max-w-3xl mx-auto space-y-4">
+    <div className="max-w-3xl mx-auto space-y-3 md:space-y-4">
       {/* 코치 정보 카드 */}
       <Card>
-        <CardContent className="py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
+        <CardContent className="py-3 md:py-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-3 md:gap-4">
               <div className="relative">
-                <div className="w-14 h-14 bg-blue-100 rounded-full flex items-center justify-center">
-                  <Target className="w-7 h-7 text-blue-600" />
+                <div className="w-12 h-12 md:w-14 md:h-14 bg-blue-100 rounded-full flex items-center justify-center">
+                  <Target className="w-6 h-6 md:w-7 md:h-7 text-blue-600" />
                 </div>
-                <div className="absolute bottom-0 right-0 w-4 h-4 bg-green-500 border-2 border-white rounded-full" />
+                <div className="absolute bottom-0 right-0 w-3.5 h-3.5 md:w-4 md:h-4 bg-green-500 border-2 border-white rounded-full" />
               </div>
               <div>
-                <h2 className="text-lg font-bold text-gray-900">{coachName}</h2>
-                <p className="text-sm text-gray-500">ADHD 실행회복 코칭</p>
+                <h2 className="text-base md:text-lg font-bold text-gray-900">{coachName}</h2>
+                <p className="text-xs md:text-sm text-gray-500">ADHD 실행회복 코칭</p>
               </div>
             </div>
 
-            <div className="text-right">
-              <p className="text-sm text-gray-500">다음 세션</p>
+            <div className="text-left sm:text-right ml-15 sm:ml-0">
+              <p className="text-xs md:text-sm text-gray-500">다음 세션</p>
               {nextSession ? (
-                <p className="font-medium text-gray-900 flex items-center gap-1">
+                <p className="text-sm md:text-base font-medium text-gray-900 flex items-center gap-1">
                   <Calendar className="w-4 h-4 text-blue-500" />
                   {new Date(nextSession.scheduled_at).toLocaleDateString('ko-KR', {
                     month: 'long',
@@ -97,7 +97,7 @@ export function MessagesPage() {
                   })}
                 </p>
               ) : (
-                <p className="text-sm text-gray-400">예정된 세션 없음</p>
+                <p className="text-xs md:text-sm text-gray-400">예정된 세션 없음</p>
               )}
             </div>
           </div>

@@ -22,8 +22,8 @@ export function Modal({ isOpen, onClose, title, children }) {
           className="fixed inset-0 bg-black/50 transition-opacity"
           onClick={onClose}
         />
-        <div className="relative bg-white rounded-xl shadow-xl w-full max-w-lg transform transition-all">
-          <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+        <div className="relative bg-white rounded-xl shadow-xl w-full max-w-lg mx-4 md:mx-0 transform transition-all max-h-[90vh] overflow-y-auto">
+          <div className="flex items-center justify-between px-4 md:px-6 py-3 md:py-4 border-b border-gray-100 sticky top-0 bg-white z-10">
             <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
             <button
               onClick={onClose}
@@ -32,7 +32,7 @@ export function Modal({ isOpen, onClose, title, children }) {
               <X className="w-5 h-5" />
             </button>
           </div>
-          <div className="px-6 py-4">
+          <div className="px-4 md:px-6 py-4">
             {children}
           </div>
         </div>
