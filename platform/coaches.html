@@ -1,0 +1,345 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>코치 선택 | FLOCA 코칭 플랫폼</title>
+  <link rel="stylesheet" href="style.css"/>
+  <style>
+    .coaches-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .method-tag { display: inline-block; background: var(--accent-light); color: #0D9488; font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 20px; margin: 2px; }
+    .time-info { font-size: 13px; color: var(--text-muted); margin: 10px 0; display: flex; align-items: center; gap: 6px; }
+    .select-indicator { display: none; align-items: center; gap: 8px; padding: 10px 14px; background: var(--primary); color: white; border-radius: 10px; font-size: 14px; font-weight: 700; margin-top: 14px; }
+    .coach-card.selected .select-indicator { display: flex; }
+    .coach-card.full { opacity: .6; cursor: default; }
+    .coach-card.full:hover { transform: none; box-shadow: none; border-color: var(--border); }
+    @media (max-width: 640px) { .coaches-grid { grid-template-columns: 1fr; } }
+
+    /* 패키지 선택 스타일 */
+    .package-section { margin-top: 32px; padding-top: 32px; border-top: 2px solid var(--border); }
+    .package-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    .package-card {
+      background: var(--card); border: 2px solid var(--border); border-radius: 16px;
+      padding: 24px 20px; text-align: center; cursor: pointer; transition: all .2s;
+      position: relative; overflow: hidden;
+    }
+    .package-card:hover { border-color: var(--primary); transform: translateY(-2px); box-shadow: 0 4px 16px rgba(0,0,0,.08); }
+    .package-card.selected { border-color: var(--primary); background: var(--primary-light); }
+    .package-card.selected::before {
+      content: '✓'; position: absolute; top: 12px; right: 12px;
+      width: 24px; height: 24px; background: var(--primary); color: white;
+      border-radius: 50%; display: flex; align-items: center; justify-content: center;
+      font-size: 14px; font-weight: 700;
+    }
+    .package-card.recommended { border-color: var(--accent); }
+    .package-card.recommended .package-badge { display: block; }
+    .package-badge {
+      display: none; position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+      background: var(--accent); color: white; font-size: 11px; font-weight: 700;
+      padding: 4px 12px; border-radius: 0 0 8px 8px;
+    }
+    .package-icon { font-size: 36px; margin-bottom: 12px; }
+    .package-name { font-size: 18px; font-weight: 800; margin-bottom: 4px; }
+    .package-sessions { font-size: 28px; font-weight: 900; color: var(--primary); margin-bottom: 8px; }
+    .package-sessions span { font-size: 14px; font-weight: 600; color: var(--text-muted); }
+    .package-desc { font-size: 13px; color: var(--text-muted); line-height: 1.6; }
+    .package-features { margin-top: 16px; text-align: left; }
+    .package-feature { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text); margin-bottom: 6px; }
+    .package-feature::before { content: '✓'; color: var(--accent); font-weight: 700; }
+    @media (max-width: 768px) { .package-grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="index.html" class="nav-logo">FLOCA <span>코칭</span></a>
+    <div class="nav-links">
+      <a href="apply.html">신청하기</a>
+      <a href="login.html">로그인</a>
+      <a href="admin.html" class="nav-admin">관리자</a>
+    </div>
+  </div>
+</nav>
+
+<div class="page-header">
+  <h1>코치 선택</h1>
+  <p>나에게 맞는 코치를 선택해주세요. 전문 분야와 코칭 방식을 확인해보세요.</p>
+</div>
+
+<div class="steps">
+  <div class="step-col"><div class="step-dot done">✓</div><div class="step-label">신청서</div></div>
+  <div class="step-line done"></div>
+  <div class="step-col"><div class="step-dot done">✓</div><div class="step-label">사전설문</div></div>
+  <div class="step-line done"></div>
+  <div class="step-col"><div class="step-dot active">3</div><div class="step-label">코치선택</div></div>
+  <div class="step-line"></div>
+  <div class="step-col"><div class="step-dot">4</div><div class="step-label">목표합의</div></div>
+  <div class="step-line"></div>
+  <div class="step-col"><div class="step-dot">5</div><div class="step-label">코칭</div></div>
+  <div class="step-line"></div>
+  <div class="step-col"><div class="step-dot">6</div><div class="step-label">사후설문</div></div>
+  <div class="step-line"></div>
+  <div class="step-col"><div class="step-dot">7</div><div class="step-label">보고서</div></div>
+</div>
+
+<main class="main">
+  <div class="container">
+    <div id="surveyResult" class="card" style="margin-bottom:24px;display:none;">
+      <div class="card-title">📊 사전 설문 점수 요약</div>
+      <div class="card-subtitle">높을수록 해당 영역이 잘 기능하고 있다는 의미예요. (1~5점)</div>
+      <div id="scorePreview" class="score-compare" style="margin-top:16px;"></div>
+    </div>
+
+    <div style="margin-bottom:20px;">
+      <h2 style="font-size:18px;font-weight:700;margin-bottom:4px;">코치 소개</h2>
+      <p style="font-size:14px;color:var(--text-muted);">카드를 클릭하면 상세 소개를 볼 수 있어요.</p>
+    </div>
+
+    <div class="coaches-grid" id="coachesGrid"></div>
+
+    <div id="selectedInfo" class="alert alert-success" style="display:none;margin-top:20px;"></div>
+
+    <!-- 패키지 선택 섹션 -->
+    <div id="packageSection" class="package-section" style="display:none;">
+      <div style="margin-bottom:20px;">
+        <h2 style="font-size:18px;font-weight:700;margin-bottom:4px;">코칭 패키지 선택</h2>
+        <p style="font-size:14px;color:var(--text-muted);">목표에 맞는 회기 수를 선택해주세요.</p>
+      </div>
+
+      <div class="package-grid" id="packageGrid">
+        <div class="package-card" data-package="starter">
+          <div class="package-badge">추천</div>
+          <div class="package-icon">🚀</div>
+          <div class="package-name">스타터</div>
+          <div class="package-sessions">3<span>회기</span></div>
+          <div class="package-desc">빠른 문제 해결이 필요할 때</div>
+          <div class="package-features">
+            <div class="package-feature">단일 주제 집중</div>
+            <div class="package-feature">빠른 행동 변화</div>
+            <div class="package-feature">약 3주 진행</div>
+          </div>
+        </div>
+
+        <div class="package-card recommended" data-package="basic">
+          <div class="package-badge">추천</div>
+          <div class="package-icon">⭐</div>
+          <div class="package-name">베이직</div>
+          <div class="package-sessions">5<span>회기</span></div>
+          <div class="package-desc">루틴 정착과 습관 형성</div>
+          <div class="package-features">
+            <div class="package-feature">1~2개 주제 집중</div>
+            <div class="package-feature">루틴 정착 시간 확보</div>
+            <div class="package-feature">약 5주 진행</div>
+          </div>
+        </div>
+
+        <div class="package-card" data-package="premium">
+          <div class="package-badge">추천</div>
+          <div class="package-icon">💎</div>
+          <div class="package-name">프리미엄</div>
+          <div class="package-sessions">10<span>회기</span></div>
+          <div class="package-desc">깊이 있는 변화와 성장</div>
+          <div class="package-features">
+            <div class="package-feature">3개 주제 모두 다룸</div>
+            <div class="package-feature">충분한 반복과 피드백</div>
+            <div class="package-feature">약 10주 진행</div>
+          </div>
+        </div>
+      </div>
+
+      <div id="packageSelectedInfo" class="alert alert-info" style="display:none;margin-top:20px;"></div>
+    </div>
+
+    <div style="margin-top:28px;">
+      <button id="selectBtn" class="btn btn-primary btn-full btn-lg" disabled>
+        코치 & 패키지 선택 완료 →
+      </button>
+    </div>
+
+    <div style="margin-top:16px;text-align:center;">
+      <p style="font-size:13px;color:var(--text-muted);">코치를 직접 선택하기 어렵다면 관리자가 배정해 드려요.</p>
+      <button class="btn btn-outline btn-sm" style="margin-top:8px;" onclick="requestMatch()">관리자 배정 요청</button>
+    </div>
+  </div>
+</main>
+
+<footer class="footer">
+  <p>FLOCA 코칭 플랫폼 · 코치 배정은 관리자 승인 후 최종 확정됩니다.</p>
+</footer>
+
+<script src="app.js"></script>
+<script>
+  const coacheeId = getParam('id');
+  let selectedCoachId = null;
+  let selectedPackage = null;
+
+  function renderScorePreview() {
+    const survey = DB.get('surveys').find(s => s.coacheeId === coacheeId && s.type === 'pre');
+    if (!survey) return;
+    document.getElementById('surveyResult').style.display = 'block';
+    const container = document.getElementById('scorePreview');
+    Object.entries(survey.categoryScores).forEach(([key, val]) => {
+      if (key === 'total') return;
+      const avg = val.average.toFixed(1);
+      const pct = (val.average / 5) * 100;
+      container.innerHTML += `
+        <div class="score-row">
+          <div class="score-label">${val.name}</div>
+          <div class="score-bars">
+            <div class="bar-wrap">
+              <div class="bar-track"><div class="bar-fill-post" style="width:${pct}%"></div></div>
+              <div class="bar-val">${avg}</div>
+            </div>
+          </div>
+        </div>`;
+    });
+    const total = survey.categoryScores.total.toFixed(1);
+    container.innerHTML += `<div style="margin-top:12px;padding:12px 16px;background:var(--primary-light);border-radius:10px;font-size:14px;"><strong>전체 평균: ${total}점 / 5점</strong></div>`;
+  }
+
+  function renderCoaches() {
+    const grid = document.getElementById('coachesGrid');
+    const matchings = DB.get('matchings');
+    const coachees = DB.get('coachees');
+
+    COACHES.forEach(coach => {
+      // 활성 매칭만 카운트 (완료된 코칭 제외)
+      const activeMatchings = matchings.filter(m => {
+        if (m.coachId !== coach.id) return false;
+        const coachee = coachees.find(c => c.id === m.coacheeId);
+        return coachee && coachee.status !== 'completed';
+      });
+      const assignedCount = activeMatchings.length;
+      const isFull = assignedCount >= coach.maxCoachees;
+
+      const card = document.createElement('div');
+      card.className = 'coach-card' + (isFull ? ' full' : '');
+      card.dataset.id = coach.id;
+      card.innerHTML = `
+        <div class="coach-avatar">${coach.avatar}</div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+          <div class="coach-name" style="margin-bottom:0;">${coach.name}</div>
+          ${isFull
+            ? `<span class="badge badge-warn">마감</span>`
+            : `<span class="badge badge-success">모집 중</span>`}
+        </div>
+        <div class="coach-bio">${coach.bio}</div>
+        <div class="coach-tags">
+          ${coach.specialties.map(s => `<span class="badge badge-primary">${s}</span>`).join('')}
+        </div>
+        <div class="coach-detail">${coach.detail}</div>
+        <div class="time-info">🕐 ${coach.availableTimes}</div>
+        <div>
+          ${coach.coachingMethods.map(m => `<span class="method-tag">${m}</span>`).join('')}
+        </div>
+        ${isFull
+          ? `<div style="margin-top:14px;padding:10px 14px;background:var(--warn-light);border-radius:10px;font-size:13px;color:#991B1B;text-align:center;">현재 다른 피코치와 코칭 중입니다</div>`
+          : `<div class="select-indicator">✓ 선택됨</div>`}
+      `;
+
+      if (!isFull) {
+        card.addEventListener('click', () => selectCoach(coach.id, coach.name));
+      }
+      grid.appendChild(card);
+    });
+  }
+
+  function selectCoach(id, name) {
+    // 마감 코치 클릭 방지
+    const matchings = DB.get('matchings');
+    const coachees = DB.get('coachees');
+    const coach = getCoach(id);
+    const activeMatchings = matchings.filter(m => {
+      if (m.coachId !== id) return false;
+      const coachee = coachees.find(c => c.id === m.coacheeId);
+      return coachee && coachee.status !== 'completed';
+    });
+    if (activeMatchings.length >= coach.maxCoachees) return;
+
+    selectedCoachId = id;
+    document.querySelectorAll('.coach-card:not(.full)').forEach(c => {
+      c.classList.toggle('selected', c.dataset.id === id);
+    });
+    document.getElementById('selectedInfo').style.display = 'block';
+    document.getElementById('selectedInfo').textContent = `✅ ${name} 코치님을 선택했습니다. 아래에서 패키지를 선택해주세요.`;
+
+    // 패키지 섹션 표시
+    document.getElementById('packageSection').style.display = 'block';
+    document.getElementById('packageSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+    updateSelectButton();
+  }
+
+  function selectPackage(packageId) {
+    selectedPackage = packageId;
+    const pkg = PACKAGES[packageId];
+
+    document.querySelectorAll('.package-card').forEach(c => {
+      c.classList.toggle('selected', c.dataset.package === packageId);
+    });
+
+    document.getElementById('packageSelectedInfo').style.display = 'block';
+    document.getElementById('packageSelectedInfo').textContent = `📦 ${pkg.name} 패키지 (${pkg.sessions}회기)를 선택했습니다.`;
+
+    updateSelectButton();
+  }
+
+  function updateSelectButton() {
+    const btn = document.getElementById('selectBtn');
+    if (selectedCoachId && selectedPackage) {
+      btn.disabled = false;
+      const coach = getCoach(selectedCoachId);
+      const pkg = PACKAGES[selectedPackage];
+      btn.textContent = `${coach.name} 코치 + ${pkg.name} ${pkg.sessions}회기로 시작하기 →`;
+    } else if (selectedCoachId) {
+      btn.disabled = true;
+      btn.textContent = '패키지를 선택해주세요';
+    } else {
+      btn.disabled = true;
+      btn.textContent = '코치를 선택해주세요';
+    }
+  }
+
+  // 패키지 카드 클릭 이벤트
+  document.querySelectorAll('.package-card').forEach(card => {
+    card.addEventListener('click', () => {
+      selectPackage(card.dataset.package);
+    });
+  });
+
+  document.getElementById('selectBtn').addEventListener('click', () => {
+    if (!selectedCoachId || !selectedPackage) return;
+    const pkg = PACKAGES[selectedPackage];
+    const matching = {
+      id: 'match_' + coacheeId,
+      coacheeId, coachId: selectedCoachId,
+      packageType: selectedPackage,
+      totalSessions: pkg.sessions,
+      status: 'pending', matchedAt: new Date().toISOString()
+    };
+    DB.upsert('matchings', matching);
+    DB.updateItem('coachees', coacheeId, { status: 'matched', selectedCoachId, packageType: selectedPackage });
+    window.location.href = `onboarding.html?id=${coacheeId}`;
+  });
+
+  function requestMatch() {
+    alert('관리자 배정 요청이 접수되었습니다. 관리자가 검토 후 코치를 배정해 드립니다.');
+    DB.updateItem('coachees', coacheeId, { status: 'pending_match' });
+  }
+
+  if (!coacheeId) {
+    window.location.href = 'apply.html';
+  } else {
+    const existingMatch = DB.get('matchings').find(m => m.coacheeId === coacheeId);
+    const coacheeData = DB.getItem('coachees', coacheeId);
+    const lockedStatuses = ['pledged', 'coaching', 'completed'];
+    if (existingMatch && coacheeData && lockedStatuses.includes(coacheeData.status)) {
+      window.location.href = `coachee-home.html?id=${coacheeId}`;
+    } else {
+      renderScorePreview();
+      renderCoaches();
+    }
+  }
+</script>
+</body>
+</html>

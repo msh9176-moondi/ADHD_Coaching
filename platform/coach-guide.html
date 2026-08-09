@@ -1,0 +1,766 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>코치 가이드 | FLOCA 코칭 플랫폼</title>
+  <link rel="stylesheet" href="style.css"/>
+  <style>
+    body { background: #F0F4F8; overflow: hidden; }
+    .slideshow { position: fixed; inset: 0; display: flex; flex-direction: column; }
+
+    /* 상단 바 */
+    .slide-topbar {
+      background: white; border-bottom: 1px solid #E2E8F0;
+      padding: 11px 20px;
+      display: flex; align-items: center; justify-content: space-between;
+      flex-shrink: 0;
+    }
+    .slide-logo { font-size: 17px; font-weight: 900; color: #3B82C4; text-decoration: none; }
+    .slide-logo span { color: #14B8A6; }
+    .slide-counter { font-size: 12px; color: #94A3B8; font-weight: 600; }
+    .slide-dashboard-btn {
+      font-size: 12px; color: #64748B; text-decoration: none;
+      background: #F8FAFC; padding: 5px 11px; border-radius: 8px;
+      border: 1px solid #E2E8F0; transition: all .2s;
+    }
+    .slide-dashboard-btn:hover { border-color: #3B82C4; color: #3B82C4; }
+
+    /* 진행 바 */
+    .slide-progress { height: 3px; background: #E2E8F0; flex-shrink: 0; }
+    .slide-progress-fill { height: 100%; background: linear-gradient(90deg,#3B82C4,#14B8A6); transition: width .4s ease; }
+
+    /* 슬라이드 */
+    .slides-wrap { flex: 1; overflow: hidden; position: relative; }
+    .slide {
+      position: absolute; inset: 0; overflow-y: auto;
+      opacity: 0; pointer-events: none;
+      transform: translateX(60px);
+      transition: opacity .3s ease, transform .3s ease;
+      padding: 0 20px 90px;
+      display: flex; align-items: flex-start; justify-content: center;
+    }
+    .slide.active { opacity: 1; pointer-events: auto; transform: translateX(0); }
+    .slide-inner { width: 100%; max-width: 540px; padding-top: 24px; }
+
+    /* 태그 */
+    .step-tag {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-size: 11px; font-weight: 700; letter-spacing: 1px;
+      padding: 4px 11px; border-radius: 20px; margin-bottom: 12px;
+    }
+    .step-tag.coachee { background: #DBEAFE; color: #1D4ED8; }
+    .step-tag.coach   { background: #FEF3C7; color: #92400E; }
+    .step-tag.both    { background: #D1FAE5; color: #065F46; }
+    .step-tag.intro   { background: #F1F5F9; color: #475569; }
+
+    .slide-title { font-size: 24px; font-weight: 900; color: #1E293B; line-height: 1.3; margin-bottom: 6px; }
+    .slide-sub   { font-size: 13px; color: #64748B; line-height: 1.7; margin-bottom: 18px; }
+
+    /* 화면 모형 */
+    .mockup {
+      background: white; border: 1px solid #E2E8F0;
+      border-radius: 14px; overflow: hidden; margin-bottom: 14px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+    .mockup-bar {
+      background: #F8FAFC; padding: 9px 13px;
+      display: flex; align-items: center; gap: 7px;
+      border-bottom: 1px solid #E2E8F0;
+    }
+    .mockup-dots { display: flex; gap: 4px; }
+    .mockup-dot  { width: 7px; height: 7px; border-radius: 50%; background: #CBD5E1; }
+    .mockup-title { font-size: 11px; color: #94A3B8; font-weight: 600; }
+    .mockup-body { padding: 13px; }
+
+    /* 모형 컴포넌트 */
+    .m-card { background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 9px; padding: 10px 12px; margin-bottom: 7px; }
+    .m-card.yellow { background: #FFFBEB; border-color: #FCD34D; }
+    .m-card.green  { background: #F0FDF4; border-color: #BBF7D0; }
+    .m-card.blue   { background: #EFF6FF; border-color: #BFDBFE; }
+    .m-label { font-size: 10px; color: #94A3B8; margin-bottom: 4px; }
+    .m-row   { display: flex; align-items: center; justify-content: space-between; }
+    .m-badge { font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 20px; }
+    .m-badge.yellow { background: #FEF3C7; color: #92400E; border: 1px solid #FCD34D; }
+    .m-badge.green  { background: #D1FAE5; color: #065F46; }
+    .m-badge.blue   { background: #DBEAFE; color: #1D4ED8; }
+    .m-badge.pulse  { background: #F59E0B; color: white; animation: mpulse 1.5s infinite; }
+    @keyframes mpulse { 0%,100%{box-shadow:0 0 0 0 rgba(245,158,11,.4)} 50%{box-shadow:0 0 0 5px rgba(245,158,11,0)} }
+    .m-btn { display: inline-block; font-size: 11px; font-weight: 700; padding: 6px 12px; border-radius: 7px; cursor: default; text-align: center; }
+    .m-btn.primary { background: #3B82C4; color: white; }
+    .m-btn.accent  { background: #F59E0B; color: white; }
+    .m-btn.outline { background: white; color: #64748B; border: 1.5px solid #E2E8F0; }
+    .m-btn.success { background: #22C55E; color: white; }
+    .m-btn.full    { display: block; width: 100%; }
+    .m-divider     { height: 1px; background: #F1F5F9; margin: 7px 0; }
+    .m-avatar      { width: 30px; height: 30px; border-radius: 50%; background: #DBEAFE; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: #1D4ED8; flex-shrink: 0; }
+    .m-dot         { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .m-dot.done    { background: #14B8A6; }
+    .m-dot.active  { background: #3B82C4; }
+    .m-dot.empty   { background: #CBD5E1; }
+    .m-session-row { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #F1F5F9; }
+    .m-session-row:last-child { border-bottom: none; }
+    .m-score-box   { text-align: center; background: #F8FAFC; border-radius: 7px; padding: 7px; }
+    .m-score-num   { font-size: 17px; font-weight: 800; color: #1E293B; }
+    .m-score-label { font-size: 10px; color: #94A3B8; }
+    .m-success-msg { background: #D1FAE5; border: 1px solid #BBF7D0; border-radius: 7px; padding: 7px 11px; font-size: 12px; color: #065F46; margin-top: 7px; text-align: center; font-weight: 600; }
+
+    /* ===== 액션 스텝 (숫자 박스) ===== */
+    .action-steps { display: flex; gap: 8px; margin-bottom: 14px; }
+    .action-step {
+      flex: 1; background: #FFFBEB; border: 1.5px solid #FDE68A;
+      border-radius: 12px; padding: 12px 10px; text-align: center;
+    }
+    .action-step-num {
+      width: 22px; height: 22px; background: #F59E0B; color: white;
+      border-radius: 50%; font-size: 11px; font-weight: 800;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 8px;
+    }
+    .action-step-icon { font-size: 22px; margin-bottom: 5px; }
+    .action-step-label { font-size: 11px; font-weight: 700; color: #92400E; line-height: 1.4; }
+
+    /* ===== 인포 박스 ===== */
+    .info-box { border-radius: 11px; padding: 11px 14px; margin-bottom: 14px; font-size: 13px; line-height: 1.6; display: flex; align-items: flex-start; gap: 8px; }
+    .info-box.blue  { background: #EFF6FF; border: 1px solid #BFDBFE; color: #1E40AF; }
+    .info-box.red   { background: #FEF2F2; border: 1px solid #FECACA; color: #991B1B; }
+    .info-box.green { background: #F0FDF4; border: 1px solid #BBF7D0; color: #166534; }
+    .info-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+
+    /* ===== 두 컬럼 ===== */
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+    @media (max-width: 480px) { .two-col { grid-template-columns: 1fr; } }
+    .col-label { font-size: 12px; font-weight: 700; color: #475569; text-align: center; margin-bottom: 7px; }
+
+    /* ===== 인트로 통계 ===== */
+    .intro-stats { display: flex; justify-content: center; gap: 0; margin: 16px 0; background: white; border: 1px solid #E2E8F0; border-radius: 14px; overflow: hidden; }
+    .intro-stat { flex: 1; text-align: center; padding: 16px 10px; border-right: 1px solid #E2E8F0; }
+    .intro-stat:last-child { border-right: none; }
+    .intro-stat-num   { font-size: 34px; font-weight: 900; color: #3B82C4; line-height: 1; }
+    .intro-stat-label { font-size: 11px; color: #94A3B8; margin-top: 4px; }
+
+    /* ===== 인트로 플로우 (세로) ===== */
+    .v-flow { background: white; border: 1px solid #E2E8F0; border-radius: 14px; overflow: hidden; margin-bottom: 14px; }
+    .v-flow-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 11px 16px; border-bottom: 1px solid #F1F5F9;
+    }
+    .v-flow-item:last-child { border-bottom: none; }
+    .v-flow-icon { font-size: 22px; flex-shrink: 0; width: 36px; text-align: center; }
+    .v-flow-text { flex: 1; }
+    .v-flow-title { font-size: 13px; font-weight: 700; color: #1E293B; }
+    .v-flow-desc  { font-size: 11px; color: #94A3B8; margin-top: 1px; }
+    .v-flow-step {
+      width: 22px; height: 22px; border-radius: 50%;
+      background: #3B82C4; color: white;
+      font-size: 11px; font-weight: 800;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .v-flow-arrow {
+      padding: 1px 16px;
+      font-size: 14px; color: #CBD5E1;
+      width: 22px;
+      border-bottom: 1px solid #F1F5F9;
+    }
+
+    /* ===== 합의서 플로우 ===== */
+    .flow3 { display: flex; align-items: center; gap: 0; margin-bottom: 14px; background: white; border: 1px solid #E2E8F0; border-radius: 12px; overflow: hidden; }
+    .flow3-item { flex: 1; padding: 12px 8px; text-align: center; border-right: 1px solid #E2E8F0; }
+    .flow3-item:last-child { border-right: none; }
+    .flow3-icon  { font-size: 22px; margin-bottom: 5px; }
+    .flow3-label { font-size: 11px; font-weight: 700; color: #1E293B; margin-bottom: 2px; }
+    .flow3-sub   { font-size: 10px; color: #94A3B8; }
+    .flow3-item.blue   { background: #EFF6FF; }
+    .flow3-item.purple { background: #F5F3FF; }
+    .flow3-item.yellow { background: #FFFBEB; }
+
+    /* ===== 주차 그리드 ===== */
+    .week-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; margin-bottom: 14px; }
+    .week-item { background: white; border: 1px solid #E2E8F0; border-radius: 11px; padding: 11px 6px; text-align: center; }
+    .week-item.now { background: #EFF6FF; border-color: #BFDBFE; }
+    .week-icon  { font-size: 22px; margin-bottom: 4px; }
+    .week-name  { font-size: 12px; font-weight: 700; color: #1E293B; margin-bottom: 2px; }
+    .week-desc  { font-size: 10px; color: #94A3B8; line-height: 1.4; }
+
+    /* ===== FAQ ===== */
+    .faq-wrap { background: white; border: 1px solid #E2E8F0; border-radius: 14px; padding: 2px 18px; box-shadow: 0 2px 8px rgba(0,0,0,.04); }
+    .faq-item { border-bottom: 1px solid #F1F5F9; padding: 12px 0; }
+    .faq-item:last-child { border-bottom: none; }
+    .faq-q { font-size: 13px; font-weight: 700; color: #1E293B; margin-bottom: 4px; display: flex; gap: 8px; align-items: flex-start; }
+    .faq-q::before { content: "Q"; color: #3B82C4; font-weight: 900; flex-shrink: 0; }
+    .faq-a { font-size: 12px; color: #64748B; line-height: 1.7; padding-left: 20px; }
+
+    /* ===== 마지막 슬라이드 ===== */
+    .final-inner { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: calc(100vh - 130px); text-align: center; padding: 32px 20px; }
+    .final-icon  { font-size: 64px; margin-bottom: 16px; }
+    .final-title { font-size: 24px; font-weight: 900; color: #1E293B; margin-bottom: 8px; }
+    .final-sub   { font-size: 13px; color: #64748B; line-height: 1.9; margin-bottom: 24px; }
+    .final-btn   { display: inline-block; background: #3B82C4; color: white; font-size: 15px; font-weight: 700; padding: 14px 32px; border-radius: 13px; text-decoration: none; transition: all .2s; }
+    .final-btn:hover { background: #2563EB; transform: translateY(-2px); }
+
+    /* ===== 하단 내비게이션 ===== */
+    .slide-nav {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      background: white; border-top: 1px solid #E2E8F0;
+      padding: 11px 20px;
+      display: flex; align-items: center; justify-content: space-between;
+      z-index: 100; box-shadow: 0 -4px 12px rgba(0,0,0,.06);
+    }
+    .nav-btn { display: flex; align-items: center; gap: 6px; background: #F8FAFC; border: 1.5px solid #E2E8F0; color: #475569; font-size: 14px; font-weight: 700; padding: 9px 18px; border-radius: 10px; cursor: pointer; transition: all .2s; font-family: inherit; }
+    .nav-btn:hover { border-color: #3B82C4; color: #3B82C4; }
+    .nav-btn:disabled { opacity: .3; cursor: not-allowed; }
+    .nav-btn.primary { background: #3B82C4; border-color: #3B82C4; color: white; }
+    .nav-btn.primary:hover { background: #2563EB; border-color: #2563EB; }
+
+    .slide-dots { display: flex; gap: 6px; align-items: center; }
+    .slide-dot  { width: 6px; height: 6px; border-radius: 50%; background: #CBD5E1; transition: all .2s; cursor: pointer; }
+    .slide-dot.active { background: #3B82C4; width: 20px; border-radius: 3px; }
+
+    @media (max-width: 480px) {
+      .slide-title { font-size: 20px; }
+      .nav-btn { font-size: 13px; padding: 8px 14px; }
+      .action-steps { flex-direction: column; }
+      .flow3-icon  { font-size: 18px; }
+      .flow3-label { font-size: 10px; }
+      .flow3-sub   { font-size: 9px; }
+      .flow3-item  { padding: 10px 4px; }
+    }
+  </style>
+</head>
+<body>
+<div class="slideshow">
+
+  <div class="slide-topbar">
+    <a href="index.html" class="slide-logo">FLOCA <span>코칭</span></a>
+    <span class="slide-counter" id="slideCounter">1 / 9</span>
+    <a href="coach-home.html" class="slide-dashboard-btn">대시보드 →</a>
+  </div>
+  <div class="slide-progress"><div class="slide-progress-fill" id="progressFill" style="width:11.1%"></div></div>
+
+  <div class="slides-wrap">
+
+    <!-- ===== 1: 인트로 ===== -->
+    <div class="slide active" id="slide-1">
+      <div class="slide-inner">
+        <div class="step-tag intro">FLOCA 코칭 프로그램</div>
+        <div class="slide-title">코치님 가이드 👋</div>
+        <div class="slide-sub">전체 흐름을 먼저 파악하세요.</div>
+
+        <div class="intro-stats">
+          <div class="intro-stat"><div class="intro-stat-num">4주</div><div class="intro-stat-label">기간</div></div>
+          <div class="intro-stat"><div class="intro-stat-num">4회</div><div class="intro-stat-label">주 1회 세션</div></div>
+          <div class="intro-stat"><div class="intro-stat-num">1:1</div><div class="intro-stat-label">코치 : 피코치</div></div>
+        </div>
+
+        <div style="font-size:11px;font-weight:700;color:#94A3B8;letter-spacing:1px;margin-bottom:8px;">전체 순서</div>
+        <div class="v-flow">
+          <div class="v-flow-item">
+            <div class="v-flow-step">1</div>
+            <div class="v-flow-icon">📝</div>
+            <div class="v-flow-text"><div class="v-flow-title">신청 & 사전 설문</div><div class="v-flow-desc">피코치가 직접 진행</div></div>
+            <span class="m-badge blue">피코치</span>
+          </div>
+          <div class="v-flow-arrow">↓</div>
+          <div class="v-flow-item">
+            <div class="v-flow-step" style="background:#F59E0B;">2</div>
+            <div class="v-flow-icon">✅</div>
+            <div class="v-flow-text"><div class="v-flow-title">코치 수락 & 웰컴 메시지</div><div class="v-flow-desc">대시보드에서 클릭 한 번</div></div>
+            <span class="m-badge yellow">코치님</span>
+          </div>
+          <div class="v-flow-arrow">↓</div>
+          <div class="v-flow-item">
+            <div class="v-flow-step" style="background:#14B8A6;">3</div>
+            <div class="v-flow-icon">👋</div>
+            <div class="v-flow-text"><div class="v-flow-title">온보딩 확인</div><div class="v-flow-desc">피코치 자기소개 읽기</div></div>
+            <span class="m-badge green">함께</span>
+          </div>
+          <div class="v-flow-arrow">↓</div>
+          <div class="v-flow-item">
+            <div class="v-flow-step" style="background:#14B8A6;">4</div>
+            <div class="v-flow-icon">🎯</div>
+            <div class="v-flow-text"><div class="v-flow-title">목표 합의서 & 서명</div><div class="v-flow-desc">피코치 작성 → 코치 서명</div></div>
+            <span class="m-badge green">함께</span>
+          </div>
+          <div class="v-flow-arrow">↓</div>
+          <div class="v-flow-item">
+            <div class="v-flow-step" style="background:#F59E0B;">5</div>
+            <div class="v-flow-icon">💬</div>
+            <div class="v-flow-text"><div class="v-flow-title">4주 코칭 세션</div><div class="v-flow-desc">주 1회, 매 회기 일지 작성</div></div>
+            <span class="m-badge yellow">코치님</span>
+          </div>
+          <div class="v-flow-arrow">↓</div>
+          <div class="v-flow-item">
+            <div class="v-flow-step">6</div>
+            <div class="v-flow-icon">📊</div>
+            <div class="v-flow-text"><div class="v-flow-title">사후 설문</div><div class="v-flow-desc">피코치가 직접 작성</div></div>
+            <span class="m-badge blue">피코치</span>
+          </div>
+          <div class="v-flow-arrow">↓</div>
+          <div class="v-flow-item" style="border-bottom:none;">
+            <div class="v-flow-step" style="background:#14B8A6;">7</div>
+            <div class="v-flow-icon">🏆</div>
+            <div class="v-flow-text"><div class="v-flow-title">결과 보고서 & 마무리</div><div class="v-flow-desc">변화 수치 함께 확인</div></div>
+            <span class="m-badge green">함께</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== 2: 피코치 신청 ===== -->
+    <div class="slide" id="slide-2">
+      <div class="slide-inner">
+        <div class="step-tag coachee">STEP 1 · 피코치가 진행</div>
+        <div class="slide-title">📝 신청 & 코치 선택</div>
+        <div class="slide-sub">이 단계는 피코치가 알아서 합니다. 코치님은 기다리기만 하면 돼요.</div>
+
+        <div class="two-col">
+          <div>
+            <div class="col-label">① 신청서 & 사전 설문</div>
+            <div class="mockup">
+              <div class="mockup-bar"><div class="mockup-dots"><span class="mockup-dot"></span><span class="mockup-dot"></span><span class="mockup-dot"></span></div><span class="mockup-title">코칭 신청</span></div>
+              <div class="mockup-body">
+                <div class="m-card">
+                  <div class="m-label">어려움</div>
+                  <div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:4px;"><span class="m-badge yellow">미루기</span><span class="m-badge yellow">집중력</span></div>
+                </div>
+                <div class="m-card">
+                  <div style="font-size:11px;color:#64748B;margin-bottom:6px;">사전 설문 5개 영역</div>
+                  <div style="display:flex;flex-wrap:wrap;gap:3px;">
+                    <span style="font-size:10px;background:#F1F5F9;color:#64748B;padding:3px 7px;border-radius:6px;">실행력</span>
+                    <span style="font-size:10px;background:#F1F5F9;color:#64748B;padding:3px 7px;border-radius:6px;">루틴</span>
+                    <span style="font-size:10px;background:#F1F5F9;color:#64748B;padding:3px 7px;border-radius:6px;">시간관리</span>
+                    <span style="font-size:10px;background:#F1F5F9;color:#64748B;padding:3px 7px;border-radius:6px;">효능감</span>
+                    <span style="font-size:10px;background:#F1F5F9;color:#64748B;padding:3px 7px;border-radius:6px;">커리어</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div>
+            <div class="col-label">② 코치 선택</div>
+            <div class="mockup">
+              <div class="mockup-bar"><div class="mockup-dots"><span class="mockup-dot"></span><span class="mockup-dot"></span><span class="mockup-dot"></span></div><span class="mockup-title">코치 선택</span></div>
+              <div class="mockup-body">
+                <div class="m-card blue">
+                  <div style="display:flex;align-items:center;gap:7px;">
+                    <div style="font-size:18px;">👩‍💼</div>
+                    <div style="flex:1;"><div style="font-size:12px;font-weight:700;color:#1E293B;">김민지</div><div style="font-size:10px;color:#94A3B8;">루틴 · 직장인</div></div>
+                    <span class="m-badge blue">✓ 선택</span>
+                  </div>
+                </div>
+                <div class="m-card">
+                  <div style="display:flex;align-items:center;gap:7px;">
+                    <div style="font-size:18px;">🧑‍💼</div>
+                    <div><div style="font-size:12px;font-weight:700;color:#1E293B;">이준혁</div><div style="font-size:10px;color:#94A3B8;">시간관리</div></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="info-box blue"><span class="info-icon">🔔</span><span>선택 완료되면 코치님 대시보드에 <strong>노란 "수락 대기" 배지</strong>가 뜹니다.</span></div>
+      </div>
+    </div>
+
+    <!-- ===== 3: 코치 수락 ===== -->
+    <div class="slide" id="slide-3">
+      <div class="slide-inner">
+        <div class="step-tag coach">STEP 2 · 코치님 차례 ⭐</div>
+        <div class="slide-title">✅ 수락 & 웰컴 메시지</div>
+        <div class="slide-sub">노란 카드가 뜨면 수락하세요. 메시지는 자동 전달됩니다.</div>
+
+        <!-- 3단계 액션 -->
+        <div class="action-steps">
+          <div class="action-step">
+            <div class="action-step-num">1</div>
+            <div class="action-step-icon">🔔</div>
+            <div class="action-step-label">노란 카드<br/>확인</div>
+          </div>
+          <div class="action-step">
+            <div class="action-step-num">2</div>
+            <div class="action-step-icon">👆</div>
+            <div class="action-step-label">"수락하고<br/>메시지 보내기"</div>
+          </div>
+          <div class="action-step">
+            <div class="action-step-num">3</div>
+            <div class="action-step-icon">📨</div>
+            <div class="action-step-label">피코치 서류함에<br/>자동 전달</div>
+          </div>
+        </div>
+
+        <!-- 대시보드 모형 -->
+        <div class="mockup" style="margin-bottom:10px;">
+          <div class="mockup-bar"><div class="mockup-dots"><span class="mockup-dot"></span><span class="mockup-dot"></span><span class="mockup-dot"></span></div><span class="mockup-title">코치 대시보드</span></div>
+          <div class="mockup-body">
+            <div class="m-card yellow">
+              <div class="m-row">
+                <div style="display:flex;align-items:center;gap:7px;">
+                  <div class="m-avatar" style="background:#FEF3C7;color:#D97706;">홍</div>
+                  <div><div style="font-size:13px;font-weight:700;color:#1E293B;">홍길동</div><div style="font-size:10px;color:#94A3B8;">010-1234-5678</div></div>
+                </div>
+                <span class="m-badge pulse">🔔 수락 대기</span>
+              </div>
+              <div class="m-divider"></div>
+              <div style="display:flex;gap:7px;">
+                <span class="m-btn outline" style="font-size:10px;">거절</span>
+                <span class="m-btn accent full">수락하고 웰컴 메시지 보내기</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 웰컴 모형 -->
+        <div class="mockup">
+          <div class="mockup-bar"><div class="mockup-dots"><span class="mockup-dot"></span><span class="mockup-dot"></span><span class="mockup-dot"></span></div><span class="mockup-title">웰컴 메시지 전송</span></div>
+          <div class="mockup-body">
+            <div style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:7px;padding:9px;font-size:11px;color:#475569;line-height:1.7;margin-bottom:8px;">
+              안녕하세요, 홍길동님! 😊 저는 김민지입니다.
+            </div>
+            <span class="m-btn primary full">수락하고 전송하기</span>
+            <div class="m-success-msg">📨 피코치 대시보드 서류함으로 자동 전달됨</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== 4: 온보딩 ===== -->
+    <div class="slide" id="slide-4">
+      <div class="slide-inner">
+        <div class="step-tag both">STEP 3 · 피코치 작성 → 코치 확인</div>
+        <div class="slide-title">👋 피코치 자기소개 확인</div>
+        <div class="slide-sub">첫 통화 전, 피코치가 쓴 소개를 미리 읽으면 대화가 훨씬 자연스러워집니다.</div>
+
+        <div class="two-col">
+          <div>
+            <div class="col-label">피코치가 쓰는 것</div>
+            <div class="mockup">
+              <div class="mockup-bar"><div class="mockup-dots"><span class="mockup-dot"></span><span class="mockup-dot"></span><span class="mockup-dot"></span></div><span class="mockup-title">나를 소개합니다</span></div>
+              <div class="mockup-body">
+                <div class="m-card"><div class="m-label">💭 기대</div><div style="font-size:11px;color:#475569;margin-top:3px;">아침 루틴 만들기</div></div>
+                <div class="m-card"><div class="m-label">😟 걱정</div><div style="font-size:11px;color:#475569;margin-top:3px;">작심삼일이 될까봐...</div></div>
+                <div class="m-card"><div class="m-label">💬 선호 소통</div><div style="display:flex;gap:3px;margin-top:3px;"><span class="m-badge blue">카카오톡</span><span class="m-badge blue">통화</span></div></div>
+              </div>
+            </div>
+          </div>
+          <div>
+            <div class="col-label">코치님이 보는 곳</div>
+            <div class="mockup">
+              <div class="mockup-bar"><div class="mockup-dots"><span class="mockup-dot"></span><span class="mockup-dot"></span><span class="mockup-dot"></span></div><span class="mockup-title">홍길동 카드 클릭</span></div>
+              <div class="mockup-body">
+                <div class="m-card green">
+                  <div style="font-size:11px;font-weight:700;color:#065F46;margin-bottom:7px;">🙋 피코치 소개</div>
+                  <div style="font-size:11px;color:#475569;line-height:1.8;">
+                    💭 아침 루틴 만들기<br/>
+                    😟 작심삼일 걱정<br/>
+                    💬 카카오톡 선호
+                  </div>
+                </div>
+                <div style="font-size:10px;color:#94A3B8;text-align:center;margin-top:6px;">↑ 피코치 카드 클릭 시 표시</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="info-box green"><span class="info-icon">💡</span><span>피코치 카드 클릭 → 소개 탭에서 확인</span></div>
+      </div>
+    </div>
+
+    <!-- ===== 5: 목표 합의서 ===== -->
+    <div class="slide" id="slide-5">
+      <div class="slide-inner">
+        <div class="step-tag both">STEP 4 · 코치 유도 → 피코치 작성 → 코치 서명</div>
+        <div class="slide-title">🎯 목표 합의서</div>
+        <div class="slide-sub">피코치가 스스로 쓰게 해주세요. 코치님은 방향만 잡아주면 됩니다.</div>
+
+        <div class="flow3">
+          <div class="flow3-item blue">
+            <div class="flow3-icon">📞</div>
+            <div class="flow3-label">코치님</div>
+            <div class="flow3-sub">통화로 방향 탐색</div>
+          </div>
+          <div class="flow3-item purple">
+            <div class="flow3-icon">✍️</div>
+            <div class="flow3-label">피코치</div>
+            <div class="flow3-sub">대시보드에서 직접 작성</div>
+          </div>
+          <div class="flow3-item yellow">
+            <div class="flow3-icon">🖊️</div>
+            <div class="flow3-label">코치님</div>
+            <div class="flow3-sub">내용 확인 후 서명</div>
+          </div>
+        </div>
+
+        <div class="mockup">
+          <div class="mockup-bar"><div class="mockup-dots"><span class="mockup-dot"></span><span class="mockup-dot"></span><span class="mockup-dot"></span></div><span class="mockup-title">홍길동 — 목표 합의서</span></div>
+          <div class="mockup-body">
+            <div class="m-card yellow">
+              <div class="m-row" style="margin-bottom:7px;">
+                <div style="font-size:12px;font-weight:700;color:#1E293B;">📋 목표 합의서</div>
+                <span class="m-badge pulse">🖊️ 서명 대기</span>
+              </div>
+              <div style="font-size:11px;color:#64748B;margin-bottom:2px;"><span style="color:#94A3B8;">주제</span> 아침 루틴 만들기</div>
+              <div style="font-size:11px;color:#64748B;margin-bottom:9px;"><span style="color:#94A3B8;">목표</span> 4주 후 매일 7시 기상</div>
+              <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:6px;align-items:center;text-align:center;margin-bottom:9px;">
+                <div class="m-score-box" style="background:#EFF6FF;"><div class="m-score-num" style="color:#3B82C4;">3점</div><div class="m-score-label">현재</div></div>
+                <div style="font-size:18px;color:#CBD5E1;">→</div>
+                <div class="m-score-box" style="background:#FEF3C7;"><div class="m-score-num" style="color:#D97706;">8점</div><div class="m-score-label">목표</div></div>
+              </div>
+              <span class="m-btn primary full">서명하기</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="info-box red"><span class="info-icon">⚠️</span><span>합의서는 <strong>피코치가 직접</strong> 작성해야 합니다. 대신 써주지 마세요.</span></div>
+      </div>
+    </div>
+
+    <!-- ===== 6: 4주 코칭 ===== -->
+    <div class="slide" id="slide-6">
+      <div class="slide-inner">
+        <div class="step-tag coach">STEP 5 · 코치님이 진행</div>
+        <div class="slide-title">💬 4주 코칭 세션</div>
+        <div class="slide-sub">매 회기 세션 후 일지를 바로 작성하세요.</div>
+
+        <div class="week-grid">
+          <div class="week-item now"><div class="week-icon">🔍</div><div class="week-name">1주차</div><div class="week-desc">탐색<br/>관계 형성</div></div>
+          <div class="week-item"><div class="week-icon">🌱</div><div class="week-name">2주차</div><div class="week-desc">실행<br/>과제 점검</div></div>
+          <div class="week-item"><div class="week-icon">📈</div><div class="week-name">3주차</div><div class="week-desc">심화<br/>루틴 강화</div></div>
+          <div class="week-item"><div class="week-icon">🏁</div><div class="week-name">4주차</div><div class="week-desc">마무리<br/>성과 점검</div></div>
+        </div>
+
+        <!-- 액션 스텝 -->
+        <div class="action-steps">
+          <div class="action-step">
+            <div class="action-step-num">1</div>
+            <div class="action-step-icon">💬</div>
+            <div class="action-step-label">세션 진행<br/>(통화·화상·대면)</div>
+          </div>
+          <div class="action-step">
+            <div class="action-step-num">2</div>
+            <div class="action-step-icon">📝</div>
+            <div class="action-step-label">피코치 카드 →<br/>"작성하기" 클릭</div>
+          </div>
+          <div class="action-step">
+            <div class="action-step-num">3</div>
+            <div class="action-step-icon">🔄</div>
+            <div class="action-step-label">새로고침 후<br/>성찰일지 확인</div>
+          </div>
+        </div>
+
+        <div class="mockup">
+          <div class="mockup-bar"><div class="mockup-dots"><span class="mockup-dot"></span><span class="mockup-dot"></span><span class="mockup-dot"></span></div><span class="mockup-title">홍길동 — 회기 일지</span></div>
+          <div class="mockup-body">
+            <div class="m-session-row">
+              <div style="display:flex;align-items:center;gap:8px;"><div class="m-dot done"></div><div><div style="font-size:12px;font-weight:700;color:#1E293B;">1회기 ✓</div><div style="font-size:10px;color:#94A3B8;">성찰일지 ✓</div></div></div>
+              <div style="display:flex;gap:5px;"><span class="m-btn outline" style="font-size:10px;padding:3px 7px;">성찰일지</span><span class="m-btn outline" style="font-size:10px;padding:3px 7px;">수정</span></div>
+            </div>
+            <div class="m-session-row">
+              <div style="display:flex;align-items:center;gap:8px;"><div class="m-dot active"></div><div><div style="font-size:12px;font-weight:700;color:#3B82C4;">2회기 ← 지금 여기</div><div style="font-size:10px;color:#94A3B8;">미작성</div></div></div>
+              <span class="m-btn primary" style="font-size:10px;padding:4px 9px;">작성하기</span>
+            </div>
+            <div class="m-session-row" style="border-bottom:none;">
+              <div style="display:flex;align-items:center;gap:8px;"><div class="m-dot empty"></div><div style="font-size:12px;color:#CBD5E1;">3회기</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== 7: 사후 설문 & 보고서 ===== -->
+    <div class="slide" id="slide-7">
+      <div class="slide-inner">
+        <div class="step-tag both">STEP 6-7 · 마무리</div>
+        <div class="slide-title">📊 사후 설문 & 결과 보고서</div>
+        <div class="slide-sub">4회기 후 피코치에게 사후 설문 작성을 안내해주세요.</div>
+
+        <!-- 액션 스텝 -->
+        <div class="action-steps">
+          <div class="action-step">
+            <div class="action-step-num">1</div>
+            <div class="action-step-icon">📣</div>
+            <div class="action-step-label">피코치에게<br/>사후설문 안내</div>
+          </div>
+          <div class="action-step">
+            <div class="action-step-num">2</div>
+            <div class="action-step-icon">📋</div>
+            <div class="action-step-label">피코치가<br/>설문 제출</div>
+          </div>
+          <div class="action-step">
+            <div class="action-step-num">3</div>
+            <div class="action-step-icon">📈</div>
+            <div class="action-step-label">결과보고서<br/>함께 확인</div>
+          </div>
+        </div>
+
+        <div class="two-col">
+          <div>
+            <div class="col-label">피코치 — 사후 설문</div>
+            <div class="mockup">
+              <div class="mockup-bar"><div class="mockup-dots"><span class="mockup-dot"></span><span class="mockup-dot"></span><span class="mockup-dot"></span></div><span class="mockup-title">사후 설문</span></div>
+              <div class="mockup-body">
+                <div class="m-card"><div class="m-label">실행력</div>
+                  <div style="display:flex;gap:2px;margin-top:4px;">
+                    <span style="width:13px;height:13px;border-radius:3px;background:#3B82C4;display:inline-block;"></span>
+                    <span style="width:13px;height:13px;border-radius:3px;background:#3B82C4;display:inline-block;"></span>
+                    <span style="width:13px;height:13px;border-radius:3px;background:#3B82C4;display:inline-block;"></span>
+                    <span style="width:13px;height:13px;border-radius:3px;background:#3B82C4;display:inline-block;"></span>
+                    <span style="width:13px;height:13px;border-radius:3px;background:#E2E8F0;display:inline-block;"></span>
+                  </div>
+                </div>
+                <span class="m-btn success full" style="margin-top:6px;">설문 제출하기</span>
+              </div>
+            </div>
+          </div>
+          <div>
+            <div class="col-label">결과 보고서</div>
+            <div class="mockup">
+              <div class="mockup-bar"><div class="mockup-dots"><span class="mockup-dot"></span><span class="mockup-dot"></span><span class="mockup-dot"></span></div><span class="mockup-title">결과 보고서</span></div>
+              <div class="mockup-body">
+                <div class="m-card green">
+                  <div style="font-size:11px;font-weight:700;color:#065F46;margin-bottom:7px;">📊 사전 → 사후</div>
+                  <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:5px;align-items:center;text-align:center;">
+                    <div class="m-score-box"><div class="m-score-num" style="color:#94A3B8;font-size:15px;">2.4</div><div class="m-score-label">사전</div></div>
+                    <div style="font-size:13px;color:#CBD5E1;">→</div>
+                    <div class="m-score-box" style="background:#D1FAE5;"><div class="m-score-num" style="color:#065F46;font-size:15px;">4.1</div><div class="m-score-label">사후</div></div>
+                  </div>
+                  <div style="text-align:center;margin-top:7px;font-size:12px;font-weight:800;color:#22C55E;">▲ 1.7점 향상 🎉</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== 8: FAQ ===== -->
+    <div class="slide" id="slide-8">
+      <div class="slide-inner">
+        <div class="step-tag intro">자주 묻는 질문</div>
+        <div class="slide-title">❓ 막히면 여기서</div>
+        <div class="slide-sub" style="margin-bottom:16px;">많이 헷갈리는 상황들만 모았습니다.</div>
+
+        <div class="faq-wrap">
+          <div class="faq-item">
+            <div class="faq-q">피코치가 배정됐는데 대시보드에 안 보여요</div>
+            <div class="faq-a">🔄 <strong>"새로고침" 버튼</strong> 클릭 → F5 새로고침 → 그래도 안 보이면 관리자 문의</div>
+          </div>
+          <div class="faq-item">
+            <div class="faq-q">"서명 대기" 배지가 안 떠요</div>
+            <div class="faq-a">🔄 <strong>"새로고침" 버튼</strong> 클릭. 피코치에게도 새로고침 요청해보세요.</div>
+          </div>
+          <div class="faq-item">
+            <div class="faq-q">세션 일지를 순서대로 써야 하나요?</div>
+            <div class="faq-a">✅ 네, <strong>1회기부터 순서대로</strong>만 작성 가능합니다.</div>
+          </div>
+          <div class="faq-item">
+            <div class="faq-q">피코치가 성찰 일지를 안 썼어요</div>
+            <div class="faq-a">📣 피코치에게 별도로 알려주세요. 피코치 대시보드 → 코칭 여정에서 작성합니다.</div>
+          </div>
+          <div class="faq-item">
+            <div class="faq-q">웰컴 메시지 전송 후 피코치가 어떻게 받나요?</div>
+            <div class="faq-a">📨 카카오톡 없이 <strong>피코치 대시보드 서류함으로 자동 전달</strong>됩니다.</div>
+          </div>
+          <div class="faq-item" style="border-bottom:none;">
+            <div class="faq-q">합의서 내용이 너무 모호해요</div>
+            <div class="faq-a">💬 <strong>"수정 요청"</strong> 버튼으로 피드백 → 피코치 수정 후 다시 제출</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== 9: 마무리 ===== -->
+    <div class="slide" id="slide-9">
+      <div class="final-inner">
+        <div class="final-icon">🎯</div>
+        <div class="final-title">준비 완료!</div>
+        <div class="final-sub">
+          이제 대시보드로 돌아가<br/>피코치를 만나보세요.<br/><br/>
+          <span style="font-size:12px;color:#94A3B8;">이 가이드는 대시보드 📖 버튼으로 언제든 다시 볼 수 있습니다.</span>
+        </div>
+        <a href="coach-home.html" class="final-btn">코치 대시보드로 가기 →</a>
+        <div style="margin-top:16px;">
+          <button onclick="goToSlide(1)" style="background:none;border:none;color:#94A3B8;font-size:13px;cursor:pointer;font-family:inherit;">← 처음부터 다시 보기</button>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /slides-wrap -->
+
+  <div class="slide-nav">
+    <button class="nav-btn" id="prevBtn" onclick="changeSlide(-1)" disabled>← 이전</button>
+    <div class="slide-dots" id="slideDots"></div>
+    <button class="nav-btn primary" id="nextBtn" onclick="changeSlide(1)">다음 →</button>
+  </div>
+
+</div>
+
+<script>
+  const TOTAL = 9;
+  let current = 1;
+
+  const dotsEl = document.getElementById('slideDots');
+  for (let i = 1; i <= TOTAL; i++) {
+    const d = document.createElement('div');
+    d.className = 'slide-dot' + (i === 1 ? ' active' : '');
+    d.onclick = () => goToSlide(i);
+    dotsEl.appendChild(d);
+  }
+
+  function goToSlide(n) {
+    if (n < 1 || n > TOTAL || n === current) return;
+    const dir = n > current ? 1 : -1;
+    const prev = document.getElementById('slide-' + current);
+    const next = document.getElementById('slide-' + n);
+
+    prev.classList.remove('active');
+    prev.style.transform = dir > 0 ? 'translateX(-60px)' : 'translateX(60px)';
+    prev.style.opacity = '0';
+
+    next.style.transition = 'none';
+    next.style.transform = dir > 0 ? 'translateX(60px)' : 'translateX(-60px)';
+    next.style.opacity = '0';
+    next.classList.add('active');
+    next.scrollTop = 0;
+
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      next.style.transition = '';
+      next.style.transform = 'translateX(0)';
+      next.style.opacity = '1';
+    }));
+    setTimeout(() => { prev.style.transition = ''; prev.classList.remove('active'); }, 320);
+
+    current = n;
+    updateUI();
+  }
+
+  function changeSlide(dir) { goToSlide(current + dir); }
+
+  function updateUI() {
+    document.getElementById('slideCounter').textContent = current + ' / ' + TOTAL;
+    document.getElementById('progressFill').style.width = (current / TOTAL * 100) + '%';
+    document.querySelectorAll('.slide-dot').forEach((d, i) => d.classList.toggle('active', i + 1 === current));
+    document.getElementById('prevBtn').disabled = current === 1;
+    const nb = document.getElementById('nextBtn');
+    if (current === TOTAL) { nb.textContent = '처음으로'; nb.onclick = () => goToSlide(1); }
+    else { nb.textContent = '다음 →'; nb.onclick = () => changeSlide(1); }
+  }
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') changeSlide(1);
+    if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   changeSlide(-1);
+  });
+
+  let tx = 0;
+  document.addEventListener('touchstart', e => { tx = e.touches[0].clientX; }, { passive: true });
+  document.addEventListener('touchend',   e => { if (Math.abs(tx - e.changedTouches[0].clientX) > 50) changeSlide(tx > e.changedTouches[0].clientX ? 1 : -1); }, { passive: true });
+
+  updateUI();
+
+  // URL 해시로 특정 슬라이드 바로 이동 (예: coach-guide.html#3)
+  const startSlide = parseInt(location.hash.replace('#', ''));
+  if (startSlide >= 1 && startSlide <= TOTAL) goToSlide(startSlide);
+</script>
+</body>
+</html>

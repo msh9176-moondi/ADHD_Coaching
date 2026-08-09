@@ -1,0 +1,529 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>코칭 세션 | FLOCA 코칭 플랫폼</title>
+  <link rel="stylesheet" href="style.css"/>
+  <style>
+    .session-tabs { display: flex; gap: 8px; margin-bottom: 24px; flex-wrap: wrap; }
+    .session-tab-btn {
+      padding: 10px 20px; border: 2px solid var(--border); border-radius: 10px;
+      background: white; cursor: pointer; font-size: 14px; font-weight: 600;
+      color: var(--text-muted); transition: all .2s; font-family: inherit;
+    }
+    .session-tab-btn.active { border-color: var(--primary); background: var(--primary); color: white; }
+    .session-tab-btn.done { border-color: var(--accent); color: var(--accent); background: var(--accent-light); }
+    .session-tab-btn.done.active { background: var(--accent); color: white; }
+    .subtabs { display: flex; gap: 4px; border-bottom: 1px solid var(--border); margin-bottom: 20px; }
+    .subtab { padding: 9px 18px; border: none; background: none; cursor: pointer; font-size: 14px; font-weight: 600; color: var(--text-muted); border-bottom: 2px solid transparent; margin-bottom: -1px; transition: all .2s; font-family: inherit; }
+    .subtab.active { color: var(--primary); border-bottom-color: var(--primary); }
+    .subtab-panel { display: none; }
+    .subtab-panel.active { display: block; }
+    .sdlw-section { margin-bottom: 20px; padding: 16px; background: #F8FAFC; border-radius: 12px; border-left: 3px solid var(--primary); }
+    .sdlw-label { font-size: 12px; font-weight: 700; color: var(--primary); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+    .complete-banner { background: var(--success-light); border: 1px solid #BBF7D0; border-radius: 12px; padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+    .complete-banner p { color: #166534; font-size: 14px; font-weight: 600; }
+    .info-box { background: var(--bg); border-radius: 12px; padding: 20px; margin-bottom: 20px; }
+    .info-row { display: flex; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--border); }
+    .info-row:last-child { border-bottom: none; }
+    .info-key { width: 100px; font-size: 13px; color: var(--text-muted); font-weight: 600; flex-shrink: 0; }
+    .info-val { font-size: 13px; }
+
+    /* 지난 과제 알림 */
+    .last-task-box {
+      background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%);
+      border: 1px solid #F59E0B; border-radius: 14px; padding: 18px 20px;
+      margin-bottom: 20px;
+    }
+    .last-task-title { font-size: 14px; font-weight: 700; color: #92400E; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+    .last-task-content { background: white; border-radius: 10px; padding: 14px; font-size: 14px; color: var(--text); line-height: 1.7; }
+    .last-task-date { font-size: 12px; color: #78350F; margin-top: 8px; }
+
+    /* 코치 피드백 미리보기 */
+    .coach-feedback-box {
+      background: var(--primary-light); border: 1px solid #BFDBFE;
+      border-radius: 14px; padding: 18px 20px; margin-bottom: 20px;
+    }
+    .coach-feedback-title { font-size: 14px; font-weight: 700; color: var(--primary); margin-bottom: 12px; }
+    .coach-feedback-item { margin-bottom: 10px; }
+    .coach-feedback-label { font-size: 11px; color: var(--text-muted); margin-bottom: 4px; }
+    .coach-feedback-val { font-size: 13px; color: var(--text); line-height: 1.6; }
+
+    /* 성찰일지 완료 모달 */
+    .celebration-modal {
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center;
+      z-index: 9999; padding: 20px;
+    }
+    .celebration-modal.show { display: flex; }
+    .celebration-content {
+      background: white; border-radius: 24px; padding: 40px 32px; text-align: center;
+      max-width: 360px; width: 100%; animation: celebrationPop 0.4s ease;
+    }
+    @keyframes celebrationPop {
+      0% { transform: scale(0.8); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    .celebration-icon { font-size: 64px; margin-bottom: 16px; }
+    .celebration-title { font-size: 22px; font-weight: 800; color: var(--text); margin-bottom: 12px; }
+    .celebration-sub { font-size: 15px; color: var(--text-muted); line-height: 1.7; margin-bottom: 24px; }
+    .celebration-timer { font-size: 13px; color: var(--text-light); margin-bottom: 16px; }
+    .celebration-btn {
+      background: var(--primary); color: white; border: none; padding: 14px 32px;
+      border-radius: 12px; font-size: 15px; font-weight: 700; cursor: pointer;
+      font-family: inherit; transition: all 0.2s;
+    }
+    .celebration-btn:hover { background: var(--primary-dark); transform: translateY(-2px); }
+  </style>
+</head>
+<body>
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="index.html" class="nav-logo">FLOCA <span>코칭</span></a>
+    <div class="nav-links">
+      <a href="apply.html">신청하기</a>
+      <a href="login.html">로그인</a>
+      <a href="admin.html" class="nav-admin">관리자</a>
+    </div>
+  </div>
+</nav>
+
+<div class="page-header">
+  <h1>코칭 세션 일지</h1>
+  <p>회기별 코치 일지와 피코치 성찰일지를 기록합니다.</p>
+</div>
+
+<div class="steps">
+  <div class="step-col"><div class="step-dot done">✓</div><div class="step-label">신청서</div></div>
+  <div class="step-line done"></div>
+  <div class="step-col"><div class="step-dot done">✓</div><div class="step-label">사전설문</div></div>
+  <div class="step-line done"></div>
+  <div class="step-col"><div class="step-dot done">✓</div><div class="step-label">코치선택</div></div>
+  <div class="step-line done"></div>
+  <div class="step-col"><div class="step-dot done">✓</div><div class="step-label">목표합의</div></div>
+  <div class="step-line done"></div>
+  <div class="step-col"><div class="step-dot active">5</div><div class="step-label">코칭</div></div>
+  <div class="step-line"></div>
+  <div class="step-col"><div class="step-dot">6</div><div class="step-label">사후설문</div></div>
+  <div class="step-line"></div>
+  <div class="step-col"><div class="step-dot">7</div><div class="step-label">보고서</div></div>
+</div>
+
+<main class="main">
+  <div class="container">
+    <div id="summaryBox" class="info-box" style="margin-bottom:24px;"></div>
+
+    <div class="session-tabs" id="sessionTabs">
+      <button class="session-tab-btn active" data-n="1" onclick="showSession(1)">1회기</button>
+      <button class="session-tab-btn" data-n="2" onclick="showSession(2)">2회기</button>
+      <button class="session-tab-btn" data-n="3" onclick="showSession(3)">3회기</button>
+      <button class="session-tab-btn" data-n="4" onclick="showSession(4)">4회기</button>
+    </div>
+
+    <div id="sessionContent"></div>
+  </div>
+</main>
+
+<footer class="footer">
+  <p>FLOCA 코칭 플랫폼 · 일지는 자동 저장됩니다.</p>
+</footer>
+
+<!-- 일지 완료 축하 모달 -->
+<div class="celebration-modal" id="celebrationModal">
+  <div class="celebration-content">
+    <div class="celebration-icon" id="celebrationIcon">🎉</div>
+    <div class="celebration-title" id="celebrationTitle">작성 완료!</div>
+    <div class="celebration-sub" id="celebrationSub">
+      수고하셨습니다.
+    </div>
+    <div class="celebration-timer" id="celebrationTimer">3초 후 대시보드로 이동합니다...</div>
+    <button class="celebration-btn" onclick="goToDashboard()">대시보드로 돌아가기</button>
+  </div>
+</div>
+
+<script src="app.js"></script>
+<script>
+  const coacheeId = getParam('id');
+  const userRole = getParam('role') || 'coachee'; // 기본값은 피코치
+  if (!coacheeId) { window.location.href = 'apply.html'; }
+
+  let currentSession = 1;
+
+  // 역할에 따른 페이지 타이틀 변경
+  if (userRole === 'coach') {
+    document.querySelector('.page-header h1').textContent = '코치 세션 일지';
+    document.querySelector('.page-header p').textContent = '회기별 코칭 세션을 기록합니다.';
+  } else {
+    document.querySelector('.page-header h1').textContent = '성찰일지 작성';
+    document.querySelector('.page-header p').textContent = '회기별 성찰과 배운 점을 기록합니다.';
+  }
+
+  function init() {
+    const coachee = DB.getItem('coachees', coacheeId);
+    const matching = DB.get('matchings').find(m => m.coacheeId === coacheeId);
+    const goal = DB.get('goalAgreements').find(g => g.coacheeId === coacheeId);
+    const coach = matching ? getCoach(matching.coachId) : null;
+
+    // 코치가 페이지를 열면 모든 성찰일지 읽음 처리
+    if (userRole === 'coach') {
+      const reflections = DB.get('reflections').filter(r => r.coacheeId === coacheeId);
+      reflections.forEach(refl => {
+        if (!refl.coachReadAt) {
+          DB.upsert('reflections', { ...refl, coachReadAt: new Date().toISOString() });
+        }
+      });
+    }
+
+    const summary = document.getElementById('summaryBox');
+    summary.innerHTML = `
+      <div class="info-row"><div class="info-key">피코치</div><div class="info-val">${coachee?.name || '-'}</div></div>
+      <div class="info-row"><div class="info-key">코치</div><div class="info-val">${coach?.name || '배정 중'}</div></div>
+      <div class="info-row"><div class="info-key">코칭 주제</div><div class="info-val">${goal?.topic || '-'}</div></div>
+      <div class="info-row"><div class="info-key">전체 목표</div><div class="info-val">${goal?.desiredOutcome || '-'}</div></div>
+    `;
+
+    updateTabStyles();
+
+    // URL에 session 파라미터가 있으면 해당 회기 표시, 없으면 다음 작성할 회기 자동 선택
+    const urlSession = parseInt(getParam('session'));
+    let nextSession = 1;
+
+    if (urlSession >= 1 && urlSession <= 4) {
+      // URL에서 지정한 회기 표시
+      nextSession = urlSession;
+    } else if (userRole === 'coachee') {
+      // 피코치: 아직 성찰일지 작성 안 한 가장 낮은 회기
+      const reflections = DB.get('reflections').filter(r => r.coacheeId === coacheeId);
+      nextSession = [1, 2, 3, 4].find(n => !reflections.find(r => r.sessionId === `sess_${coacheeId}_${n}`)) || 1;
+    } else {
+      // 코치: 아직 세션일지 작성 안 한 가장 낮은 회기
+      const sessions = DB.get('sessions').filter(s => s.coacheeId === coacheeId);
+      nextSession = [1, 2, 3, 4].find(n => !sessions.find(s => s.sessionNumber === n)) || 1;
+    }
+    showSession(nextSession);
+  }
+
+  function updateTabStyles() {
+    for (let n = 1; n <= 4; n++) {
+      const sess = DB.get('sessions').find(s => s.coacheeId === coacheeId && s.sessionNumber === n);
+      const btn = document.querySelector(`.session-tab-btn[data-n="${n}"]`);
+      if (sess?.completed) btn.classList.add('done'); else btn.classList.remove('done');
+    }
+  }
+
+  function showSession(n) {
+    currentSession = n;
+    document.querySelectorAll('.session-tab-btn').forEach(b => b.classList.toggle('active', parseInt(b.dataset.n) === n));
+    renderSession(n);
+  }
+
+  function renderSession(n) {
+    const sess = DB.get('sessions').find(s => s.coacheeId === coacheeId && s.sessionNumber === n);
+    const refl = DB.get('reflections').find(r => r.coacheeId === coacheeId && r.sessionId === `sess_${coacheeId}_${n}`);
+    const matching = DB.get('matchings').find(m => m.coacheeId === coacheeId);
+    const coach = matching ? getCoach(matching.coachId) : null;
+    const coachee = DB.getItem('coachees', coacheeId);
+    const goal = DB.get('goalAgreements').find(g => g.coacheeId === coacheeId);
+
+    const container = document.getElementById('sessionContent');
+
+    // 코치용 UI
+    if (userRole === 'coach') {
+      // 이전 회기 정보
+      const prevSess = n > 1 ? DB.get('sessions').find(s => s.coacheeId === coacheeId && s.sessionNumber === n-1) : null;
+
+      container.innerHTML = `
+        ${sess?.completed ? `<div class="complete-banner"><p>✅ 이 회기 일지가 저장되었습니다.</p><button class="btn btn-outline btn-sm" onclick="editSession(${n})">수정하기</button></div>` : ''}
+
+        ${n > 1 && prevSess?.nextAction ? `
+        <div class="last-task-box">
+          <div class="last-task-title">📋 지난 회기에서 준 과제 (${n-1}회기)</div>
+          <div class="last-task-content">${prevSess.nextAction}</div>
+        </div>` : ''}
+
+        ${refl ? `
+        <div class="coach-feedback-box" style="background:#ECFDF5;border-color:#10B981;">
+          <div class="coach-feedback-title" style="color:#059669;">📝 피코치 ${n}회기 성찰일지</div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px;">
+            <div style="background:white;border-radius:8px;padding:10px;text-align:center;">
+              <div style="font-size:10px;color:var(--text-muted);">이전</div>
+              <div style="font-size:20px;font-weight:800;color:var(--text-light);">${refl.previousScore || '-'}</div>
+            </div>
+            <div style="background:white;border-radius:8px;padding:10px;text-align:center;">
+              <div style="font-size:10px;color:var(--primary);">현재</div>
+              <div style="font-size:20px;font-weight:800;color:var(--primary);">${refl.currentScore || '-'}</div>
+            </div>
+            <div style="background:white;border-radius:8px;padding:10px;text-align:center;">
+              <div style="font-size:10px;color:var(--accent);">목표</div>
+              <div style="font-size:20px;font-weight:800;color:var(--accent);">${refl.targetScore || '-'}</div>
+            </div>
+          </div>
+          ${refl.previousActionDone ? `<div class="coach-feedback-item"><div class="coach-feedback-label">과제 실행</div><div class="coach-feedback-val" style="color:${refl.previousActionDone.includes('완전') ? '#059669' : refl.previousActionDone.includes('못') ? '#DC2626' : '#D97706'};">${refl.previousActionDone}</div></div>` : ''}
+          ${refl.learned ? `<div class="coach-feedback-item"><div class="coach-feedback-label">배운 점</div><div class="coach-feedback-val">${refl.learned}</div></div>` : ''}
+          ${refl.felt ? `<div class="coach-feedback-item"><div class="coach-feedback-label">느낀 점</div><div class="coach-feedback-val">${refl.felt}</div></div>` : ''}
+          ${refl.actionPlan ? `<div class="coach-feedback-item"><div class="coach-feedback-label">이번 주 계획</div><div class="coach-feedback-val">${refl.actionPlan}</div></div>` : ''}
+        </div>` : `
+        <div style="background:#FEF3C7;border:1px solid #F59E0B;border-radius:14px;padding:16px;margin-bottom:20px;font-size:13px;color:#92400E;">
+          ⏳ 피코치가 아직 ${n}회기 성찰일지를 작성하지 않았습니다.
+        </div>`}
+
+        <form id="coachForm-${n}" onsubmit="saveSession(event, ${n})">
+          <div class="card">
+            <div class="card-title">${n}회기 코치 세션 일지</div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">코칭 일시</label>
+                <input type="date" class="form-input" id="c-date-${n}" value="${sess?.sessionDate || today()}"/>
+              </div>
+              <div class="form-group">
+                <label class="form-label">다음 코칭 일시</label>
+                <input type="date" class="form-input" id="c-nextdate-${n}" value="${sess?.nextSessionDate || ''}"/>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">이번 회기 코칭 목표</label>
+              <input type="text" class="form-input" id="c-sessiongoal-${n}" value="${sess?.sessionGoal || ''}" placeholder="이번 회기에서 다룰 핵심 목표"/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">전체 코칭 목표</label>
+              <input type="text" class="form-input" id="c-goal-${n}" value="${sess?.coachingGoal || goal?.desiredOutcome || ''}" readonly style="background:#F8FAFC"/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">과제 점검 (지난 회기 과제 실행 결과)</label>
+              <textarea class="form-textarea" id="c-assignment-${n}" placeholder="${n === 1 ? '첫 회기입니다.' : '지난 회기 과제 실행 여부와 결과를 기록하세요.'}">${sess?.assignmentReview || ''}</textarea>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">TAP 구조 기록</div>
+            <div class="sdlw-section">
+              <div class="sdlw-label">Share — 현재 상태 공유</div>
+              <textarea class="form-textarea" id="c-share-${n}" placeholder="피코치의 지금 상태와 지난주 이야기">${sess?.share || ''}</textarea>
+            </div>
+            <div class="sdlw-section" style="border-color:var(--accent)">
+              <div class="sdlw-label" style="color:var(--accent)">Develop — 핵심 주제 발전</div>
+              <textarea class="form-textarea" id="c-develop-${n}" placeholder="오늘 다룬 핵심 코칭 주제와 내용">${sess?.develop || ''}</textarea>
+            </div>
+            <div class="sdlw-section" style="border-color:var(--orange)">
+              <div class="sdlw-label" style="color:var(--orange)">Learning — 배운 점</div>
+              <textarea class="form-textarea" id="c-learning-${n}" placeholder="피코치가 오늘 배우고 깨달은 점">${sess?.learning || ''}</textarea>
+            </div>
+            <div class="sdlw-section" style="border-color:var(--success)">
+              <div class="sdlw-label" style="color:var(--success)">Wrap-up — 마무리와 다음 과제</div>
+              <textarea class="form-textarea" id="c-wrapup-${n}" placeholder="다음 실행 과제와 마무리 내용">${sess?.wrapUp || ''}</textarea>
+            </div>
+          </div>
+          <div class="card">
+            <div class="form-group">
+              <label class="form-label">코칭 성과</label>
+              <textarea class="form-textarea" id="c-outcome-${n}" placeholder="이번 회기를 통해 달성된 성과">${sess?.outcome || ''}</textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label">다음 실행 과제</label>
+              <textarea class="form-textarea" id="c-nextaction-${n}" placeholder="피코치가 다음 회기까지 실행할 구체적인 과제">${sess?.nextAction || ''}</textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label">기타사항</label>
+              <textarea class="form-textarea" id="c-notes-${n}" style="min-height:70px;" placeholder="특이사항, 관찰 내용 등">${sess?.notes || ''}</textarea>
+            </div>
+          </div>
+          <div style="margin-top:20px;">
+            <button type="submit" class="btn btn-primary btn-full">일지 저장</button>
+          </div>
+        </form>
+      `;
+    } else {
+      // 피코치용 UI (성찰일지)
+      // 이전 회기 정보 가져오기
+      const prevSess = n > 1 ? DB.get('sessions').find(s => s.coacheeId === coacheeId && s.sessionNumber === n-1) : null;
+      const prevRefl = n > 1 ? DB.get('reflections').find(r => r.sessionId === `sess_${coacheeId}_${n-1}`) : null;
+
+      // 점수 자동 채우기
+      const autoTargetScore = refl?.targetScore || goal?.targetScore || '';
+      const autoPrevScore = refl?.previousScore || prevRefl?.currentScore || (n === 1 ? goal?.currentScore : '') || '';
+
+      container.innerHTML = `
+        ${refl ? `<div class="complete-banner"><p>✅ 성찰일지가 저장되었습니다.</p></div>` : ''}
+
+        ${n > 1 && prevSess?.nextAction ? `
+        <div class="last-task-box">
+          <div class="last-task-title">📋 지난 회기에서 받은 과제</div>
+          <div class="last-task-content">${prevSess.nextAction}</div>
+          <div class="last-task-date">${n-1}회기 (${prevSess.sessionDate ? fmtDate(prevSess.sessionDate) : ''}) 코치님이 작성</div>
+        </div>` : ''}
+
+        ${sess ? `
+        <div class="coach-feedback-box">
+          <div class="coach-feedback-title">💬 이번 회기 코치 기록 미리보기</div>
+          ${sess.sessionGoal ? `<div class="coach-feedback-item"><div class="coach-feedback-label">이번 회기 목표</div><div class="coach-feedback-val">${sess.sessionGoal}</div></div>` : ''}
+          ${sess.learning ? `<div class="coach-feedback-item"><div class="coach-feedback-label">코치가 본 배운 점</div><div class="coach-feedback-val">${sess.learning}</div></div>` : ''}
+          ${sess.nextAction ? `<div class="coach-feedback-item"><div class="coach-feedback-label">다음 과제</div><div class="coach-feedback-val" style="background:#ECFDF5;padding:10px;border-radius:8px;font-weight:600;">${sess.nextAction}</div></div>` : ''}
+        </div>` : ''}
+
+        <form id="reflForm-${n}" onsubmit="saveReflection(event, ${n})">
+          <div class="card">
+            <div class="card-title">${n}회기 성찰일지</div>
+            <div class="form-group">
+              <label class="form-label">오늘의 코칭 주제</label>
+              <input type="text" class="form-input" id="r-topic-${n}" value="${refl?.topic || sess?.sessionGoal || ''}" placeholder="오늘 코칭에서 다룬 주제"/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">이전 과제 실행 여부</label>
+              <div class="radio-group" style="flex-direction:row;flex-wrap:wrap;gap:8px;">
+                ${['완전 실행', '부분 실행', '실행 못 함', '해당없음 (첫 회기)'].map(v =>
+                  `<label class="radio-item" style="flex:none;padding:8px 14px;"><input type="radio" name="r-done-${n}" value="${v}" ${refl?.previousActionDone===v?'checked':''}/><span style="font-size:13px;">${v}</span></label>`
+                ).join('')}
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">목표 점수 <span style="font-size:11px;color:var(--text-muted);">(자동)</span></label>
+                <input type="number" class="form-input" id="r-target-${n}" min="1" max="10" value="${autoTargetScore}" placeholder="1~10" style="${autoTargetScore ? 'background:#F0FDF4;' : ''}"/>
+              </div>
+              <div class="form-group">
+                <label class="form-label">이전 점수 <span style="font-size:11px;color:var(--text-muted);">(자동)</span></label>
+                <input type="number" class="form-input" id="r-prev-${n}" min="1" max="10" value="${autoPrevScore}" placeholder="1~10" style="${autoPrevScore ? 'background:#F0FDF4;' : ''}"/>
+              </div>
+              <div class="form-group">
+                <label class="form-label">현재 점수 <span style="font-size:11px;color:var(--primary);font-weight:600;">← 입력</span></label>
+                <input type="number" class="form-input" id="r-current-${n}" min="1" max="10" value="${refl?.currentScore || ''}" placeholder="1~10" style="border-color:var(--primary);"/>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="form-group">
+              <label class="form-label">오늘 배운 점</label>
+              <textarea class="form-textarea" id="r-learned-${n}" placeholder="오늘 코칭에서 새롭게 알게 된 것">${refl?.learned || ''}</textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label">느낀 점</label>
+              <textarea class="form-textarea" id="r-felt-${n}" placeholder="오늘 코칭을 통해 느낀 감정, 생각">${refl?.felt || ''}</textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label">이번 주 액션플랜</label>
+              <textarea class="form-textarea" id="r-action-${n}" placeholder="이번 주에 실제로 실행할 구체적인 행동">${refl?.actionPlan || ''}</textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label">다음 세션에서 다루고 싶은 것</label>
+              <textarea class="form-textarea" id="r-next-${n}" placeholder="다음 회기에 이야기하고 싶은 주제">${refl?.nextSessionExpectation || ''}</textarea>
+            </div>
+          </div>
+          <div style="margin-top:20px;">
+            <button type="submit" class="btn btn-accent btn-full">성찰일지 저장</button>
+          </div>
+        </form>
+      `;
+      // Re-attach radio styling
+      document.querySelectorAll('.radio-item input[type=radio]').forEach(rb => {
+        rb.addEventListener('change', () => {
+          const name = rb.name;
+          document.querySelectorAll(`input[name="${name}"]`).forEach(r => r.closest('.radio-item').classList.toggle('selected', r.checked));
+        });
+        if (rb.checked) rb.closest('.radio-item').classList.add('selected');
+      });
+    }
+  }
+
+  function getCoachFormData(n) {
+    return {
+      id: `sess_${coacheeId}_${n}`, coacheeId,
+      coachId: DB.get('matchings').find(m => m.coacheeId === coacheeId)?.coachId,
+      sessionNumber: n,
+      sessionDate: document.getElementById(`c-date-${n}`)?.value,
+      nextSessionDate: document.getElementById(`c-nextdate-${n}`)?.value,
+      sessionGoal: document.getElementById(`c-sessiongoal-${n}`)?.value,
+      coachingGoal: document.getElementById(`c-goal-${n}`)?.value,
+      assignmentReview: document.getElementById(`c-assignment-${n}`)?.value,
+      share: document.getElementById(`c-share-${n}`)?.value,
+      develop: document.getElementById(`c-develop-${n}`)?.value,
+      learning: document.getElementById(`c-learning-${n}`)?.value,
+      wrapUp: document.getElementById(`c-wrapup-${n}`)?.value,
+      outcome: document.getElementById(`c-outcome-${n}`)?.value,
+      nextAction: document.getElementById(`c-nextaction-${n}`)?.value,
+      notes: document.getElementById(`c-notes-${n}`)?.value,
+      completed: true, createdAt: new Date().toISOString()
+    };
+  }
+
+  function saveSession(e, n) {
+    e.preventDefault();
+    DB.upsert('sessions', getCoachFormData(n));
+    updateTabStyles();
+
+    // 해당 회기 성찰일지 읽음 처리
+    const reflId = `refl_${coacheeId}_${n}`;
+    const refl = DB.get('reflections').find(r => r.id === reflId);
+    if (refl && !refl.coachReadAt) {
+      DB.upsert('reflections', { ...refl, coachReadAt: new Date().toISOString() });
+    }
+
+    showCelebration('coach', n);
+  }
+
+  function saveReflection(e, n) {
+    e.preventDefault();
+    const refl = {
+      id: `refl_${coacheeId}_${n}`,
+      sessionId: `sess_${coacheeId}_${n}`,
+      coacheeId,
+      topic: document.getElementById(`r-topic-${n}`)?.value,
+      previousActionDone: document.querySelector(`input[name="r-done-${n}"]:checked`)?.value || '',
+      targetScore: parseInt(document.getElementById(`r-target-${n}`)?.value) || null,
+      previousScore: parseInt(document.getElementById(`r-prev-${n}`)?.value) || null,
+      currentScore: parseInt(document.getElementById(`r-current-${n}`)?.value) || null,
+      learned: document.getElementById(`r-learned-${n}`)?.value,
+      felt: document.getElementById(`r-felt-${n}`)?.value,
+      actionPlan: document.getElementById(`r-action-${n}`)?.value,
+      nextSessionExpectation: document.getElementById(`r-next-${n}`)?.value,
+      createdAt: new Date().toISOString()
+    };
+    DB.upsert('reflections', refl);
+
+    showCelebration('coachee', n);
+  }
+
+  // 축하 모달 표시 및 대시보드 이동
+  let celebrationTimer = null;
+  function showCelebration(role, sessionNum) {
+    const modal = document.getElementById('celebrationModal');
+    const icon = document.getElementById('celebrationIcon');
+    const title = document.getElementById('celebrationTitle');
+    const sub = document.getElementById('celebrationSub');
+
+    if (role === 'coach') {
+      icon.textContent = '✨';
+      title.textContent = `${sessionNum}회기 일지 저장 완료!`;
+      sub.innerHTML = '꼼꼼한 기록이 피코치의 성장을 돕습니다.<br/>수고하셨습니다!';
+    } else {
+      icon.textContent = '🎉';
+      title.textContent = '성찰일지 작성 완료!';
+      sub.innerHTML = '오늘의 성찰이 내일의 성장이 됩니다.<br/>코치님께 전달되었어요.';
+    }
+
+    modal.classList.add('show');
+
+    let countdown = 3;
+    document.getElementById('celebrationTimer').textContent = `${countdown}초 후 대시보드로 이동합니다...`;
+
+    celebrationTimer = setInterval(() => {
+      countdown--;
+      if (countdown > 0) {
+        document.getElementById('celebrationTimer').textContent = `${countdown}초 후 대시보드로 이동합니다...`;
+      } else {
+        clearInterval(celebrationTimer);
+        goToDashboard();
+      }
+    }, 1000);
+  }
+
+  function goToDashboard() {
+    if (celebrationTimer) clearInterval(celebrationTimer);
+    window.location.href = userRole === 'coach' ? 'coach-home.html' : `coachee-home.html?id=${coacheeId}`;
+  }
+
+  function editSession(n) { showSession(n); }
+
+  init();
+</script>
+</body>
+</html>
