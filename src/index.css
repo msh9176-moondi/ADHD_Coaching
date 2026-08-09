@@ -92,4 +92,27 @@ input[type="range"]:focus::-webkit-slider-thumb {
   input:focus, textarea:focus {
     scroll-margin-bottom: 0;
   }
+
+  /* 채팅 영역만 스크롤 허용 */
+  .chat-container {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    scroll-behavior: auto;
+  }
+
+  /* 메시지 페이지 전용 - 채팅 입력창 고정 */
+  .messages-page-container {
+    height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .messages-page-container .chat-card {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    max-height: calc(100dvh - 200px);
+  }
 }

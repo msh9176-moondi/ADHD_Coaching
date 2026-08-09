@@ -118,16 +118,45 @@ export function MessageList({
     scrollToBottom()
   }, [messages])
 
-  // 모바일 키보드 대응: 입력창 포커스 시 스크롤 위치 유지
-  const handleInputFocus = () => {
-    // 현재 스크롤 위치 저장 후 복원
-    const container = messagesContainerRef.current
-    if (container) {
-      const scrollTop = container.scrollTop
-      setTimeout(() => {
-        container.scrollTop = scrollTop
-      }, 100)
+  // 모바일 키보드 대응
+  const lastScrollTopRef = useRef(0)
+  const isKeyboardOpenRef = useRef(false)
+
+  // visualViewport API로 키보드 감지 (모바일)
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.visualViewport) return
+
+    const handleResize = () => {
+      const container = messagesContainerRef.current
+      if (!container) return
+
+      // 키보드가 열리면 viewport height가 줄어듦
+      const isKeyboardOpen = window.visualViewport.height < window.innerHeight * 0.75
+
+      if (isKeyboardOpen && !isKeyboardOpenRef.current) {
+        // 키보드가 열릴 때 - 스크롤 위치 저장
+        lastScrollTopRef.current = container.scrollTop
+        isKeyboardOpenRef.current = true
+        // 약간의 딜레이 후 스크롤을 맨 아래로
+        setTimeout(() => {
+          container.scrollTop = container.scrollHeight
+        }, 50)
+      } else if (!isKeyboardOpen && isKeyboardOpenRef.current) {
+        // 키보드가 닫힐 때
+        isKeyboardOpenRef.current = false
+      }
     }
+
+    window.visualViewport.addEventListener('resize', handleResize)
+    return () => window.visualViewport.removeEventListener('resize', handleResize)
+  }, [])
+
+  // 입력창 포커스 시 스크롤을 맨 아래로
+  const handleInputFocus = () => {
+    // 포커스 시 스크롤을 맨 아래로 이동 (키보드가 올라와도 최신 메시지 보이도록)
+    setTimeout(() => {
+      scrollToBottom()
+    }, 300)
   }
 
   // Supabase에서 메시지 로드 및 실시간 구독
@@ -1024,7 +1053,7 @@ export function MessageList({
 
   return (
     <div className="flex gap-3 relative">
-      <Card className={`h-[calc(100vh-140px)] md:h-[calc(100vh-180px)] min-h-[300px] md:min-h-[400px] max-h-[800px] flex flex-col transition-all duration-300 w-full ${hasOpenPanel ? 'lg:flex-1' : ''}`}>
+      <Card className={`h-[calc(100dvh-140px)] md:h-[calc(100vh-180px)] min-h-[300px] md:min-h-[400px] max-h-[800px] flex flex-col transition-all duration-300 w-full chat-card ${hasOpenPanel ? 'lg:flex-1' : ''}`}>
         <CardHeader className="flex-shrink-0 border-b py-2 md:py-3">
           <div className="flex items-center gap-2 md:gap-3">
             <Avatar name={otherSenderName} size="sm" />
