@@ -4,6 +4,7 @@
  */
 
 import { supabase, isSupabaseConfigured } from './supabase'
+import { updateTopicScoreByTitle } from './coacheeService'
 
 // 성찰일지 생성
 export async function createReflection(coacheeId, sessionNumber, reflectionData) {
@@ -32,6 +33,16 @@ export async function createReflection(coacheeId, sessionNumber, reflectionData)
     .single()
 
   if (error) throw error
+
+  // 목표합의서의 코칭 주제 점수도 함께 업데이트
+  if (reflectionData.topic && reflectionData.currentScore) {
+    try {
+      await updateTopicScoreByTitle(coacheeId, reflectionData.topic, reflectionData.currentScore)
+    } catch (err) {
+      console.warn('코칭 주제 점수 연동 실패 (무시):', err)
+    }
+  }
+
   return data
 }
 
@@ -113,7 +124,7 @@ export async function getReflection(reflectionId) {
 }
 
 // 성찰일지 수정
-export async function updateReflection(reflectionId, reflectionData) {
+export async function updateReflection(reflectionId, reflectionData, coacheeId = null) {
   if (!isSupabaseConfigured()) throw new Error('LOCAL_MODE')
 
   const updateData = {
@@ -141,6 +152,17 @@ export async function updateReflection(reflectionId, reflectionData) {
     .single()
 
   if (error) throw error
+
+  // 목표합의서의 코칭 주제 점수도 함께 업데이트
+  const userId = coacheeId || data.coachee_id
+  if (userId && reflectionData.topic && reflectionData.currentScore) {
+    try {
+      await updateTopicScoreByTitle(userId, reflectionData.topic, reflectionData.currentScore)
+    } catch (err) {
+      console.warn('코칭 주제 점수 연동 실패 (무시):', err)
+    }
+  }
+
   return data
 }
 

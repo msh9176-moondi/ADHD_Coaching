@@ -17,7 +17,8 @@ import {
   Users, TrendingUp, Calendar,
   ChevronRight, AlertTriangle, CalendarPlus, Crown
 } from 'lucide-react'
-import { getCoachSubscribers } from '../../lib/subscriptionService'
+import { getCoachSubscribers, confirmSubscriptionPayment } from '../../lib/subscriptionService'
+import { CheckCircle, Loader2 } from 'lucide-react'
 
 const TABS = [
   { id: 'active', label: '진행 중', icon: Users },
@@ -88,6 +89,7 @@ export function CoacheesPage() {
         // 구독자 데이터 변환
         const formattedSubscribers = subscribersData.map(s => ({
           id: s.user_id,
+          subscriptionId: s.id,
           name: s.user?.name || '구독자',
           email: s.user?.email || '',
           avatarUrl: s.user?.avatar_url,
@@ -95,7 +97,10 @@ export function CoacheesPage() {
           sessionsPerMonth: s.sessions_per_month,
           sessionsUsed: s.sessions_used_this_month,
           periodEnd: s.current_period_end,
-          status: s.status
+          status: s.status,
+          paymentStatus: s.payment_status,
+          depositorName: s.depositor_name,
+          amount: s.amount
         }))
         setSubscribers(formattedSubscribers)
       } catch (err) {
@@ -230,6 +235,12 @@ export function CoacheesPage() {
               key={subscriber.id}
               subscriber={subscriber}
               onClick={() => navigate(`/coach/coachees/${subscriber.id}`)}
+              onPaymentConfirmed={(id) => {
+                // 구독자 상태 업데이트
+                setSubscribers(prev => prev.map(s =>
+                  s.subscriptionId === id ? { ...s, status: 'active', paymentStatus: 'paid' } : s
+                ))
+              }}
             />
           ))}
         </div>
@@ -343,13 +354,16 @@ function CoacheeCard({ coachee, onBookSession, onClick }) {
   )
 }
 
-function SubscriberCard({ subscriber, onClick }) {
+function SubscriberCard({ subscriber, onClick, onPaymentConfirmed }) {
+  const [confirming, setConfirming] = useState(false)
+
   const planLabels = {
     monthly: '월간',
     quarterly: '분기',
     yearly: '연간'
   }
 
+  const isPending = subscriber.status === 'pending'
   const sessionsRemaining = subscriber.sessionsPerMonth - subscriber.sessionsUsed
   const periodEndDate = subscriber.periodEnd
     ? new Date(subscriber.periodEnd).toLocaleDateString('ko-KR', {
@@ -358,48 +372,105 @@ function SubscriberCard({ subscriber, onClick }) {
       })
     : '-'
 
+  const handleConfirmPayment = async (e) => {
+    e.stopPropagation() // 카드 클릭 이벤트 방지
+
+    if (!window.confirm(`${subscriber.name}님의 입금을 확인하시겠습니까?\n\n입금자명: ${subscriber.depositorName || '미입력'}\n금액: ${(subscriber.amount || 0).toLocaleString()}원`)) {
+      return
+    }
+
+    setConfirming(true)
+    try {
+      await confirmSubscriptionPayment(subscriber.subscriptionId)
+      alert('입금이 확인되었습니다. 구독이 활성화되었습니다.')
+      onPaymentConfirmed?.(subscriber.subscriptionId)
+    } catch (err) {
+      console.error('입금 확인 실패:', err)
+      alert('입금 확인에 실패했습니다.')
+    } finally {
+      setConfirming(false)
+    }
+  }
+
   return (
-    <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={onClick}>
+    <Card className={`hover:shadow-md transition-shadow cursor-pointer ${isPending ? 'border-amber-300 bg-amber-50/30' : ''}`} onClick={onClick}>
       <CardContent className="py-5">
         <div className="flex items-start gap-4">
           <Avatar name={subscriber.name} size="lg" />
 
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-1">
+            <div className="flex items-center gap-2 mb-1 flex-wrap">
               <h3 className="font-semibold text-gray-900">{subscriber.name}</h3>
               <span className="px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-700 flex items-center gap-1">
                 <Crown className="w-3 h-3" />
                 {planLabels[subscriber.planType] || '월간'} 구독
               </span>
+              {isPending && (
+                <span className="px-2 py-0.5 rounded text-xs font-medium bg-orange-100 text-orange-700">
+                  입금 대기
+                </span>
+              )}
             </div>
             <p className="text-sm text-gray-500 mb-3">{subscriber.email}</p>
 
-            {/* 세션 사용량 */}
-            <div className="mb-3">
-              <div className="flex items-center justify-between text-sm mb-1">
-                <span className="text-gray-500">이번 달 세션</span>
-                <span className="font-medium">
-                  {subscriber.sessionsUsed}/{subscriber.sessionsPerMonth}회 사용
-                </span>
+            {isPending ? (
+              <div className="bg-orange-50 rounded-lg p-3 text-sm">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-orange-700">입금자명</span>
+                  <span className="font-medium text-orange-900">{subscriber.depositorName || '-'}</span>
+                </div>
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-orange-700">결제 금액</span>
+                  <span className="font-medium text-orange-900">{(subscriber.amount || 0).toLocaleString()}원</span>
+                </div>
+                <button
+                  onClick={handleConfirmPayment}
+                  disabled={confirming}
+                  className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  {confirming ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      확인 중...
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle className="w-4 h-4" />
+                      입금 확인
+                    </>
+                  )}
+                </button>
               </div>
-              <ProgressBar
-                current={subscriber.sessionsUsed}
-                total={subscriber.sessionsPerMonth}
-                color="yellow"
-                size="md"
-              />
-            </div>
+            ) : (
+              <>
+                {/* 세션 사용량 */}
+                <div className="mb-3">
+                  <div className="flex items-center justify-between text-sm mb-1">
+                    <span className="text-gray-500">이번 달 세션</span>
+                    <span className="font-medium">
+                      {subscriber.sessionsUsed}/{subscriber.sessionsPerMonth}회 사용
+                    </span>
+                  </div>
+                  <ProgressBar
+                    current={subscriber.sessionsUsed}
+                    total={subscriber.sessionsPerMonth}
+                    color="yellow"
+                    size="md"
+                  />
+                </div>
 
-            {/* 갱신일 & 남은 세션 */}
-            <div className="flex items-center justify-between text-sm">
-              <div className="flex items-center gap-1 text-gray-600">
-                <Calendar className="w-4 h-4" />
-                <span>갱신: {periodEndDate}</span>
-              </div>
-              <span className={`font-medium ${sessionsRemaining > 0 ? 'text-emerald-600' : 'text-gray-400'}`}>
-                {sessionsRemaining > 0 ? `${sessionsRemaining}회 남음` : '완료'}
-              </span>
-            </div>
+                {/* 갱신일 & 남은 세션 */}
+                <div className="flex items-center justify-between text-sm">
+                  <div className="flex items-center gap-1 text-gray-600">
+                    <Calendar className="w-4 h-4" />
+                    <span>갱신: {periodEndDate}</span>
+                  </div>
+                  <span className={`font-medium ${sessionsRemaining > 0 ? 'text-emerald-600' : 'text-gray-400'}`}>
+                    {sessionsRemaining > 0 ? `${sessionsRemaining}회 남음` : '완료'}
+                  </span>
+                </div>
+              </>
+            )}
           </div>
 
           <ChevronRight className="w-5 h-5 text-gray-400" />

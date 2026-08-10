@@ -1,11 +1,11 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '../common/Card'
 import { Button } from '../common/Button'
 import { Textarea } from '../common/Input'
 import { AIQuestionSuggester } from './AIReflectionHelper'
-import { BookOpen, Lightbulb, Rocket, Star } from 'lucide-react'
+import { BookOpen, Lightbulb, Rocket, Star, ChevronDown, Target } from 'lucide-react'
 
-export function ReflectionNote({ session, initialData, onSubmit, onCancel, isEditing = false }) {
+export function ReflectionNote({ session, initialData, onSubmit, onCancel, isEditing = false, coachingTopics = [] }) {
   const [reflection, setReflection] = useState({
     topic: initialData?.topic || '',
     previousScore: initialData?.previousScore || 5,
@@ -15,6 +15,7 @@ export function ReflectionNote({ session, initialData, onSubmit, onCancel, isEdi
     actionPlan: initialData?.actionPlan || '',
     nextExpectation: initialData?.nextExpectation || '',
   })
+  const [showTopicDropdown, setShowTopicDropdown] = useState(false)
 
   const handleChange = (field, value) => {
     setReflection(prev => ({ ...prev, [field]: value }))
@@ -48,14 +49,95 @@ export function ReflectionNote({ session, initialData, onSubmit, onCancel, isEdi
 
         {/* 코칭 주제 */}
         <div className="space-y-2">
-          <label className="text-sm font-medium text-gray-700">오늘의 코칭 주제</label>
-          <input
-            type="text"
-            value={reflection.topic}
-            onChange={(e) => handleChange('topic', e.target.value)}
-            placeholder="오늘 상담에서 다룬 주제를 적어주세요"
-            className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
-          />
+          <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
+            <Target className="w-4 h-4 text-emerald-500" />
+            오늘의 코칭 주제
+          </label>
+
+          {/* 목표합의서 주제가 있으면 드롭다운 표시 */}
+          {coachingTopics.length > 0 ? (
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setShowTopicDropdown(!showTopicDropdown)}
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-left flex items-center justify-between focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white"
+              >
+                <span className={reflection.topic ? 'text-gray-900' : 'text-gray-400'}>
+                  {reflection.topic || '코칭 주제를 선택하세요'}
+                </span>
+                <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${showTopicDropdown ? 'rotate-180' : ''}`} />
+              </button>
+
+              {showTopicDropdown && (
+                <div className="absolute z-10 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-auto">
+                  {coachingTopics.map((topic) => (
+                    <button
+                      key={topic.id}
+                      type="button"
+                      onClick={() => {
+                        handleChange('topic', topic.title)
+                        // 이전 점수를 해당 주제의 현재 점수로 자동 설정
+                        handleChange('previousScore', topic.currentScore || 1)
+                        setShowTopicDropdown(false)
+                      }}
+                      className={`w-full px-4 py-3 text-left hover:bg-emerald-50 flex items-center justify-between ${
+                        reflection.topic === topic.title ? 'bg-emerald-50' : ''
+                      }`}
+                    >
+                      <div>
+                        <p className="font-medium text-gray-900">{topic.title}</p>
+                        <p className="text-xs text-gray-500">
+                          현재 {topic.currentScore || 0}점 → 목표 {topic.targetScore || 10}점
+                        </p>
+                      </div>
+                      {reflection.topic === topic.title && (
+                        <span className="text-emerald-600 text-sm">선택됨</span>
+                      )}
+                    </button>
+                  ))}
+                  <div className="border-t">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        handleChange('topic', '')
+                        setShowTopicDropdown(false)
+                      }}
+                      className="w-full px-4 py-2 text-left text-sm text-gray-500 hover:bg-gray-50"
+                    >
+                      직접 입력하기...
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* 직접 입력 모드 */}
+              {!reflection.topic && !showTopicDropdown && (
+                <input
+                  type="text"
+                  value={reflection.topic}
+                  onChange={(e) => handleChange('topic', e.target.value)}
+                  placeholder="또는 직접 입력..."
+                  className="w-full mt-2 px-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                />
+              )}
+            </div>
+          ) : (
+            <input
+              type="text"
+              value={reflection.topic}
+              onChange={(e) => handleChange('topic', e.target.value)}
+              placeholder="오늘 상담에서 다룬 주제를 적어주세요"
+              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            />
+          )}
+
+          {/* 선택된 주제의 점수 변화 안내 */}
+          {coachingTopics.length > 0 && reflection.topic && coachingTopics.find(t => t.title === reflection.topic) && (
+            <p className="text-xs text-emerald-600 flex items-center gap-1">
+              <Target className="w-3 h-3" />
+              성찰일지 저장 시 목표합의서의 점수도 함께 업데이트됩니다
+            </p>
+          )}
         </div>
 
         {/* 점수 변화 */}

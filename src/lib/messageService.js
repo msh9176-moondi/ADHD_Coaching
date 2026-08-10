@@ -9,6 +9,8 @@ import { supabase, isSupabaseConfigured } from './supabase'
 export async function getOrCreateConversation(coachId, coacheeId) {
   if (!isSupabaseConfigured()) throw new Error('LOCAL_MODE')
 
+  console.log('[getOrCreateConversation] 조회 시작:', { coachId, coacheeId })
+
   // 기존 대화방 찾기 (maybeSingle: 없으면 null 반환)
   const { data: existing, error: findError } = await supabase
     .from('conversations')
@@ -17,8 +19,17 @@ export async function getOrCreateConversation(coachId, coacheeId) {
     .eq('coachee_id', coacheeId)
     .maybeSingle()
 
-  if (findError) throw findError
-  if (existing) return existing
+  if (findError) {
+    console.error('[getOrCreateConversation] 조회 실패:', findError)
+    throw findError
+  }
+
+  if (existing) {
+    console.log('[getOrCreateConversation] 기존 대화방 발견:', existing.id)
+    return existing
+  }
+
+  console.log('[getOrCreateConversation] 기존 대화방 없음, 새로 생성')
 
   // 새 대화방 생성
   const { data, error } = await supabase
@@ -27,7 +38,12 @@ export async function getOrCreateConversation(coachId, coacheeId) {
     .select()
     .single()
 
-  if (error) throw error
+  if (error) {
+    console.error('[getOrCreateConversation] 생성 실패:', error)
+    throw error
+  }
+
+  console.log('[getOrCreateConversation] 새 대화방 생성됨:', data.id)
   return data
 }
 
@@ -51,10 +67,11 @@ export async function getUserConversations(userId, role) {
   return data
 }
 
-// 대화방의 메시지 조회
+// 대화방의 메시지 조회 (최신 N개를 시간순으로 반환)
 export async function getMessages(conversationId, limit = 50) {
   if (!isSupabaseConfigured()) throw new Error('LOCAL_MODE')
 
+  // 최신 메시지부터 limit개를 가져온 후, 시간순으로 정렬
   const { data, error } = await supabase
     .from('messages')
     .select(`
@@ -62,11 +79,13 @@ export async function getMessages(conversationId, limit = 50) {
       sender:sender_id(id, name, avatar_url)
     `)
     .eq('conversation_id', conversationId)
-    .order('created_at', { ascending: true })
+    .order('created_at', { ascending: false })  // 최신순으로 가져오기
     .limit(limit)
 
   if (error) throw error
-  return data
+
+  // 시간순으로 다시 정렬하여 반환 (오래된 것 → 최신 것)
+  return (data || []).reverse()
 }
 
 // 메시지 전송
@@ -357,15 +376,45 @@ export async function getConfirmedGoals(coacheeId) {
   if (error) throw error
   if (!messages) return []
 
+  // 코칭 주제에서 현재 점수 가져오기 (성찰일지에서 업데이트된 점수)
+  const { data: coachingTopics } = await supabase
+    .from('coaching_topics')
+    .select('title, current_score')
+    .eq('user_id', coacheeId)
+
+  // 주제 이름 -> 현재 점수 매핑
+  const topicScoreMap = {}
+  if (coachingTopics) {
+    coachingTopics.forEach(t => {
+      topicScoreMap[t.title.trim().toLowerCase()] = t.current_score
+    })
+  }
+
   // 확정된 목표 합의서만 필터링 (metadata.goalData.status === 'confirmed')
   const confirmedGoals = messages
     .filter(msg => msg.metadata?.goalData?.status === 'confirmed')
-    .map(msg => ({
-      id: msg.id,
-      goals: msg.metadata?.goalData?.goals || [],
-      confirmedAt: msg.updated_at || msg.created_at,
-      version: msg.metadata?.goalData?.version || 1
-    }))
+    .map(msg => {
+      const goals = (msg.metadata?.goalData?.goals || []).map(goal => {
+        // 코칭 주제에서 현재 점수 찾기
+        const topicKey = (goal.topic || '').trim().toLowerCase()
+        const updatedScore = topicScoreMap[topicKey]
+
+        return {
+          ...goal,
+          // 코칭 주제에 업데이트된 점수가 있으면 사용, 없으면 원래 점수 유지
+          currentScore: updatedScore !== undefined ? updatedScore : goal.currentScore,
+          // 원래 시작 점수도 보존
+          startScore: goal.currentScore
+        }
+      })
+
+      return {
+        id: msg.id,
+        goals,
+        confirmedAt: msg.updated_at || msg.created_at,
+        version: msg.metadata?.goalData?.version || 1
+      }
+    })
 
   return confirmedGoals
 }

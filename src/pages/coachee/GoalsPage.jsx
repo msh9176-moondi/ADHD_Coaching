@@ -94,42 +94,52 @@ export function GoalsPage() {
                 </div>
 
                 <div className="space-y-3">
-                  {agreement.goals.map((goal, idx) => (
-                    <div key={goal.id || idx} className="p-3 bg-gray-50 rounded-lg">
-                      <div className="flex items-start justify-between gap-2 mb-2">
-                        <h4 className="font-medium text-gray-900 flex-1">
-                          {goal.topic || `목표 ${idx + 1}`}
-                        </h4>
-                        <div className="flex items-center gap-1 text-sm">
-                          <TrendingUp className="w-4 h-4 text-emerald-500" />
-                          <span className="text-emerald-600 font-medium">
-                            {goal.currentScore} → {goal.targetScore}
-                          </span>
-                        </div>
-                      </div>
-                      {goal.desiredResult && (
-                        <p className="text-sm text-gray-600">
-                          {goal.desiredResult}
-                        </p>
-                      )}
+                  {agreement.goals.map((goal, idx) => {
+                    const startScore = goal.startScore || goal.currentScore
+                    const hasProgress = goal.currentScore > startScore
 
-                      {/* 진행률 바 */}
-                      <div className="mt-2">
-                        <div className="flex justify-between text-xs text-gray-500 mb-1">
-                          <span>현재 {goal.currentScore}점</span>
-                          <span>목표 {goal.targetScore}점</span>
+                    return (
+                      <div key={goal.id || idx} className="p-3 bg-gray-50 rounded-lg">
+                        <div className="flex items-start justify-between gap-2 mb-2">
+                          <h4 className="font-medium text-gray-900 flex-1">
+                            {goal.topic || `목표 ${idx + 1}`}
+                          </h4>
+                          <div className="flex items-center gap-1 text-sm">
+                            <TrendingUp className={`w-4 h-4 ${hasProgress ? 'text-emerald-500' : 'text-gray-400'}`} />
+                            <span className={`font-medium ${hasProgress ? 'text-emerald-600' : 'text-gray-600'}`}>
+                              {startScore} → {goal.targetScore}
+                            </span>
+                          </div>
                         </div>
-                        <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-                          <div
-                            className="h-full bg-gradient-to-r from-amber-500 to-emerald-600 rounded-full transition-all"
-                            style={{
-                              width: `${Math.min(100, (goal.currentScore / goal.targetScore) * 100)}%`
-                            }}
-                          />
+                        {goal.desiredResult && (
+                          <p className="text-sm text-gray-600">
+                            {goal.desiredResult}
+                          </p>
+                        )}
+
+                        {/* 진행률 바 */}
+                        <div className="mt-2">
+                          <div className="flex justify-between text-xs text-gray-500 mb-1">
+                            <span className="flex items-center gap-1">
+                              현재 <span className={`font-medium ${hasProgress ? 'text-emerald-600' : ''}`}>{goal.currentScore}점</span>
+                              {hasProgress && (
+                                <span className="text-emerald-500">(+{goal.currentScore - startScore})</span>
+                              )}
+                            </span>
+                            <span>목표 {goal.targetScore}점</span>
+                          </div>
+                          <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                            <div
+                              className="h-full bg-gradient-to-r from-amber-500 to-emerald-600 rounded-full transition-all"
+                              style={{
+                                width: `${Math.min(100, (goal.currentScore / goal.targetScore) * 100)}%`
+                              }}
+                            />
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    )
+                  })}
                 </div>
               </CardContent>
             </Card>

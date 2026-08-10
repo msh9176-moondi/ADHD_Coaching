@@ -25,6 +25,7 @@ export function ReflectionsPage() {
   const [selectedReflection, setSelectedReflection] = useState(null)
   const [isEditing, setIsEditing] = useState(false)
   const [reflections, setReflections] = useState([])
+  const [coachingTopics, setCoachingTopics] = useState([])
   const [loading, setLoading] = useState(true)
   const [currentSession, setCurrentSession] = useState(1)
 
@@ -44,6 +45,13 @@ export function ReflectionsPage() {
         const packageInfo = await coacheeService.getCoacheePackage(user.id)
         if (packageInfo?.current_session) {
           setCurrentSession(packageInfo.current_session)
+        }
+        // 코칭 주제 로드 (목표합의서에서 가져온 주제들)
+        try {
+          const topics = await coacheeService.getCoachingTopics(user.id)
+          setCoachingTopics(topics || [])
+        } catch {
+          setCoachingTopics([])
         }
       } catch (err) {
         console.warn('데이터 로드 실패:', err)
@@ -90,7 +98,7 @@ export function ReflectionsPage() {
       await reflectionService.updateReflection(selectedReflection.id, {
         ...data,
         sessionNumber: selectedReflection.sessionNumber
-      })
+      }, user.id)
       // 목록 새로고침
       const updatedList = await reflectionService.getCoacheeReflections(user.id)
       setReflections(updatedList || [])
@@ -149,7 +157,7 @@ export function ReflectionsPage() {
           <ChevronLeft className="w-4 h-4" />
           목록으로
         </button>
-        <ReflectionNote session={{ sessionNumber: nextSession }} onSubmit={handleSubmit} />
+        <ReflectionNote session={{ sessionNumber: nextSession }} onSubmit={handleSubmit} coachingTopics={coachingTopics} />
       </div>
     )
   }
@@ -171,6 +179,7 @@ export function ReflectionsPage() {
           onSubmit={handleEditSubmit}
           onCancel={handleCancelEdit}
           isEditing={true}
+          coachingTopics={coachingTopics}
         />
       </div>
     )

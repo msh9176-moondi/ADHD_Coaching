@@ -109,13 +109,19 @@ export function MessageList({
   )
 
   const scrollToBottom = (smooth = true) => {
-    if (messagesContainerRef.current) {
-      messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight
-    }
+    // requestAnimationFrame으로 DOM 업데이트 후 스크롤
+    requestAnimationFrame(() => {
+      if (messagesEndRef.current) {
+        messagesEndRef.current.scrollIntoView({ behavior: smooth ? 'smooth' : 'instant', block: 'end' })
+      } else if (messagesContainerRef.current) {
+        messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight
+      }
+    })
   }
 
   useEffect(() => {
-    scrollToBottom()
+    // 메시지가 변경될 때마다 스크롤을 맨 아래로
+    scrollToBottom(false) // 메시지 추가 시에는 즉시 스크롤
   }, [messages])
 
   // 모바일 키보드 대응
@@ -161,12 +167,17 @@ export function MessageList({
 
   // Supabase에서 메시지 로드 및 실시간 구독
   useEffect(() => {
-    if (!conversationId || !isSupabaseConfigured()) return
+    if (!conversationId || !isSupabaseConfigured()) {
+      console.log('[MessageList] 메시지 로드 스킵:', { conversationId, configured: isSupabaseConfigured() })
+      return
+    }
 
     // 기존 메시지 로드
     async function loadMessages() {
       try {
+        console.log('[MessageList] 메시지 로드 시작:', { conversationId, coacheeName })
         const dbMessages = await getMessages(conversationId, 100)
+        console.log('[MessageList] DB에서 가져온 메시지:', dbMessages?.length, '개')
         let formattedMessages = dbMessages.map(msg => {
           const metadata = msg.metadata || {}
           // metadata에 실제 타입이 있으면 사용 (declaration_confirm_request 등)
@@ -263,6 +274,7 @@ export function MessageList({
           })
         }
 
+        console.log('[MessageList] setMessages 호출:', formattedMessages.length, '개')
         setMessages(formattedMessages)
       } catch (err) {
         console.error('메시지 로드 실패:', err)
@@ -388,6 +400,9 @@ export function MessageList({
       type: 'normal',
     }
     setMessages(prev => [...prev, message])
+
+    // 메시지 전송 후 스크롤을 맨 아래로
+    setTimeout(() => scrollToBottom(false), 50)
 
     // Supabase에 저장
     if (conversationId && userId && isSupabaseConfigured()) {
@@ -1050,6 +1065,9 @@ export function MessageList({
   }
 
   const hasOpenPanel = showGoalPanel || viewingGoalMessage || showDeclarationCreatePanel || viewingDeclaration || showTaskPanel || showTaskSubmitPanel
+
+  // 디버깅: 렌더링 시점의 messages 상태
+  console.log('[MessageList] 렌더링:', { messagesCount: messages.length, conversationId })
 
   return (
     <div className="flex gap-3 relative">

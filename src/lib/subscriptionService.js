@@ -176,6 +176,33 @@ export async function cancelSubscription(subscriptionId) {
 }
 
 /**
+ * 입금 확인 및 구독 활성화
+ */
+export async function confirmSubscriptionPayment(subscriptionId) {
+  if (!isSupabaseConfigured()) {
+    throw new Error('Supabase가 설정되지 않았습니다')
+  }
+
+  const { data, error } = await supabase
+    .from('subscriptions')
+    .update({
+      status: 'active',
+      payment_status: 'paid',
+      updated_at: new Date().toISOString()
+    })
+    .eq('id', subscriptionId)
+    .select()
+    .single()
+
+  if (error) {
+    console.error('결제 확인 실패:', error)
+    throw error
+  }
+
+  return data
+}
+
+/**
  * 세션 사용 기록
  */
 export async function useSubscriptionSession(subscriptionId) {
@@ -237,32 +264,46 @@ export async function getRemainingSessionsCount(subscriptionId) {
 }
 
 /**
- * 코치의 구독자 목록 조회
+ * 코치의 구독자 목록 조회 (active + pending 포함)
  */
 export async function getCoachSubscribers(coachId) {
   if (!isSupabaseConfigured() || !coachId) return []
 
-  const { data, error } = await supabase
-    .from('subscriptions')
-    .select(`
-      *,
-      user:profiles!subscriptions_user_id_fkey (
-        id,
-        name,
-        email,
-        avatar_url
-      )
-    `)
-    .eq('coach_id', coachId)
-    .eq('status', 'active')
-    .order('created_at', { ascending: false })
+  try {
+    // 구독 목록 조회
+    const { data: subscriptions, error } = await supabase
+      .from('subscriptions')
+      .select('*')
+      .eq('coach_id', coachId)
+      .or('status.eq.active,status.eq.pending')
+      .order('created_at', { ascending: false })
 
-  if (error) {
-    console.error('구독자 목록 조회 실패:', error)
+    if (error) {
+      console.error('구독자 목록 조회 실패:', error)
+      return []
+    }
+
+    if (!subscriptions || subscriptions.length === 0) return []
+
+    // 사용자 정보 별도 조회
+    const userIds = subscriptions.map(s => s.user_id)
+    const { data: profiles } = await supabase
+      .from('profiles')
+      .select('id, name, email, avatar_url')
+      .in('id', userIds)
+
+    // 합치기
+    const profileMap = {}
+    profiles?.forEach(p => { profileMap[p.id] = p })
+
+    return subscriptions.map(s => ({
+      ...s,
+      user: profileMap[s.user_id] || null
+    }))
+  } catch (err) {
+    console.error('구독자 조회 오류:', err)
     return []
   }
-
-  return data || []
 }
 
 /**

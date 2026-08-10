@@ -88,11 +88,18 @@ export function CoachMessagesPage() {
   useEffect(() => {
     async function initConversation() {
       if (!user?.id || !selectedCoachee?.userId || !isSupabaseConfigured()) {
+        console.log('[MessagesPage] 대화방 초기화 스킵:', { userId: user?.id, coacheeUserId: selectedCoachee?.userId })
         setConversationId(null)
         return
       }
       try {
+        console.log('[MessagesPage] 대화방 조회 시작:', {
+          coachId: user.id,
+          coacheeUserId: selectedCoachee.userId,
+          coacheeName: selectedCoachee.name
+        })
         const conversation = await getOrCreateConversation(user.id, selectedCoachee.userId)
+        console.log('[MessagesPage] 대화방 조회 결과:', conversation)
         setConversationId(conversation.id)
       } catch (err) {
         console.error('대화방 생성 실패:', err)

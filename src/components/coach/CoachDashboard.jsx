@@ -6,12 +6,14 @@ import { StatCard } from '../common/StatCard'
 import { LoadingContainer } from '../common/LoadingSpinner'
 import { useStore } from '../../store/useStore'
 import { coacheeService, sessionService } from '../../lib'
-import { Users, Calendar, AlertTriangle, Clock } from 'lucide-react'
+import { getCoachSubscribers, confirmSubscriptionPayment } from '../../lib/subscriptionService'
+import { Users, Calendar, AlertTriangle, Clock, Crown, CheckCircle, Loader2 } from 'lucide-react'
 
 // 분리된 서브 컴포넌트 import
 import { TodaySessionsList } from './dashboard/TodaySessionsList'
 import { WarningList } from './dashboard/WarningList'
 import { PendingApplicantsList } from './dashboard/PendingApplicantsList'
+import { PendingSubscriptionsList } from './dashboard/PendingSubscriptionsList'
 import { CoacheeQuickList } from './dashboard/CoacheeQuickList'
 
 export function CoachDashboard() {
@@ -19,13 +21,15 @@ export function CoachDashboard() {
   const { user } = useStore()
   const [coachees, setCoachees] = useState([])
   const [pendingApplicants, setPendingApplicants] = useState([])
+  const [pendingSubscriptions, setPendingSubscriptions] = useState([])
   const [todaySessions, setTodaySessions] = useState([])
   const [loading, setLoading] = useState(true)
   const [stats, setStats] = useState({
     totalCoachees: 0,
     weekSessions: 0,
     warnings: 0,
-    pendingApplicants: 0
+    pendingApplicants: 0,
+    pendingSubscriptions: 0
   })
 
   useEffect(() => {
@@ -74,6 +78,16 @@ export function CoachDashboard() {
         } catch {
           setTodaySessions([])
         }
+
+        // 입금 대기 중인 구독 로드
+        try {
+          const subscribers = await getCoachSubscribers(user?.id)
+          const pendingSubs = subscribers.filter(s => s.status === 'pending')
+          setPendingSubscriptions(pendingSubs)
+          setStats(prev => ({ ...prev, pendingSubscriptions: pendingSubs.length }))
+        } catch {
+          setPendingSubscriptions([])
+        }
       } catch (err) {
         console.warn('대시보드 데이터 로드 실패:', err)
         setCoachees([])
@@ -119,6 +133,28 @@ export function CoachDashboard() {
           color="yellow"
         />
       </div>
+
+      {/* 입금 대기 중인 구독 (있을 때만 표시) */}
+      {pendingSubscriptions.length > 0 && (
+        <Card className="border-2 border-amber-200 bg-amber-50">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-amber-700">
+              <Crown className="w-5 h-5" />
+              입금 확인 필요
+              <Badge variant="warning" className="ml-2">{pendingSubscriptions.length}건</Badge>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <PendingSubscriptionsList
+              subscriptions={pendingSubscriptions}
+              onConfirmed={(id) => {
+                setPendingSubscriptions(prev => prev.filter(s => s.id !== id))
+                setStats(prev => ({ ...prev, pendingSubscriptions: prev.pendingSubscriptions - 1 }))
+              }}
+            />
+          </CardContent>
+        </Card>
+      )}
 
       {/* 신규 신청자 (있을 때만 표시) */}
       {pendingApplicants.length > 0 && (

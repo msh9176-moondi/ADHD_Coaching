@@ -572,6 +572,54 @@ export async function updateMultipleTopicScores(topicScores) {
   return results
 }
 
+// 주제 이름으로 코칭 주제 점수 업데이트 (성찰일지 연동용)
+export async function updateTopicScoreByTitle(userId, topicTitle, currentScore) {
+  if (!isSupabaseConfigured()) return null
+
+  // 주제 이름으로 검색 (대소문자 무시, 공백 trim)
+  const { data: topics, error: findError } = await supabase
+    .from('coaching_topics')
+    .select('id, title, current_score')
+    .eq('user_id', userId)
+
+  if (findError || !topics || topics.length === 0) {
+    console.log('코칭 주제를 찾을 수 없음:', topicTitle)
+    return null
+  }
+
+  // 주제 이름 매칭 (정확히 일치하거나 포함하는 경우)
+  const normalizedTitle = topicTitle.trim().toLowerCase()
+  const matchedTopic = topics.find(t =>
+    t.title.trim().toLowerCase() === normalizedTitle ||
+    t.title.trim().toLowerCase().includes(normalizedTitle) ||
+    normalizedTitle.includes(t.title.trim().toLowerCase())
+  )
+
+  if (!matchedTopic) {
+    console.log('매칭되는 코칭 주제 없음:', topicTitle, '/ 기존 주제:', topics.map(t => t.title))
+    return null
+  }
+
+  // 점수 업데이트
+  const { data, error } = await supabase
+    .from('coaching_topics')
+    .update({
+      current_score: currentScore,
+      updated_at: new Date().toISOString()
+    })
+    .eq('id', matchedTopic.id)
+    .select()
+    .single()
+
+  if (error) {
+    console.error('주제 점수 업데이트 실패:', error)
+    return null
+  }
+
+  console.log(`코칭 주제 점수 업데이트 완료: ${matchedTopic.title} (${matchedTopic.current_score} → ${currentScore})`)
+  return data
+}
+
 // 목표 합의서에서 코칭 주제 저장 (기존 주제 삭제 후 새로 저장)
 export async function saveCoachingTopicsFromGoal(userId, goals) {
   if (!isSupabaseConfigured()) throw new Error('LOCAL_MODE')
