@@ -6,21 +6,50 @@ import { Badge } from '../common/Badge'
 import { useStore } from '../../store/useStore'
 import { getCoachSessions, getSessionsForCoachee } from '../../lib/sessionService'
 import { SessionDetailModal } from '../coach/SessionDetailModal'
+import { SessionEditModal } from './SessionEditModal'
 import { Calendar, Clock, MessageSquare, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react'
 
 export function SessionSchedule({ userRole = 'coachee', coacheeId = null }) {
   const navigate = useNavigate()
-  const { user, sessions: storeSessions, openBookingModal } = useStore()
+  const { user, sessions: storeSessions, openBookingModal, removeSession, updateSessionInStore } = useStore()
   const [currentDate, setCurrentDate] = useState(new Date())
   const [dbSessions, setDbSessions] = useState([])
   const [loading, setLoading] = useState(true)
   const [selectedSession, setSelectedSession] = useState(null)
   const [detailModalOpen, setDetailModalOpen] = useState(false)
+  const [editModalOpen, setEditModalOpen] = useState(false)
+  const [editingSession, setEditingSession] = useState(null)
+  const [selectedFilterDate, setSelectedFilterDate] = useState(null) // 날짜 필터
 
   // 상세보기 클릭
   const handleViewDetail = (session) => {
     setSelectedSession(session)
     setDetailModalOpen(true)
+  }
+
+  // 수정 클릭
+  const handleEdit = (session) => {
+    setEditingSession(selectedSession || session)
+    setDetailModalOpen(false)
+    setEditModalOpen(true)
+  }
+
+  // 세션 수정 완료
+  const handleSessionUpdate = (updatedSession) => {
+    setDbSessions(prev => prev.map(s =>
+      s.id === updatedSession.id ? { ...s, ...updatedSession } : s
+    ))
+    if (updateSessionInStore) {
+      updateSessionInStore(updatedSession.id, updatedSession)
+    }
+  }
+
+  // 세션 삭제 완료
+  const handleSessionDelete = (sessionId) => {
+    setDbSessions(prev => prev.filter(s => s.id !== sessionId))
+    if (removeSession) {
+      removeSession(sessionId)
+    }
   }
 
   // 입장하기 클릭 (메시지 페이지로 이동)
@@ -39,7 +68,9 @@ export function SessionSchedule({ userRole = 'coachee', coacheeId = null }) {
         setLoading(true)
         let data = []
         if (userRole === 'coach' && user?.id) {
+          console.log('[다가오는 상담] 코치 세션 로드 시작, coach_id:', user.id)
           data = await getCoachSessions(user.id)
+          console.log('[다가오는 상담] 코치 세션 로드 완료:', data)
         } else if (userRole === 'coachee') {
           const id = coacheeId || user?.id
           if (id) {
@@ -48,7 +79,7 @@ export function SessionSchedule({ userRole = 'coachee', coacheeId = null }) {
         }
         setDbSessions(data || [])
       } catch (err) {
-        console.warn('세션 로드 실패:', err)
+        console.error('[다가오는 상담] 세션 로드 실패:', err)
         setDbSessions([])
       } finally {
         setLoading(false)
@@ -85,6 +116,33 @@ export function SessionSchedule({ userRole = 'coachee', coacheeId = null }) {
     })
   }, [dbSessions, storeSessions, userRole, user?.id, coacheeId])
 
+  // 날짜 필터가 적용된 세션 목록
+  const filteredSessions = useMemo(() => {
+    if (!selectedFilterDate) return sessions
+    return sessions.filter(s => {
+      const sessionDate = new Date(s.date)
+      return sessionDate.getFullYear() === selectedFilterDate.getFullYear() &&
+             sessionDate.getMonth() === selectedFilterDate.getMonth() &&
+             sessionDate.getDate() === selectedFilterDate.getDate()
+    })
+  }, [sessions, selectedFilterDate])
+
+  // 캘린더 날짜 클릭 핸들러
+  const handleDateSelect = (day) => {
+    if (day) {
+      const newDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), day)
+      // 같은 날짜 클릭시 필터 해제
+      if (selectedFilterDate &&
+          selectedFilterDate.getFullYear() === newDate.getFullYear() &&
+          selectedFilterDate.getMonth() === newDate.getMonth() &&
+          selectedFilterDate.getDate() === newDate.getDate()) {
+        setSelectedFilterDate(null)
+      } else {
+        setSelectedFilterDate(newDate)
+      }
+    }
+  }
+
   const formatDate = (dateStr) => {
     const date = new Date(dateStr)
     return date.toLocaleDateString('ko-KR', {
@@ -118,7 +176,12 @@ export function SessionSchedule({ userRole = 'coachee', coacheeId = null }) {
           </div>
         </CardHeader>
         <CardContent>
-          <MiniCalendar date={currentDate} sessions={sessions} />
+          <MiniCalendar
+            date={currentDate}
+            sessions={sessions}
+            selectedDate={selectedFilterDate}
+            onSelectDate={handleDateSelect}
+          />
         </CardContent>
       </Card>
 
@@ -133,9 +196,28 @@ export function SessionSchedule({ userRole = 'coachee', coacheeId = null }) {
       {/* 다가오는 세션 */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Calendar className="w-5 h-5 text-emerald-600" />
-            다가오는 상담
+          <CardTitle className="flex items-center justify-between">
+            <span className="flex items-center gap-2">
+              <Calendar className="w-5 h-5 text-emerald-600" />
+              {selectedFilterDate ? (
+                <>
+                  {selectedFilterDate.toLocaleDateString('ko-KR', { month: 'long', day: 'numeric' })} 상담
+                  <span className="text-sm font-normal text-gray-500">
+                    ({filteredSessions.length}건)
+                  </span>
+                </>
+              ) : (
+                '다가오는 상담'
+              )}
+            </span>
+            {selectedFilterDate && (
+              <button
+                onClick={() => setSelectedFilterDate(null)}
+                className="text-sm text-gray-500 hover:text-gray-700 px-2 py-1 rounded hover:bg-gray-100"
+              >
+                전체 보기
+              </button>
+            )}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -144,12 +226,12 @@ export function SessionSchedule({ userRole = 'coachee', coacheeId = null }) {
               <Loader2 className="w-6 h-6 animate-spin text-emerald-500" />
               <span className="ml-2 text-gray-500">불러오는 중...</span>
             </div>
-          ) : sessions.length === 0 ? (
+          ) : filteredSessions.length === 0 ? (
             <p className="text-center text-gray-500 py-8">
-              예정된 상담이 없습니다.
+              {selectedFilterDate ? '해당 날짜에 상담이 없습니다.' : '예정된 상담이 없습니다.'}
             </p>
           ) : (
-            sessions.map((session) => (
+            filteredSessions.map((session) => (
               <SessionCard
                 key={session.id}
                 session={session}
@@ -180,6 +262,16 @@ export function SessionSchedule({ userRole = 'coachee', coacheeId = null }) {
           warnings: selectedSession.warnings
         } : null}
         coachee={{ name: selectedSession?.coachee_name || selectedSession?.coacheeName }}
+        onEdit={userRole === 'coach' ? handleEdit : undefined}
+      />
+
+      {/* 세션 수정 모달 */}
+      <SessionEditModal
+        isOpen={editModalOpen}
+        onClose={() => setEditModalOpen(false)}
+        session={editingSession}
+        onUpdate={handleSessionUpdate}
+        onDelete={handleSessionDelete}
       />
     </div>
   )
@@ -200,7 +292,10 @@ function SessionCard({ session, formatDate, showCoacheeName = false, onViewDetai
 
         <div className="flex-1 min-w-0 md:hidden">
           <div className="flex items-center gap-2 mb-1 flex-wrap">
-            <h4 className="font-medium text-gray-900 text-sm">{session.topic}</h4>
+            {showCoacheeName && coacheeName && (
+              <h4 className="font-medium text-gray-900 text-sm">{coacheeName}</h4>
+            )}
+            <Badge variant="default" className="text-xs">{session.topic}</Badge>
             <Badge variant={session.status === 'scheduled' ? 'primary' : 'success'} className="text-xs">
               {session.status === 'scheduled' ? '예정' : '완료'}
             </Badge>
@@ -210,10 +305,10 @@ function SessionCard({ session, formatDate, showCoacheeName = false, onViewDetai
 
       <div className="flex-1 min-w-0 hidden md:block">
         <div className="flex items-center gap-2 mb-1">
-          <h4 className="font-medium text-gray-900">{session.topic}</h4>
           {showCoacheeName && coacheeName && (
-            <Badge variant="default">{coacheeName}</Badge>
+            <h4 className="font-medium text-gray-900">{coacheeName}</h4>
           )}
+          <Badge variant="default">{session.topic}</Badge>
           <Badge variant={session.status === 'scheduled' ? 'primary' : 'success'}>
             {session.status === 'scheduled' ? '예정' : '완료'}
           </Badge>
@@ -259,12 +354,20 @@ function SessionCard({ session, formatDate, showCoacheeName = false, onViewDetai
   )
 }
 
-function MiniCalendar({ date, sessions }) {
+function MiniCalendar({ date, sessions, selectedDate, onSelectDate }) {
   const [hoveredDay, setHoveredDay] = useState(null)
   const year = date.getFullYear()
   const month = date.getMonth()
   const firstDay = new Date(year, month, 1).getDay()
   const daysInMonth = new Date(year, month + 1, 0).getDate()
+
+  // 선택된 날짜 체크
+  const isSelectedDay = (day) => {
+    if (!selectedDate || !day) return false
+    return selectedDate.getFullYear() === year &&
+           selectedDate.getMonth() === month &&
+           selectedDate.getDate() === day
+  }
 
   // 날짜별 세션 그룹화
   const sessionsByDate = sessions.reduce((acc, session) => {
@@ -304,6 +407,8 @@ function MiniCalendar({ date, sessions }) {
           const hasSession = sessionCount > 0
           const isToday = isCurrentMonth && day === today.getDate()
 
+          const selected = isSelectedDay(day)
+
           return (
             <div
               key={index}
@@ -312,18 +417,23 @@ function MiniCalendar({ date, sessions }) {
               onMouseLeave={() => setHoveredDay(null)}
             >
               <div
-                className={`aspect-square flex flex-col items-center justify-center text-sm rounded-lg cursor-default ${
+                onClick={() => day && hasSession && onSelectDate && onSelectDate(day)}
+                className={`aspect-square flex flex-col items-center justify-center text-sm rounded-lg transition-all ${
                   day === null
                     ? ''
                     : hasSession
-                    ? sessionCount >= 3
-                      ? 'bg-emerald-600 text-white font-medium'
-                      : sessionCount >= 2
-                      ? 'bg-emerald-500 text-white font-medium'
-                      : 'bg-emerald-400 text-white font-medium'
+                    ? `cursor-pointer ${
+                        selected
+                          ? 'ring-2 ring-offset-2 ring-emerald-600 bg-emerald-600 text-white font-medium'
+                          : sessionCount >= 3
+                          ? 'bg-emerald-600 text-white font-medium hover:ring-2 hover:ring-emerald-300'
+                          : sessionCount >= 2
+                          ? 'bg-emerald-500 text-white font-medium hover:ring-2 hover:ring-emerald-300'
+                          : 'bg-emerald-400 text-white font-medium hover:ring-2 hover:ring-emerald-300'
+                      }`
                     : isToday
-                    ? 'bg-gray-200 font-medium'
-                    : 'hover:bg-gray-100'
+                    ? 'bg-gray-200 font-medium cursor-default'
+                    : 'hover:bg-gray-100 cursor-default'
                 }`}
               >
                 <span>{day}</span>

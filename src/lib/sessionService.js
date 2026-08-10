@@ -291,6 +291,27 @@ export async function createSession(sessionData) {
   }
 }
 
+// 세션 수정
+export async function updateSession(sessionId, updates) {
+  if (!isSupabaseConfigured()) throw new Error('LOCAL_MODE')
+
+  const { data, error } = await supabase
+    .from('sessions')
+    .update({
+      date: updates.date,
+      time: updates.time,
+      topic: updates.topic,
+      duration: updates.duration,
+      status: updates.status
+    })
+    .eq('id', sessionId)
+    .select()
+    .single()
+
+  if (error) throw error
+  return data
+}
+
 // 세션 삭제 (세션일지도 함께 삭제)
 export async function deleteSession(sessionId) {
   if (!isSupabaseConfigured()) throw new Error('LOCAL_MODE')

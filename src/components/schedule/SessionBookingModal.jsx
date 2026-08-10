@@ -137,7 +137,9 @@ export function SessionBookingModal() {
 
       // Supabase에 저장 시도
       try {
+        console.log('[세션 예약] DB 저장 시도:', sessionData)
         const newSession = await createSession(sessionData)
+        console.log('[세션 예약] DB 저장 성공:', newSession)
         // store의 sessions를 업데이트 (중복 방지를 위해 ID 체크)
         const currentSessions = useStore.getState().sessions
         const isDuplicate = currentSessions.some(s => s.id === newSession.id)
@@ -146,7 +148,8 @@ export function SessionBookingModal() {
         }
       } catch (supabaseError) {
         // Supabase 연동이 안 되어 있으면 로컬 상태에만 추가
-        console.warn('Supabase 연동 실패, 로컬 상태에 추가:', supabaseError)
+        console.error('[세션 예약] DB 저장 실패:', supabaseError)
+        setError(`DB 저장 실패: ${supabaseError.message}`)
         const localSession = {
           ...sessionData,
           id: `local-${Date.now()}`,

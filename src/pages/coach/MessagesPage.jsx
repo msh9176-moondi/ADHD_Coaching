@@ -207,7 +207,11 @@ export function CoachMessagesPage() {
       // 로컬 상태 업데이트
       setCoacheesData(prev => prev.map(c =>
         c.id === selectedCoacheeId
-          ? { ...c, currentSession: c.currentSession + 1 }
+          ? {
+              ...c,
+              currentSession: c.currentSession + 1,
+              ...(isLastSession && { status: 'completed' })
+            }
           : c
       ))
 

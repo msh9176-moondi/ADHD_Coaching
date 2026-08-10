@@ -7,26 +7,29 @@ export const SUBSCRIPTION_PLANS = {
   monthly: {
     id: 'monthly',
     name: '월간 구독',
-    sessionsPerMonth: 2,
-    price: 99000,
+    sessionsPerMonth: 3,
+    sessionDuration: 30, // 분
+    price: 20000,
     discountRate: 0,
-    description: '매월 2회 사후관리 세션'
+    description: '매월 3회 사후관리 세션 (회당 30분)'
   },
   quarterly: {
     id: 'quarterly',
     name: '분기 구독',
-    sessionsPerMonth: 2,
-    price: 267300, // 10% 할인
+    sessionsPerMonth: 3,
+    sessionDuration: 30,
+    price: 54000, // 10% 할인
     discountRate: 10,
-    description: '3개월간 매월 2회 세션 (10% 할인)'
+    description: '3개월간 매월 3회 세션 (10% 할인)'
   },
   yearly: {
     id: 'yearly',
     name: '연간 구독',
-    sessionsPerMonth: 2,
-    price: 950400, // 20% 할인
+    sessionsPerMonth: 3,
+    sessionDuration: 30,
+    price: 192000, // 20% 할인
     discountRate: 20,
-    description: '12개월간 매월 2회 세션 (20% 할인)'
+    description: '12개월간 매월 3회 세션 (20% 할인)'
   }
 }
 
@@ -46,19 +49,23 @@ export const SUBSCRIPTION_STATUS_LABELS = {
 export async function getActiveSubscription(userId) {
   if (!isSupabaseConfigured() || !userId) return null
 
-  const { data, error } = await supabase
-    .from('subscriptions')
-    .select('*')
-    .eq('user_id', userId)
-    .eq('status', 'active')
-    .single()
+  try {
+    const { data, error } = await supabase
+      .from('subscriptions')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('status', 'active')
+      .single()
 
-  if (error && error.code !== 'PGRST116') {
-    console.error('구독 조회 실패:', error)
+    // PGRST116: 결과 없음, 406: 테이블 없음 - 둘 다 무시
+    if (error) {
+      return null
+    }
+
+    return data
+  } catch {
     return null
   }
-
-  return data
 }
 
 /**
@@ -84,7 +91,7 @@ export async function getSubscriptionHistory(userId) {
 /**
  * 새 구독 생성
  */
-export async function createSubscription({ userId, coachId, planType }) {
+export async function createSubscription({ userId, coachId, planType, depositorName }) {
   if (!isSupabaseConfigured()) {
     throw new Error('Supabase가 설정되지 않았습니다')
   }
@@ -112,12 +119,14 @@ export async function createSubscription({ userId, coachId, planType }) {
       user_id: userId,
       coach_id: coachId,
       plan_type: planType,
-      status: 'active',
+      status: 'pending', // 입금 확인 전까지 대기 상태
       sessions_per_month: plan.sessionsPerMonth,
       sessions_used_this_month: 0,
       current_period_start: now.toISOString(),
       current_period_end: periodEnd.toISOString(),
-      payment_status: 'unpaid' // 결제 시스템 연동 전까지
+      payment_status: 'pending', // 입금 대기
+      depositor_name: depositorName || null,
+      amount: plan.price
     })
     .select()
     .single()

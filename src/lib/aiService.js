@@ -343,6 +343,415 @@ JSON 형식으로 응답 (각 항목 1-2문장):
  * @param {Object} task - 과제 정보
  * @param {string} type - 'hint' | 'encourage' | 'stuck'
  */
+// ============================================
+// 코치용 AI 코칭 브리핑
+// ============================================
+
+/**
+ * 종합 코칭 브리핑 생성
+ * @param {Object} coacheeData - 피코치 정보 및 세션 데이터
+ * @param {Array} messages - 전체 대화 내역
+ * @param {Array} sessionNotes - 세션 노트 목록
+ * @param {Array} reflections - 피코치 성찰일지
+ * @param {number} currentSessionNumber - 현재 회기
+ * @returns {Promise<Object>} 코칭 브리핑 결과
+ */
+export async function generateCoachingBriefing(coacheeData, messages = [], sessionNotes = [], reflections = [], currentSessionNumber = 1) {
+  const apiKey = import.meta.env.VITE_OPENAI_API_KEY
+  if (!apiKey) throw new Error('API 키가 설정되지 않았습니다.')
+
+  // 회기별 차별화된 분석 포커스
+  const sessionFocus = getSessionFocus(currentSessionNumber)
+
+  const systemPrompt = `당신은 ADHD 코칭 전문가 어시스턴트입니다.
+피코치의 모든 데이터를 종합 분석하여 코치에게 전략적 브리핑을 제공합니다.
+
+## 분석 원칙
+1. 피코치의 원래 진술과 AI 해석을 명확히 분리
+2. 문제의 표면적 증상이 아닌 작동 구조(메커니즘) 분석
+3. 강점을 구체적 증거와 함께 제시
+4. 코칭 우선순위는 영향력과 실현가능성 고려
+5. 작은 실험은 실패해도 배울 수 있도록 설계
+
+## 현재 회기 포커스: ${currentSessionNumber}회기
+${sessionFocus}
+
+## JSON 응답 형식
+{
+  "briefingSummary": {
+    "headline": "한 줄 핵심 (코치가 가장 먼저 볼 내용)",
+    "keyTakeaways": ["핵심 포인트 1", "핵심 포인트 2", "핵심 포인트 3"],
+    "sessionProgress": "전체 여정에서 현재 위치 설명"
+  },
+
+  "coacheeStatements": {
+    "directQuotes": [
+      {"quote": "피코치 원문 인용", "context": "어떤 맥락에서", "significance": "왜 중요한지"}
+    ],
+    "selfDescriptions": {
+      "howTheySeeThemselves": "피코치가 자신을 어떻게 설명하는지",
+      "statedGoals": "피코치가 직접 말한 목표",
+      "expressedDifficulties": "피코치가 표현한 어려움"
+    }
+  },
+
+  "aiInterpretation": {
+    "beyondWords": "피코치가 직접 말하지 않았지만 읽히는 것",
+    "discrepancies": "진술과 행동 사이의 불일치",
+    "blindSpots": "피코치가 인식하지 못하는 것",
+    "underlyingNeeds": "근본적 욕구 추정",
+    "confidence": "해석의 확신도 (low/medium/high)"
+  },
+
+  "problemStructure": {
+    "surfaceIssue": "표면적으로 보이는 문제",
+    "triggerPattern": {
+      "triggers": ["트리거 1", "트리거 2"],
+      "responses": ["반응 패턴 1", "반응 패턴 2"],
+      "consequences": ["결과 1", "결과 2"]
+    },
+    "maintenanceFactors": ["문제를 유지시키는 요인들"],
+    "secondaryGains": "문제 행동의 숨겨진 이득 (있다면)",
+    "structuralDiagram": "트리거 → 자동사고 → 감정 → 행동 → 결과 의 흐름 요약"
+  },
+
+  "strengthsAnalysis": {
+    "evidencedStrengths": [
+      {"strength": "강점", "evidence": "구체적 증거", "coachingApplication": "코칭에서 활용법"}
+    ],
+    "emergingStrengths": ["아직 약하지만 발전 가능한 강점"],
+    "resourcesAvailable": ["활용 가능한 내외부 자원"]
+  },
+
+  "coachingPriorities": {
+    "immediateActions": [
+      {"action": "즉시 할 것", "rationale": "왜", "expectedOutcome": "기대 결과"}
+    ],
+    "sessionAgenda": [
+      {"topic": "이번 세션 주제", "approach": "접근법", "timeAllocation": "대략적 시간배분"}
+    ],
+    "avoidThisSession": ["이번 세션에서 피해야 할 것"],
+    "strategicDirection": "중장기 코칭 방향"
+  },
+
+  "suggestedQuestions": {
+    "openingQuestions": ["세션 시작 질문"],
+    "explorationQuestions": ["탐색을 위한 질문"],
+    "challengingQuestions": ["도전적 질문 (타이밍 주의)"],
+    "closingQuestions": ["세션 마무리 질문"]
+  },
+
+  "smallExperiments": [
+    {
+      "experimentName": "실험 이름",
+      "description": "무엇을 해보는가",
+      "duration": "기간 (예: 3일, 1주)",
+      "successCriteria": "성공 기준",
+      "failureLearning": "실패해도 배울 수 있는 것",
+      "adaptations": "ADHD 맞춤 조정 (예: 알림 설정, 시각화)"
+    }
+  ],
+
+  "coacheeVersion": {
+    "sessionPreview": "이번 세션에서 함께 이야기할 내용 (친근한 톤)",
+    "progressCelebration": "지금까지 잘해온 것 인정",
+    "simpleNextStep": "다음 단계 한 가지 (명확하고 작게)",
+    "encouragement": "격려 메시지"
+  },
+
+  "metaAnalysis": {
+    "coachingRelationship": "코칭 관계 평가",
+    "resistanceLevel": "저항/방어 수준 (low/medium/high)",
+    "readinessForChange": "변화 준비도",
+    "riskFactors": ["주의해야 할 위험 요소"],
+    "supervisorNote": "수퍼비전 시 논의할 점 (있다면)"
+  }
+}`
+
+  // 데이터 구성
+  const analysisData = buildBriefingData(coacheeData, messages, sessionNotes, reflections, currentSessionNumber)
+
+  const response = await fetch(OPENAI_API_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${apiKey}`
+    },
+    body: JSON.stringify({
+      model: 'gpt-4',
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: analysisData }
+      ],
+      temperature: 0.6,
+      max_tokens: 4000
+    })
+  })
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({}))
+    throw new Error(error.error?.message || 'AI 브리핑 생성 실패')
+  }
+
+  const data = await response.json()
+  return parseBriefingResponse(data)
+}
+
+/**
+ * 회기별 분석 포커스 결정
+ */
+function getSessionFocus(sessionNumber) {
+  const focusMap = {
+    1: `1회기 - 관계 형성 & 목표 설정
+- 신뢰 구축이 최우선
+- 피코치의 언어와 프레임 이해하기
+- 현실적이고 동기부여되는 목표 도출
+- ADHD 특성과 강점 탐색 시작`,
+
+    2: `2회기 - 실행 환경 설계
+- 목표를 구체적 행동으로 전환
+- 장애물 예측 및 대비책 수립
+- 작은 성공 경험 설계
+- 피코치 맞춤 루틴 초안`,
+
+    3: `3회기 - 감정/자기비난/재시작 훈련
+- 감정 인식 및 조절 전략
+- 자기비난 패턴 탐색 및 재구성
+- 중단 후 재시작 기술
+- 자기 연민 연습`,
+
+    4: `4회기 - 장애물 분석과 대응
+- 예상치 못한 장애물 분석
+- 회피/미루기 패턴 이해
+- 대안적 대응 전략 수립
+- 환경 조정`,
+
+    5: `5회기 - 루틴 점검 및 조정
+- 중간 점검
+- 작동하는 것과 안 하는 것 구분
+- 루틴 미세 조정
+- 동기 재점화`,
+
+    6: `6회기 - 중간 점검
+- 전반부 성찰
+- 목표 재설정 필요 여부 확인
+- 코칭 관계 점검
+- 후반부 전략 수립`,
+
+    7: `7회기 - 심화 작업
+- 핵심 패턴 깊이 탐색
+- 도전적 실험 시도
+- 자기 효능감 강화
+- 독립성 증진`,
+
+    8: `8회기 - 최종 점검 및 마무리
+- 전체 여정 성찰
+- 성장 인정 및 축하
+- 지속 전략 수립
+- 종결 준비 / 사후관리 안내`
+  }
+
+  return focusMap[sessionNumber] || focusMap[Math.min(sessionNumber, 8)]
+}
+
+/**
+ * 브리핑 분석용 데이터 구성
+ */
+function buildBriefingData(coacheeData, messages, sessionNotes, reflections, currentSessionNumber) {
+  // 최근 메시지 (토큰 제한 고려)
+  const recentMessages = messages.slice(-50)
+  const conversationText = recentMessages.map(msg => {
+    const role = msg.sender_role === 'coach' ? '코치' : '피코치'
+    return `[${role}]: ${msg.content || ''}`
+  }).join('\n')
+
+  // 세션 노트 요약
+  const notesText = sessionNotes.map((note, idx) => {
+    return `[${idx + 1}회기 노트]
+주제: ${note.main_topics?.join(', ') || '없음'}
+요약: ${note.summary || '없음'}
+다음 과제: ${note.next_actions?.join(', ') || '없음'}`
+  }).join('\n\n')
+
+  // 성찰일지 요약
+  const reflectionsText = reflections.slice(-5).map((ref, idx) => {
+    return `[성찰 ${idx + 1}]
+날짜: ${ref.date || ''}
+기분: ${ref.mood || ''}
+내용: ${ref.content?.substring(0, 200) || ''}...`
+  }).join('\n\n')
+
+  return `## 피코치 기본 정보
+- 이름: ${coacheeData.name || '미상'}
+- 패키지: ${coacheeData.packageType || '미상'}
+- 현재 회기: ${currentSessionNumber}/${coacheeData.totalSessions || 8}
+- 코칭 주제: ${coacheeData.topics?.join(', ') || '미설정'}
+- 시작일: ${coacheeData.startDate || '미상'}
+
+## 최근 대화 내역 (최근 ${recentMessages.length}개)
+${conversationText || '대화 기록 없음'}
+
+## 세션 노트 기록
+${notesText || '세션 노트 없음'}
+
+## 피코치 성찰일지
+${reflectionsText || '성찰일지 없음'}
+
+## 분석 요청
+위 데이터를 종합하여 ${currentSessionNumber}회기를 앞두고 코치가 참고할 종합 브리핑을 제공해주세요.
+피코치의 원래 진술과 AI의 해석을 명확히 구분하고, 구체적이고 실행 가능한 코칭 전략을 제안해주세요.`
+}
+
+/**
+ * 브리핑 응답 파싱
+ */
+function parseBriefingResponse(data) {
+  try {
+    const content = data.choices[0]?.message?.content || ''
+
+    let jsonStr = content
+    const jsonMatch = content.match(/```(?:json)?\s*([\s\S]*?)```/)
+    if (jsonMatch) {
+      jsonStr = jsonMatch[1]
+    }
+
+    return JSON.parse(jsonStr.trim())
+  } catch (err) {
+    console.error('브리핑 응답 파싱 실패:', err)
+    return getDefaultBriefing()
+  }
+}
+
+/**
+ * 기본 브리핑 구조 (파싱 실패 시)
+ */
+function getDefaultBriefing() {
+  return {
+    briefingSummary: {
+      headline: '분석을 위한 데이터가 부족합니다',
+      keyTakeaways: ['더 많은 대화가 필요합니다'],
+      sessionProgress: '초기 단계'
+    },
+    coacheeStatements: {
+      directQuotes: [],
+      selfDescriptions: {
+        howTheySeeThemselves: '정보 없음',
+        statedGoals: '정보 없음',
+        expressedDifficulties: '정보 없음'
+      }
+    },
+    aiInterpretation: {
+      beyondWords: '분석 불가',
+      discrepancies: '분석 불가',
+      blindSpots: '분석 불가',
+      underlyingNeeds: '분석 불가',
+      confidence: 'low'
+    },
+    problemStructure: {
+      surfaceIssue: '정보 부족',
+      triggerPattern: { triggers: [], responses: [], consequences: [] },
+      maintenanceFactors: [],
+      secondaryGains: '',
+      structuralDiagram: ''
+    },
+    strengthsAnalysis: {
+      evidencedStrengths: [],
+      emergingStrengths: [],
+      resourcesAvailable: []
+    },
+    coachingPriorities: {
+      immediateActions: [],
+      sessionAgenda: [],
+      avoidThisSession: [],
+      strategicDirection: '먼저 라포 형성에 집중'
+    },
+    suggestedQuestions: {
+      openingQuestions: ['오늘 어떤 마음으로 오셨나요?'],
+      explorationQuestions: [],
+      challengingQuestions: [],
+      closingQuestions: ['오늘 이야기 나누면서 어떠셨어요?']
+    },
+    smallExperiments: [],
+    coacheeVersion: {
+      sessionPreview: '이번 세션에서 함께 이야기 나눠요',
+      progressCelebration: '',
+      simpleNextStep: '',
+      encouragement: '함께 해나가요!'
+    },
+    metaAnalysis: {
+      coachingRelationship: '형성 중',
+      resistanceLevel: 'low',
+      readinessForChange: '평가 필요',
+      riskFactors: [],
+      supervisorNote: ''
+    }
+  }
+}
+
+/**
+ * 빠른 세션 준비 브리핑 (간소화 버전)
+ */
+export async function getQuickSessionBriefing(coacheeData, recentMessages = []) {
+  const apiKey = import.meta.env.VITE_OPENAI_API_KEY
+  if (!apiKey) throw new Error('API 키가 설정되지 않았습니다.')
+
+  const messagesText = recentMessages.slice(-20).map(msg => {
+    const role = msg.sender_role === 'coach' ? '코치' : '피코치'
+    return `[${role}]: ${msg.content || ''}`
+  }).join('\n')
+
+  const prompt = `ADHD 코칭 세션 빠른 브리핑을 제공하세요.
+
+피코치: ${coacheeData.name || '미상'}
+현재 회기: ${coacheeData.currentSession || 1}/${coacheeData.totalSessions || 8}
+
+최근 대화:
+${messagesText || '대화 없음'}
+
+JSON 응답:
+{
+  "headline": "오늘 세션 핵심 포인트 (1문장)",
+  "coacheeState": "피코치의 현재 상태 요약",
+  "topPriority": "가장 중요한 한 가지",
+  "openingQuestion": "세션 시작 질문",
+  "caution": "주의할 점 (있으면)"
+}`
+
+  const response = await fetch(OPENAI_API_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${apiKey}`
+    },
+    body: JSON.stringify({
+      model: 'gpt-4',
+      messages: [{ role: 'user', content: prompt }],
+      temperature: 0.7,
+      max_tokens: 500
+    })
+  })
+
+  if (!response.ok) throw new Error('빠른 브리핑 생성 실패')
+
+  const data = await response.json()
+  const content = data.choices[0]?.message?.content || ''
+
+  try {
+    let jsonStr = content
+    const match = content.match(/```(?:json)?\s*([\s\S]*?)```/)
+    if (match) jsonStr = match[1]
+    return JSON.parse(jsonStr.trim())
+  } catch {
+    return {
+      headline: '세션 준비 완료',
+      coacheeState: '정보 부족',
+      topPriority: '라포 형성',
+      openingQuestion: '오늘 어떻게 지내셨어요?',
+      caution: ''
+    }
+  }
+}
+
 export async function getTaskSupport(task, type = 'encourage') {
   const apiKey = import.meta.env.VITE_OPENAI_API_KEY
   if (!apiKey) throw new Error('API 키가 설정되지 않았습니다.')

@@ -13,14 +13,17 @@ import {
 import { ADHD_TYPES, PACKAGES } from '../../data/coachData'
 import { SessionDetailModal } from '../../components/coach/SessionDetailModal'
 import { TaskModal } from '../../components/coach/TaskModal'
+import { CoachAIBriefing } from '../../components/coach/CoachAIBriefing'
 import { coacheeService } from '../../lib'
+import { getOrCreateConversation, sendMessage, getMessages } from '../../lib/messageService'
+import { getCoacheeSessions } from '../../lib/sessionService'
 import { useStore } from '../../store/useStore'
-import { getOrCreateConversation, sendMessage } from '../../lib/messageService'
 import {
   ArrowLeft, User, Heart, AlertCircle, MessageCircle, Clock,
   Brain, Target, CheckCircle, Calendar, TrendingUp,
   FileText, ChevronRight, AlertTriangle, Zap, Layers,
-  Package, Plus, CalendarPlus, Edit3, Loader2, UserCheck, UserX
+  Package, Plus, CalendarPlus, Edit3, Loader2, UserCheck, UserX,
+  Sparkles, ChevronDown, ChevronUp
 } from 'lucide-react'
 
 const TYPE_ICONS = {
@@ -63,6 +66,9 @@ export function CoacheeDetailPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [accepting, setAccepting] = useState(false)
+  const [messages, setMessages] = useState([])
+  const [sessionNotes, setSessionNotes] = useState([])
+  const [showAIBriefing, setShowAIBriefing] = useState(false)
 
   // 모달 상태
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false)
@@ -77,7 +83,7 @@ export function CoacheeDetailPage() {
         setLoading(true)
         const data = await coacheeService.getCoacheeDetail(id)
         // 데이터 형식 변환
-        setCoachee({
+        const coacheeData = {
           id: data.id,
           userId: data.user_id,
           name: data.name,
@@ -99,7 +105,29 @@ export function CoacheeDetailPage() {
           coachingGoal: data.coaching_goal,
           tasks: data.tasks || [],
           sessionHistory: data.session_history || []
-        })
+        }
+        setCoachee(coacheeData)
+
+        // AI 브리핑을 위한 추가 데이터 로드 (user가 있을 때만)
+        if (user?.id && data.user_id) {
+          try {
+            // 메시지 로드 (대화방 조회 후 메시지 가져오기)
+            const conversation = await getOrCreateConversation(user.id, data.user_id)
+            if (conversation?.id) {
+              const msgs = await getMessages(conversation.id, 100)
+              setMessages(msgs || [])
+            }
+
+            // 세션 노트 로드
+            const sessions = await getCoacheeSessions(user.id, data.user_id)
+            const notes = sessions
+              .filter(s => s.session_notes && s.session_notes.length > 0)
+              .map(s => s.session_notes[0])
+            setSessionNotes(notes)
+          } catch (err) {
+            console.warn('AI 브리핑 데이터 로드 실패:', err)
+          }
+        }
       } catch (err) {
         if (err.message === 'LOCAL_MODE') {
           setError('Supabase가 설정되지 않았습니다.')
@@ -111,7 +139,7 @@ export function CoacheeDetailPage() {
       }
     }
     loadCoachee()
-  }, [id])
+  }, [id, user?.id])
 
   const pkg = coachee?.packageType ? PACKAGES[coachee.packageType] : null
 
@@ -373,6 +401,50 @@ export function CoacheeDetailPage() {
           </div>
         </CardContent>
       </Card>
+
+      {/* AI 코칭 브리핑 섹션 */}
+      {!isPending && (
+        <div className="space-y-3">
+          <button
+            onClick={() => setShowAIBriefing(!showAIBriefing)}
+            className="w-full flex items-center justify-between p-4 bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 rounded-xl hover:from-emerald-100 hover:to-teal-100 transition-colors"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-emerald-100 rounded-xl flex items-center justify-center">
+                <Sparkles className="w-5 h-5 text-emerald-600" />
+              </div>
+              <div className="text-left">
+                <h3 className="font-semibold text-emerald-900">AI 코칭 브리핑</h3>
+                <p className="text-sm text-emerald-700">
+                  피코치 분석, 코칭 전략, 질문 제안
+                </p>
+              </div>
+            </div>
+            {showAIBriefing ? (
+              <ChevronUp className="w-5 h-5 text-emerald-600" />
+            ) : (
+              <ChevronDown className="w-5 h-5 text-emerald-600" />
+            )}
+          </button>
+
+          {showAIBriefing && (
+            <CoachAIBriefing
+              coacheeData={{
+                name: coachee.name,
+                packageType: coachee.packageType,
+                totalSessions: coachee.totalSessions,
+                topics: coachee.topics,
+                startDate: coachee.matchedAt
+              }}
+              messages={messages}
+              sessionNotes={sessionNotes}
+              reflections={[]}
+              currentSessionNumber={coachee.currentSession + 1}
+              mode="full"
+            />
+          )}
+        </div>
+      )}
 
       <div className="grid grid-cols-2 gap-6">
         {/* 자기소개 */}

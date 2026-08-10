@@ -49,6 +49,7 @@ export function CoacheesPage() {
         // 뷰 데이터를 컴포넌트가 기대하는 형태로 변환
         const formatted = coacheesData.map(c => ({
           id: c.user_id || c.id,  // user_id를 기본 id로 사용
+          profileId: c.id,  // 프로필 ID (업데이트용)
           name: c.name,
           email: c.email,
           phone: c.phone,
@@ -64,6 +65,24 @@ export function CoacheesPage() {
           warningReason: c.warning_reason,
           topics: c.topics || []
         }))
+
+        // 모든 회기가 완료되었지만 status가 'completed'가 아닌 피코치 자동 수정
+        const needsSync = formatted.filter(c =>
+          c.currentSession > c.totalSessions && c.status !== 'completed'
+        )
+        if (needsSync.length > 0) {
+          console.log('완료 상태 동기화 필요:', needsSync.map(c => c.name))
+          for (const c of needsSync) {
+            try {
+              await coacheeService.updateCoacheeById(c.profileId, { status: 'completed' })
+              c.status = 'completed'
+              console.log(`${c.name} 상태를 completed로 변경 완료`)
+            } catch (err) {
+              console.error(`${c.name} 상태 변경 실패:`, err)
+            }
+          }
+        }
+
         setCoachees(formatted)
 
         // 구독자 데이터 변환
