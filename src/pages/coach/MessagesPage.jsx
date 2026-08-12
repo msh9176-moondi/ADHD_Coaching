@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/common/Card'
 import { Avatar } from '../../components/common/Avatar'
@@ -48,6 +48,10 @@ export function CoachMessagesPage() {
   const [showAIInsights, setShowAIInsights] = useState(false) // AI 분석 패널
   const [conversationId, setConversationId] = useState(null)
   const [showConversationList, setShowConversationList] = useState(true) // 모바일에서 대화 목록 표시 여부
+  const [expandedSections, setExpandedSections] = useState({
+    inProgress: true,
+    completed: false
+  })
 
   // 피코치 데이터 로드
   useEffect(() => {
@@ -122,6 +126,31 @@ export function CoachMessagesPage() {
   const filteredCoachees = coacheesData.filter(c =>
     c.name.toLowerCase().includes(searchQuery.toLowerCase())
   )
+
+  // 피코치를 상태별로 분류
+  const categorizedCoachees = useMemo(() => {
+    const inProgress = filteredCoachees.filter(c =>
+      c.currentSession > 0 && c.currentSession <= c.totalSessions
+    )
+    const completed = filteredCoachees.filter(c =>
+      c.currentSession > c.totalSessions
+    )
+    const newCoachees = filteredCoachees.filter(c =>
+      c.currentSession === 0
+    )
+    // 신규를 진행중에 포함
+    return {
+      inProgress: [...newCoachees, ...inProgress],
+      completed
+    }
+  }, [filteredCoachees])
+
+  const toggleSection = (section) => {
+    setExpandedSections(prev => ({
+      ...prev,
+      [section]: !prev[section]
+    }))
+  }
 
   const getLastMessage = (coacheeId) => {
     const msgs = coacheeMessages[coacheeId] || []
@@ -266,62 +295,70 @@ export function CoachMessagesPage() {
         </div>
 
         <div className="flex-1 overflow-y-auto">
-          {filteredCoachees.map((coachee) => {
-            const lastMsg = getLastMessage(coachee.id)
-            const isSelected = coachee.id === selectedCoacheeId
-
-            return (
+          {/* 진행중 섹션 */}
+          {categorizedCoachees.inProgress.length > 0 && (
+            <div>
               <button
-                key={coachee.id}
-                onClick={() => handleSelectCoachee(coachee.id)}
-                className={`w-full p-3 flex items-start gap-3 text-left hover:bg-gray-50 transition-colors border-b border-gray-100 ${
-                  isSelected ? 'bg-emerald-50' : ''
-                }`}
+                onClick={() => toggleSection('inProgress')}
+                className="w-full px-3 py-2 flex items-center justify-between bg-emerald-50 border-b border-emerald-100 hover:bg-emerald-100 transition-colors"
               >
-                <div className="relative">
-                  <Avatar name={coachee.name} size="sm" />
-                  <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-white rounded-full" />
-                </div>
-
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between mb-0.5">
-                    <span className={`font-medium text-sm ${isSelected ? 'text-emerald-700' : 'text-gray-900'}`}>
-                      {coachee.name}
-                    </span>
-                    {lastMsg && (
-                      <span className="text-xs text-gray-400">{lastMsg.timestamp}</span>
-                    )}
-                  </div>
-
-                  <p className="text-xs text-gray-500 truncate">
-                    {lastMsg ? (
-                      <>
-                        {lastMsg.isOwn && <span className="text-gray-400">나: </span>}
-                        {lastMsg.content}
-                      </>
-                    ) : (
-                      <span className="text-gray-400">대화 시작</span>
-                    )}
-                  </p>
-
-                  <div className="flex items-center gap-1 mt-1 text-xs text-gray-400">
-                    {coachee.packageType && PACKAGES[coachee.packageType] && (
-                      <span className={`px-1.5 py-0 rounded-full text-[10px] font-medium ${packageColors[coachee.packageType]}`}>
-                        {PACKAGES[coachee.packageType].icon}
-                      </span>
-                    )}
-                    <span>
-                      {Math.min(coachee.currentSession, coachee.totalSessions)}/{coachee.totalSessions}회기
-                      {coachee.currentSession > coachee.totalSessions && ' ✓'}
-                    </span>
-                    {coachee.hasWarning && (
-                      <Badge variant="warning" className="text-xs px-1 py-0 ml-1">주의</Badge>
-                    )}
-                  </div>
-                </div>
+                <span className="text-xs font-semibold text-emerald-700 flex items-center gap-1.5">
+                  <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
+                  진행중 ({categorizedCoachees.inProgress.length})
+                </span>
+                {expandedSections.inProgress ? (
+                  <ChevronUp className="w-4 h-4 text-emerald-600" />
+                ) : (
+                  <ChevronDown className="w-4 h-4 text-emerald-600" />
+                )}
               </button>
-            )
-          })}
+              {expandedSections.inProgress && categorizedCoachees.inProgress.map((coachee) => (
+                <CoacheeListItem
+                  key={coachee.id}
+                  coachee={coachee}
+                  isSelected={coachee.id === selectedCoacheeId}
+                  lastMsg={getLastMessage(coachee.id)}
+                  onClick={() => handleSelectCoachee(coachee.id)}
+                />
+              ))}
+            </div>
+          )}
+
+          {/* 완료 섹션 */}
+          {categorizedCoachees.completed.length > 0 && (
+            <div>
+              <button
+                onClick={() => toggleSection('completed')}
+                className="w-full px-3 py-2 flex items-center justify-between bg-gray-100 border-b border-gray-200 hover:bg-gray-200 transition-colors"
+              >
+                <span className="text-xs font-semibold text-gray-600 flex items-center gap-1.5">
+                  <CheckCircle className="w-3.5 h-3.5 text-gray-500" />
+                  완료 ({categorizedCoachees.completed.length})
+                </span>
+                {expandedSections.completed ? (
+                  <ChevronUp className="w-4 h-4 text-gray-500" />
+                ) : (
+                  <ChevronDown className="w-4 h-4 text-gray-500" />
+                )}
+              </button>
+              {expandedSections.completed && categorizedCoachees.completed.map((coachee) => (
+                <CoacheeListItem
+                  key={coachee.id}
+                  coachee={coachee}
+                  isSelected={coachee.id === selectedCoacheeId}
+                  lastMsg={getLastMessage(coachee.id)}
+                  onClick={() => handleSelectCoachee(coachee.id)}
+                />
+              ))}
+            </div>
+          )}
+
+          {/* 목록이 비어있을 때 */}
+          {filteredCoachees.length === 0 && (
+            <div className="p-4 text-center text-gray-500 text-sm">
+              피코치가 없습니다.
+            </div>
+          )}
         </div>
       </Card>
 
@@ -1646,5 +1683,59 @@ function CoacheeInfoPanel({ coachee, onClose }) {
       </div>
     </Card>
     </>
+  )
+}
+
+// 피코치 목록 아이템 컴포넌트
+function CoacheeListItem({ coachee, isSelected, lastMsg, onClick }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`w-full p-3 flex items-start gap-3 text-left hover:bg-gray-50 transition-colors border-b border-gray-100 ${
+        isSelected ? 'bg-emerald-50' : ''
+      }`}
+    >
+      <div className="relative">
+        <Avatar name={coachee.name} size="sm" />
+        <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-white rounded-full" />
+      </div>
+
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center justify-between mb-0.5">
+          <span className={`font-medium text-sm ${isSelected ? 'text-emerald-700' : 'text-gray-900'}`}>
+            {coachee.name}
+          </span>
+          {lastMsg && (
+            <span className="text-xs text-gray-400">{lastMsg.timestamp}</span>
+          )}
+        </div>
+
+        <p className="text-xs text-gray-500 truncate">
+          {lastMsg ? (
+            <>
+              {lastMsg.isOwn && <span className="text-gray-400">나: </span>}
+              {lastMsg.content}
+            </>
+          ) : (
+            <span className="text-gray-400">대화 시작</span>
+          )}
+        </p>
+
+        <div className="flex items-center gap-1 mt-1 text-xs text-gray-400">
+          {coachee.packageType && PACKAGES[coachee.packageType] && (
+            <span className={`px-1.5 py-0 rounded-full text-[10px] font-medium ${packageColors[coachee.packageType]}`}>
+              {PACKAGES[coachee.packageType].icon}
+            </span>
+          )}
+          <span>
+            {Math.min(coachee.currentSession, coachee.totalSessions)}/{coachee.totalSessions}회기
+            {coachee.currentSession > coachee.totalSessions && ' ✓'}
+          </span>
+          {coachee.hasWarning && (
+            <Badge variant="warning" className="text-xs px-1 py-0 ml-1">주의</Badge>
+          )}
+        </div>
+      </div>
+    </button>
   )
 }
