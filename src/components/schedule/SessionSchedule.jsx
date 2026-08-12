@@ -4,10 +4,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '../common/Card'
 import { Button } from '../common/Button'
 import { Badge } from '../common/Badge'
 import { useStore } from '../../store/useStore'
-import { getCoachSessions, getSessionsForCoachee } from '../../lib/sessionService'
+import { getCoachSessions, getSessionsForCoachee, deleteSession } from '../../lib/sessionService'
 import { SessionDetailModal } from '../coach/SessionDetailModal'
 import { SessionEditModal } from './SessionEditModal'
-import { Calendar, Clock, MessageSquare, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react'
+import { Calendar, Clock, MessageSquare, ChevronLeft, ChevronRight, Loader2, Trash2 } from 'lucide-react'
 
 export function SessionSchedule({ userRole = 'coachee', coacheeId = null }) {
   const navigate = useNavigate()
@@ -49,6 +49,28 @@ export function SessionSchedule({ userRole = 'coachee', coacheeId = null }) {
     setDbSessions(prev => prev.filter(s => s.id !== sessionId))
     if (removeSession) {
       removeSession(sessionId)
+    }
+  }
+
+  // 예약 취소 (피코치용)
+  const [cancellingId, setCancellingId] = useState(null)
+  const handleCancelSession = async (session) => {
+    if (!window.confirm('예약을 취소하시겠습니까?')) return
+
+    setCancellingId(session.id)
+    try {
+      // 세션 삭제
+      await deleteSession(session.id)
+      // 로컬 상태 업데이트
+      setDbSessions(prev => prev.filter(s => s.id !== session.id))
+      if (removeSession) {
+        removeSession(session.id)
+      }
+    } catch (err) {
+      console.error('예약 취소 실패:', err)
+      alert('예약 취소에 실패했습니다.')
+    } finally {
+      setCancellingId(null)
     }
   }
 
@@ -185,12 +207,17 @@ export function SessionSchedule({ userRole = 'coachee', coacheeId = null }) {
         </CardContent>
       </Card>
 
-      {/* 예약하기 버튼 (피코치) */}
-      {userRole === 'coachee' && (
-        <Button className="w-full" size="lg" onClick={() => openBookingModal()}>
-          <Calendar className="w-4 h-4 mr-2" />
-          새 상담 예약하기
-        </Button>
+      {/* 첫 상담 예약하기 버튼 (피코치 - 상담 기록이 없을 때만) */}
+      {userRole === 'coachee' && sessions.length === 0 && !loading && (
+        <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl">
+          <p className="text-sm text-emerald-700 mb-3 text-center">
+            아직 예약된 상담이 없습니다. 첫 상담을 예약해보세요!
+          </p>
+          <Button className="w-full" size="lg" onClick={() => openBookingModal()}>
+            <Calendar className="w-4 h-4 mr-2" />
+            첫 상담 예약하기
+          </Button>
+        </div>
       )}
 
       {/* 다가오는 세션 */}
@@ -237,8 +264,11 @@ export function SessionSchedule({ userRole = 'coachee', coacheeId = null }) {
                 session={session}
                 formatDate={formatDate}
                 showCoacheeName={userRole === 'coach'}
+                userRole={userRole}
                 onViewDetail={handleViewDetail}
                 onEnterSession={handleEnterSession}
+                onCancel={handleCancelSession}
+                isCancelling={cancellingId === session.id}
               />
             ))
           )}
@@ -277,10 +307,11 @@ export function SessionSchedule({ userRole = 'coachee', coacheeId = null }) {
   )
 }
 
-function SessionCard({ session, formatDate, showCoacheeName = false, onViewDetail, onEnterSession }) {
+function SessionCard({ session, formatDate, showCoacheeName = false, userRole = 'coachee', onViewDetail, onEnterSession, onCancel, isCancelling }) {
   // snake_case (Supabase) / camelCase 둘 다 지원
   const sessionNumber = session.session_number || session.sessionNumber
   const coacheeName = session.coachee_name || session.coacheeName
+  const isCoachee = userRole === 'coachee'
 
   return (
     <div className="flex flex-col md:flex-row md:items-center gap-3 md:gap-4 p-3 md:p-4 bg-gray-50 rounded-xl">
@@ -345,9 +376,26 @@ function SessionCard({ session, formatDate, showCoacheeName = false, onViewDetai
           상세보기
         </Button>
         {session.status === 'scheduled' && (
-          <Button size="sm" onClick={() => onEnterSession(session)} className="text-xs md:text-sm">
-            입장하기
-          </Button>
+          <>
+            <Button size="sm" onClick={() => onEnterSession(session)} className="text-xs md:text-sm">
+              입장하기
+            </Button>
+            {/* 피코치 예약 취소 버튼 */}
+            {isCoachee && onCancel && (
+              <button
+                onClick={() => onCancel(session)}
+                disabled={isCancelling}
+                className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
+                title="예약 취소"
+              >
+                {isCancelling ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Trash2 className="w-4 h-4" />
+                )}
+              </button>
+            )}
+          </>
         )}
       </div>
     </div>

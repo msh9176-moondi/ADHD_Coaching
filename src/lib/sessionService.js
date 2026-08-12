@@ -312,7 +312,7 @@ export async function updateSession(sessionId, updates) {
   return data
 }
 
-// 세션 삭제 (세션일지도 함께 삭제)
+// 세션 삭제 (세션일지도 함께 삭제, 슬롯 해제)
 export async function deleteSession(sessionId) {
   if (!isSupabaseConfigured()) throw new Error('LOCAL_MODE')
 
@@ -324,6 +324,20 @@ export async function deleteSession(sessionId) {
 
   if (noteError) {
     console.error('세션일지 삭제 실패:', noteError)
+  }
+
+  // 연결된 슬롯 해제 (있는 경우)
+  const { error: slotError } = await supabase
+    .from('coach_available_slots')
+    .update({
+      is_booked: false,
+      booked_by: null,
+      session_id: null
+    })
+    .eq('session_id', sessionId)
+
+  if (slotError) {
+    console.error('슬롯 해제 실패:', slotError)
   }
 
   // 세션 삭제

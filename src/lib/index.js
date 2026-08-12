@@ -30,3 +30,6 @@ export * as reflectionService from './reflectionService'
 
 // 결과 보고서
 export * as reportService from './reportService'
+
+// 코치 가용 시간
+export * as availabilityService from './availabilityService'
