@@ -106,6 +106,7 @@ export function CoachMessagesPage() {
   }, [user?.id])
 
   const selectedCoachee = coacheesData.find(c => c.id === selectedCoacheeId)
+    || subscribers.find(s => s.userId === selectedCoacheeId)
   const messages = coacheeMessages[selectedCoacheeId] || []
 
   // 피코치 선택 시 대화방 생성/조회
