@@ -99,9 +99,9 @@ export function MessageList({
   const inputRef = useRef(null)
   const navigate = useNavigate()
 
-  // 성찰일지 페이지로 이동 핸들러
+  // 성찰일지 페이지로 이동 핸들러 (바로 작성 화면으로)
   const handleNavigateToReflection = () => {
-    navigate('/coachee/reflections')
+    navigate('/coachee/reflections', { state: { showNew: true } })
   }
 
   const declarationCompleted = messages.some(
@@ -110,11 +110,17 @@ export function MessageList({
 
   const scrollToBottom = (smooth = true) => {
     // requestAnimationFrame으로 DOM 업데이트 후 스크롤
+    // scrollIntoView 대신 컨테이너 직접 스크롤 (외부 페이지 스크롤 영향 방지)
     requestAnimationFrame(() => {
-      if (messagesEndRef.current) {
-        messagesEndRef.current.scrollIntoView({ behavior: smooth ? 'smooth' : 'instant', block: 'end' })
-      } else if (messagesContainerRef.current) {
-        messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight
+      if (messagesContainerRef.current) {
+        if (smooth) {
+          messagesContainerRef.current.scrollTo({
+            top: messagesContainerRef.current.scrollHeight,
+            behavior: 'smooth'
+          })
+        } else {
+          messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight
+        }
       }
     })
   }

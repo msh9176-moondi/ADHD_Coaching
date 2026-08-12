@@ -219,6 +219,100 @@ ${context.currentTask ? `진행 중인 과제: ${context.currentTask}` : ''}`
 }
 
 /**
+ * 채팅 내역 기반 성찰일지 도우미
+ * @param {Array} messages - 채팅 내역
+ * @param {string} topicTitle - 선택된 코칭 주제
+ * @param {number} sessionNumber - 회기 번호
+ */
+export async function getSessionReflectionHelper(messages = [], topicTitle = '', sessionNumber = 1) {
+  const apiKey = import.meta.env.VITE_OPENAI_API_KEY
+  if (!apiKey) throw new Error('API 키가 설정되지 않았습니다.')
+
+  // 최근 메시지만 분석 (토큰 제한 고려)
+  const recentMessages = messages.slice(-40)
+  const conversationText = recentMessages.map(msg => {
+    const role = msg.sender === 'coach' || msg.sender_role === 'coach' ? '코치' : '피코치'
+    return `[${role}]: ${msg.content || ''}`
+  }).join('\n')
+
+  const prompt = `당신은 ADHD 코칭 피코치의 성찰일지 작성을 돕는 따뜻한 도우미입니다.
+아래 코칭 대화 내역을 분석하여 피코치가 성찰일지를 쉽게 작성할 수 있도록 조언해주세요.
+
+## 대화 내역
+${conversationText || '대화 내역 없음'}
+
+## 회기 정보
+- 회기: ${sessionNumber}회기
+- 코칭 주제: ${topicTitle || '미선택'}
+
+## 요청
+위 대화를 바탕으로 피코치가 성찰일지를 작성하는 데 도움이 될 내용을 JSON 형식으로 제공해주세요.
+피코치의 언어와 표현을 최대한 활용하고, 강요하지 않는 부드러운 제안으로 작성해주세요.
+
+JSON 응답 형식:
+{
+  "sessionSummary": "이번 회기에서 다룬 핵심 내용 요약 (2-3문장)",
+  "keyMoments": ["인상 깊었던 순간 1", "순간 2"],
+  "learnedSuggestions": [
+    "배운 점 제안 1 (피코치가 직접 표현한 내용 활용)",
+    "배운 점 제안 2"
+  ],
+  "actionPlanSuggestions": [
+    {
+      "action": "구체적인 액션플랜",
+      "why": "왜 이게 도움이 될지",
+      "howSmall": "더 작게 시작하려면"
+    }
+  ],
+  "nextSessionSuggestions": [
+    "다음 회기에서 다루면 좋을 주제 1",
+    "주제 2"
+  ],
+  "encouragement": "피코치에게 전하는 따뜻한 격려 메시지 (1-2문장)",
+  "scoreHint": "점수 변화에 대한 힌트 (예: '오늘 새로운 시도를 했으니 점수를 올려도 좋을 것 같아요')"
+}`
+
+  const response = await fetch(OPENAI_API_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${apiKey}`
+    },
+    body: JSON.stringify({
+      model: 'gpt-4',
+      messages: [{ role: 'user', content: prompt }],
+      temperature: 0.7,
+      max_tokens: 1500
+    })
+  })
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({}))
+    throw new Error(error.error?.message || 'AI 응답 실패')
+  }
+
+  const data = await response.json()
+  const content = data.choices[0]?.message?.content || ''
+
+  try {
+    let jsonStr = content
+    const match = content.match(/```(?:json)?\s*([\s\S]*?)```/)
+    if (match) jsonStr = match[1]
+    return JSON.parse(jsonStr.trim())
+  } catch {
+    return {
+      sessionSummary: '대화 내용을 분석하는 데 문제가 발생했습니다.',
+      keyMoments: [],
+      learnedSuggestions: ['오늘 코칭에서 새롭게 알게 된 것을 적어보세요.'],
+      actionPlanSuggestions: [{ action: '작은 한 가지부터 시작해보세요', why: '작은 성공이 큰 변화로 이어져요', howSmall: '5분만 해보기' }],
+      nextSessionSuggestions: ['다음에 이야기하고 싶은 주제를 생각해보세요'],
+      encouragement: '성찰하는 것 자체가 큰 성장이에요!',
+      scoreHint: ''
+    }
+  }
+}
+
+/**
  * 성찰 도우미 - 질문 생성
  * @param {Object} context - 현재 성찰 내용
  */

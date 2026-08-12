@@ -1,3 +1,5 @@
+import { forwardRef } from 'react'
+
 export function Card({ children, className = '', ...props }) {
   return (
     <div
@@ -25,10 +27,10 @@ export function CardTitle({ children, className = '' }) {
   )
 }
 
-export function CardContent({ children, className = '' }) {
+export const CardContent = forwardRef(({ children, className = '' }, ref) => {
   return (
-    <div className={`px-4 md:px-6 py-3 md:py-4 ${className}`}>
+    <div ref={ref} className={`px-4 md:px-6 py-3 md:py-4 ${className}`}>
       {children}
     </div>
   )
-}
+})

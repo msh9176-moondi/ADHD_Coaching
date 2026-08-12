@@ -1,11 +1,46 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '../common/Card'
 import { Button } from '../common/Button'
 import { Textarea } from '../common/Input'
-import { AIQuestionSuggester } from './AIReflectionHelper'
-import { BookOpen, Lightbulb, Rocket, Star, ChevronDown, Target } from 'lucide-react'
+import { getSessionReflectionHelper, isAIConfigured } from '../../lib/aiService'
+import { BookOpen, Lightbulb, Rocket, Star, ChevronDown, Target, Sparkles, Loader2, Calendar, TrendingUp } from 'lucide-react'
 
-export function ReflectionNote({ session, initialData, onSubmit, onCancel, isEditing = false, coachingTopics = [] }) {
+// 인라인 AI 제안 컴포넌트 - 입력 필드 바로 위에 표시
+function InlineSuggestion({ suggestions = [], onApply, color = 'emerald' }) {
+  if (!suggestions || suggestions.length === 0) return null
+
+  const colorClasses = {
+    emerald: 'bg-emerald-50 border-emerald-200 text-emerald-700 hover:bg-emerald-100',
+    blue: 'bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100',
+    indigo: 'bg-indigo-50 border-indigo-200 text-indigo-700 hover:bg-indigo-100',
+  }
+
+  return (
+    <div className="flex flex-wrap gap-1.5 mb-2">
+      {suggestions.map((suggestion, idx) => {
+        // suggestion이 object인 경우 (액션플랜)
+        const text = typeof suggestion === 'string' ? suggestion : suggestion.action
+        const extra = typeof suggestion === 'object' ? suggestion : null
+
+        return (
+          <button
+            key={idx}
+            type="button"
+            onClick={() => onApply(text)}
+            className={`px-3 py-1.5 text-xs rounded-lg border transition-colors text-left ${colorClasses[color]}`}
+          >
+            <span className="font-medium">{text}</span>
+            {extra?.howSmall && (
+              <span className="block text-[10px] opacity-75 mt-0.5">🎯 {extra.howSmall}</span>
+            )}
+          </button>
+        )
+      })}
+    </div>
+  )
+}
+
+export function ReflectionNote({ session, initialData, onSubmit, onCancel, isEditing = false, coachingTopics = [], chatMessages = [] }) {
   const [reflection, setReflection] = useState({
     topic: initialData?.topic || '',
     previousScore: initialData?.previousScore || 5,
@@ -17,12 +52,45 @@ export function ReflectionNote({ session, initialData, onSubmit, onCancel, isEdi
   })
   const [showTopicDropdown, setShowTopicDropdown] = useState(false)
 
+  // AI 분석 상태
+  const [aiData, setAiData] = useState(null)
+  const [aiLoading, setAiLoading] = useState(false)
+  const [aiError, setAiError] = useState(null)
+
   const handleChange = (field, value) => {
     setReflection(prev => ({ ...prev, [field]: value }))
   }
 
   const handleSubmit = () => {
-    onSubmit?.(reflection)
+    onSubmit?.(reflection, session?.sessionNumber || 1)
+  }
+
+  // AI 분석 실행
+  const handleAIAnalyze = async () => {
+    if (chatMessages.length === 0) {
+      setAiError('분석할 채팅 내역이 없습니다.')
+      return
+    }
+
+    setAiLoading(true)
+    setAiError(null)
+    try {
+      const result = await getSessionReflectionHelper(chatMessages, reflection.topic, session?.sessionNumber || 1)
+      setAiData(result)
+    } catch (err) {
+      console.error('AI 분석 실패:', err)
+      setAiError('AI 분석에 실패했습니다.')
+    } finally {
+      setAiLoading(false)
+    }
+  }
+
+  // 제안 적용 핸들러
+  const applyToField = (field, value) => {
+    setReflection(prev => ({
+      ...prev,
+      [field]: prev[field] ? `${prev[field]}\n${value}` : value
+    }))
   }
 
   return (
@@ -34,18 +102,73 @@ export function ReflectionNote({ session, initialData, onSubmit, onCancel, isEdi
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
-        {/* AI 질문 도우미 */}
-        <AIQuestionSuggester
-          sessionNumber={session?.sessionNumber || 1}
-          mood=""
-          content={reflection.topic || reflection.learned}
-          onSelectQuestion={(q) => {
-            // 질문을 '배운 점' 필드에 힌트로 추가
-            if (!reflection.learned) {
-              handleChange('learned', `[질문] ${q}\n\n`)
-            }
-          }}
-        />
+        {/* AI 분석 버튼 & 회기 요약 */}
+        {isAIConfigured() && (
+          <div className="space-y-3">
+            {!aiData ? (
+              <div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleAIAnalyze}
+                  disabled={aiLoading || chatMessages.length === 0}
+                  className="text-purple-600 border-purple-300 hover:bg-purple-50"
+                >
+                  {aiLoading ? (
+                    <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                  ) : (
+                    <Sparkles className="w-4 h-4 mr-1" />
+                  )}
+                  {aiLoading ? 'AI가 채팅 분석 중...' : 'AI 성찰 도우미'}
+                </Button>
+                {chatMessages.length === 0 && (
+                  <p className="text-xs text-gray-400 mt-1">채팅 내역이 있어야 분석할 수 있어요</p>
+                )}
+                {aiError && <p className="text-xs text-red-500 mt-1">{aiError}</p>}
+              </div>
+            ) : (
+              <div className="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl p-4 border border-purple-100">
+                <div className="flex items-center gap-2 mb-2">
+                  <Sparkles className="w-4 h-4 text-purple-600" />
+                  <span className="text-sm font-medium text-purple-800">이번 회기 요약</span>
+                  <button
+                    onClick={handleAIAnalyze}
+                    disabled={aiLoading}
+                    className="ml-auto text-xs text-purple-500 hover:text-purple-700"
+                  >
+                    {aiLoading ? '분석 중...' : '다시 분석'}
+                  </button>
+                </div>
+                <p className="text-sm text-gray-700">{aiData.sessionSummary}</p>
+
+                {/* 인상 깊었던 순간 */}
+                {aiData.keyMoments?.length > 0 && (
+                  <div className="mt-3 pt-3 border-t border-purple-100">
+                    <p className="text-xs text-amber-600 font-medium mb-1">💡 인상 깊었던 순간</p>
+                    <ul className="space-y-0.5">
+                      {aiData.keyMoments.map((moment, idx) => (
+                        <li key={idx} className="text-xs text-gray-600">• {moment}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {/* 점수 힌트 */}
+                {aiData.scoreHint && (
+                  <div className="mt-3 pt-3 border-t border-purple-100 flex items-center gap-2">
+                    <TrendingUp className="w-3 h-3 text-green-600" />
+                    <p className="text-xs text-green-700">{aiData.scoreHint}</p>
+                  </div>
+                )}
+
+                {/* 격려 메시지 */}
+                {aiData.encouragement && (
+                  <p className="mt-3 text-xs text-center text-pink-600">✨ {aiData.encouragement}</p>
+                )}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* 코칭 주제 */}
         <div className="space-y-2">
@@ -54,7 +177,6 @@ export function ReflectionNote({ session, initialData, onSubmit, onCancel, isEdi
             오늘의 코칭 주제
           </label>
 
-          {/* 목표합의서 주제가 있으면 드롭다운 표시 */}
           {coachingTopics.length > 0 ? (
             <div className="relative">
               <button
@@ -76,7 +198,6 @@ export function ReflectionNote({ session, initialData, onSubmit, onCancel, isEdi
                       type="button"
                       onClick={() => {
                         handleChange('topic', topic.title)
-                        // 이전 점수를 해당 주제의 현재 점수로 자동 설정
                         handleChange('previousScore', topic.currentScore || 1)
                         setShowTopicDropdown(false)
                       }}
@@ -110,7 +231,6 @@ export function ReflectionNote({ session, initialData, onSubmit, onCancel, isEdi
                 </div>
               )}
 
-              {/* 직접 입력 모드 */}
               {!reflection.topic && !showTopicDropdown && (
                 <input
                   type="text"
@@ -131,7 +251,6 @@ export function ReflectionNote({ session, initialData, onSubmit, onCancel, isEdi
             />
           )}
 
-          {/* 선택된 주제의 점수 변화 안내 */}
           {coachingTopics.length > 0 && reflection.topic && coachingTopics.find(t => t.title === reflection.topic) && (
             <p className="text-xs text-emerald-600 flex items-center gap-1">
               <Target className="w-3 h-3" />
@@ -176,12 +295,17 @@ export function ReflectionNote({ session, initialData, onSubmit, onCancel, isEdi
           </div>
         </div>
 
-        {/* 배운 점 */}
+        {/* 배운 점 - AI 제안이 바로 위에 */}
         <div className="space-y-2">
           <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
             <Lightbulb className="w-4 h-4 text-yellow-500" />
             배운 점
           </label>
+          <InlineSuggestion
+            suggestions={aiData?.learnedSuggestions}
+            onApply={(text) => applyToField('learned', text)}
+            color="emerald"
+          />
           <Textarea
             value={reflection.learned}
             onChange={(e) => handleChange('learned', e.target.value)}
@@ -204,12 +328,17 @@ export function ReflectionNote({ session, initialData, onSubmit, onCancel, isEdi
           />
         </div>
 
-        {/* 액션플랜 */}
+        {/* 액션플랜 - AI 제안이 바로 위에 */}
         <div className="space-y-2">
           <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
             <Rocket className="w-4 h-4 text-emerald-500" />
             액션플랜
           </label>
+          <InlineSuggestion
+            suggestions={aiData?.actionPlanSuggestions}
+            onApply={(text) => applyToField('actionPlan', text)}
+            color="blue"
+          />
           <Textarea
             value={reflection.actionPlan}
             onChange={(e) => handleChange('actionPlan', e.target.value)}
@@ -218,9 +347,17 @@ export function ReflectionNote({ session, initialData, onSubmit, onCancel, isEdi
           />
         </div>
 
-        {/* 다음 회기 기대 */}
+        {/* 다음 회기 기대 - AI 제안이 바로 위에 */}
         <div className="space-y-2">
-          <label className="text-sm font-medium text-gray-700">다음 회기 기대사항</label>
+          <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
+            <Calendar className="w-4 h-4 text-indigo-500" />
+            다음 회기 기대사항
+          </label>
+          <InlineSuggestion
+            suggestions={aiData?.nextSessionSuggestions}
+            onApply={(text) => applyToField('nextExpectation', text)}
+            color="indigo"
+          />
           <Textarea
             value={reflection.nextExpectation}
             onChange={(e) => handleChange('nextExpectation', e.target.value)}

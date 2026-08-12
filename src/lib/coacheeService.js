@@ -485,7 +485,16 @@ export async function getCoachingTopics(userId) {
     .order('created_at', { ascending: true })
 
   if (error) throw error
-  return data || []
+
+  // snake_case → camelCase 변환
+  return (data || []).map(topic => ({
+    id: topic.id,
+    title: topic.title,
+    description: topic.description,
+    startScore: topic.start_score,
+    currentScore: topic.current_score,
+    targetScore: topic.target_score
+  }))
 }
 
 // 피코치 코칭 목표 조회

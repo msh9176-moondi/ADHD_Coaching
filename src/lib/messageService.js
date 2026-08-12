@@ -68,7 +68,7 @@ export async function getUserConversations(userId, role) {
 }
 
 // 대화방의 메시지 조회 (최신 N개를 시간순으로 반환)
-export async function getMessages(conversationId, limit = 50) {
+export async function getMessages(conversationId, limit = 500) {
   if (!isSupabaseConfigured()) throw new Error('LOCAL_MODE')
 
   // 최신 메시지부터 limit개를 가져온 후, 시간순으로 정렬

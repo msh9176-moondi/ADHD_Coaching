@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useLocation } from 'react-router-dom'
 import { ReflectionNote } from '../../components/coachee/ReflectionNote'
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/common/Card'
 import { Badge } from '../../components/common/Badge'
@@ -7,6 +8,7 @@ import { PageHeader } from '../../components/common/PageHeader'
 import { useStore } from '../../store/useStore'
 import { reflectionService, coacheeService } from '../../lib'
 import { isSupabaseConfigured } from '../../lib/supabase'
+import { getMessages, getOrCreateConversation } from '../../lib/messageService'
 import {
   BookOpen, ChevronRight, ChevronLeft, Lightbulb, Star, Rocket,
   Calendar, TrendingUp, Edit3, Loader2
@@ -20,12 +22,16 @@ function formatDate(dateString) {
 }
 
 export function ReflectionsPage() {
-  const { user } = useStore()
-  const [showNewReflection, setShowNewReflection] = useState(false)
+  const { user, matchedCoach } = useStore()
+  const location = useLocation()
+
+  // 채팅에서 바로 온 경우 새 성찰일지 작성 화면 표시
+  const [showNewReflection, setShowNewReflection] = useState(location.state?.showNew || false)
   const [selectedReflection, setSelectedReflection] = useState(null)
   const [isEditing, setIsEditing] = useState(false)
   const [reflections, setReflections] = useState([])
   const [coachingTopics, setCoachingTopics] = useState([])
+  const [chatMessages, setChatMessages] = useState([])
   const [loading, setLoading] = useState(true)
   const [currentSession, setCurrentSession] = useState(1)
 
@@ -53,6 +59,20 @@ export function ReflectionsPage() {
         } catch {
           setCoachingTopics([])
         }
+
+        // 채팅 내역 로드 (AI 분석용)
+        try {
+          if (matchedCoach?.coachId) {
+            const conversation = await getOrCreateConversation(matchedCoach.coachId, user.id)
+            if (conversation?.id) {
+              const messages = await getMessages(conversation.id)
+              setChatMessages(messages || [])
+            }
+          }
+        } catch (err) {
+          console.warn('채팅 내역 로드 실패:', err)
+          setChatMessages([])
+        }
       } catch (err) {
         console.warn('데이터 로드 실패:', err)
         setReflections([])
@@ -61,9 +81,9 @@ export function ReflectionsPage() {
       }
     }
     loadData()
-  }, [user?.id])
+  }, [user?.id, matchedCoach?.coachId])
 
-  const handleSubmit = async (data) => {
+  const handleSubmit = async (data, sessionNumber) => {
     if (!user?.id || !isSupabaseConfigured()) {
       console.log('Reflection submitted (local):', data)
       setShowNewReflection(false)
@@ -71,7 +91,7 @@ export function ReflectionsPage() {
     }
 
     try {
-      await reflectionService.createReflection(user.id, data.sessionNumber || 1, data)
+      await reflectionService.createReflection(user.id, sessionNumber, data)
       // 목록 새로고침
       const updatedList = await reflectionService.getCoacheeReflections(user.id)
       setReflections(updatedList || [])
@@ -82,10 +102,10 @@ export function ReflectionsPage() {
     }
   }
 
-  const handleEditSubmit = async (data) => {
+  const handleEditSubmit = async (data, sessionNumber) => {
     if (!selectedReflection?.id || !isSupabaseConfigured()) {
       // 로컬 모드 - 기존 로직
-      const updatedReflection = { ...selectedReflection, ...data }
+      const updatedReflection = { ...selectedReflection, ...data, sessionNumber }
       setReflections(prev =>
         prev.map(r => r.id === selectedReflection.id ? updatedReflection : r)
       )
@@ -97,7 +117,7 @@ export function ReflectionsPage() {
     try {
       await reflectionService.updateReflection(selectedReflection.id, {
         ...data,
-        sessionNumber: selectedReflection.sessionNumber
+        sessionNumber
       }, user.id)
       // 목록 새로고침
       const updatedList = await reflectionService.getCoacheeReflections(user.id)
@@ -157,7 +177,7 @@ export function ReflectionsPage() {
           <ChevronLeft className="w-4 h-4" />
           목록으로
         </button>
-        <ReflectionNote session={{ sessionNumber: nextSession }} onSubmit={handleSubmit} coachingTopics={coachingTopics} />
+        <ReflectionNote session={{ sessionNumber: nextSession }} onSubmit={handleSubmit} coachingTopics={coachingTopics} chatMessages={chatMessages} />
       </div>
     )
   }
@@ -180,6 +200,7 @@ export function ReflectionsPage() {
           onCancel={handleCancelEdit}
           isEditing={true}
           coachingTopics={coachingTopics}
+          chatMessages={chatMessages}
         />
       </div>
     )
