@@ -21,31 +21,31 @@ export function SessionDetailModal({ isOpen, onClose, coachee, session, onEdit }
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="lg">
-      <div className="p-6">
+      <div className="p-4 sm:p-6">
         {/* 헤더 */}
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 sm:mb-6">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center">
-              <span className="text-lg font-bold text-emerald-600">{session.session}</span>
+            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-emerald-100 rounded-xl flex items-center justify-center flex-shrink-0">
+              <span className="text-base sm:text-lg font-bold text-emerald-600">{session.session}</span>
             </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h2 className="text-lg font-bold text-gray-900">{session.session}회기</h2>
-                <Badge variant="primary">{session.topic}</Badge>
+            <div className="min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h2 className="text-base sm:text-lg font-bold text-gray-900">{session.session}회기</h2>
+                <Badge variant="primary" className="text-xs">{session.topic}</Badge>
               </div>
-              <p className="text-sm text-gray-500">
+              <p className="text-xs sm:text-sm text-gray-500 truncate">
                 {coachee?.name} · {session.date}
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 self-end sm:self-auto">
             {onEdit && (
               <Button variant="outline" size="sm" onClick={() => onEdit(session)}>
-                <Edit3 className="w-4 h-4 mr-1" />
-                수정
+                <Edit3 className="w-4 h-4 sm:mr-1" />
+                <span className="hidden sm:inline">수정</span>
               </Button>
             )}
-            <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg">
+            <button onClick={onClose} className="hidden sm:block p-2 hover:bg-gray-100 rounded-lg">
               <X className="w-5 h-5 text-gray-400" />
             </button>
           </div>
@@ -87,36 +87,37 @@ export function SessionDetailModal({ isOpen, onClose, coachee, session, onEdit }
           )}
 
           {/* 상태 정보 */}
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-3 gap-2 sm:gap-4">
             {/* 피코치 컨디션 */}
-            <div className="p-4 bg-gray-50 rounded-xl text-center">
-              <p className="text-xs text-gray-500 mb-2">피코치 컨디션</p>
-              <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${condition.color}`}>
+            <div className="p-2 sm:p-4 bg-gray-50 rounded-xl text-center">
+              <p className="text-[10px] sm:text-xs text-gray-500 mb-1 sm:mb-2">컨디션</p>
+              <span className={`inline-block px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-xs sm:text-sm font-medium ${condition.color}`}>
                 {condition.label}
               </span>
             </div>
 
             {/* 점수 변화 */}
-            <div className="p-4 bg-gray-50 rounded-xl text-center">
-              <p className="text-xs text-gray-500 mb-2">점수 변화</p>
+            <div className="p-2 sm:p-4 bg-gray-50 rounded-xl text-center">
+              <p className="text-[10px] sm:text-xs text-gray-500 mb-1 sm:mb-2">점수</p>
               {session.scoreChange !== undefined ? (
-                <span className={`text-lg font-bold ${
+                <span className={`text-sm sm:text-lg font-bold ${
                   session.scoreChange > 0 ? 'text-green-600' :
                   session.scoreChange < 0 ? 'text-red-600' : 'text-gray-600'
                 }`}>
-                  {session.scoreChange > 0 ? '+' : ''}{session.scoreChange}점
+                  {session.scoreChange > 0 ? '+' : ''}{session.scoreChange}
                 </span>
               ) : (
-                <span className="text-gray-400">-</span>
+                <span className="text-gray-400 text-sm">-</span>
               )}
             </div>
 
             {/* 날짜 */}
-            <div className="p-4 bg-gray-50 rounded-xl text-center">
-              <p className="text-xs text-gray-500 mb-2">세션 일자</p>
-              <span className="text-sm font-medium text-gray-700">
-                <Calendar className="w-4 h-4 inline mr-1" />
-                {session.date}
+            <div className="p-2 sm:p-4 bg-gray-50 rounded-xl text-center">
+              <p className="text-[10px] sm:text-xs text-gray-500 mb-1 sm:mb-2">일자</p>
+              <span className="text-xs sm:text-sm font-medium text-gray-700">
+                <Calendar className="w-3 h-3 sm:w-4 sm:h-4 inline mr-0.5 sm:mr-1" />
+                <span className="hidden sm:inline">{session.date}</span>
+                <span className="sm:hidden">{session.date?.split(' ')[0]}</span>
               </span>
             </div>
           </div>
