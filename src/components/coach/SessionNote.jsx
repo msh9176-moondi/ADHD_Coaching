@@ -217,7 +217,6 @@ export function SessionNote({ coachee, sessionNumber = 1, session, onDelete, onB
           </summary>
           <div className="mt-2 space-y-3">
             <CoacheeInfoCard coachee={coachee} />
-            <AIAssistCard />
           </div>
         </details>
       </div>
@@ -226,7 +225,6 @@ export function SessionNote({ coachee, sessionNumber = 1, session, onDelete, onB
       <div className="hidden lg:block space-y-4">
         <CoacheeInfoCard coachee={coachee} />
         <RecentRecordsCard />
-        <AIAssistCard />
       </div>
 
       {/* 세션 노트 */}
@@ -595,36 +593,6 @@ function RecentRecordsCard({ coachee }) {
           <p className="text-gray-500">복귀 횟수</p>
           <p className="text-gray-900">{returnCount}회</p>
         </div>
-      </CardContent>
-    </Card>
-  )
-}
-
-function AIAssistCard() {
-  return (
-    <Card className="border-emerald-200 bg-emerald-50">
-      <CardHeader className="py-3">
-        <CardTitle className="text-sm flex items-center gap-2">
-          <Sparkles className="w-4 h-4 text-emerald-600" />
-          AI 코칭 보조
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="py-2 space-y-3 text-sm">
-        <div>
-          <p className="font-medium text-blue-800 mb-1">확인해 볼 가능성</p>
-          <p className="text-emerald-700">
-            시작 전 부담감보다 휴대폰의 즉각적인 사회적 보상이 더 강하게 작용할 수 있습니다.
-          </p>
-        </div>
-        <div>
-          <p className="font-medium text-blue-800 mb-1">추가 질문 제안</p>
-          <p className="text-emerald-700">
-            "휴대폰을 보기 직전 어떤 기분이나 생각이 있었나요?"
-          </p>
-        </div>
-        <Button variant="outline" size="sm" className="w-full">
-          더 많은 제안 보기
-        </Button>
       </CardContent>
     </Card>
   )
