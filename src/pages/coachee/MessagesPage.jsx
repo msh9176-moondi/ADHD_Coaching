@@ -6,6 +6,7 @@ import { MessageList } from '../../components/messages/MessageList'
 import { useStore } from '../../store/useStore'
 import { getSessionsForCoachee } from '../../lib/sessionService'
 import { getOrCreateConversation } from '../../lib/messageService'
+import { getCoachingTopics } from '../../lib/coacheeService'
 import { isSupabaseConfigured } from '../../lib/supabase'
 import {
   Target, Calendar, ChevronDown, ChevronUp,
@@ -19,6 +20,7 @@ export function MessagesPage() {
   const [nextSession, setNextSession] = useState(null)
   const [conversationId, setConversationId] = useState(null)
   const [showTopCards, setShowTopCards] = useState(false) // 모바일 상단 카드 토글
+  const [coachingTopics, setCoachingTopics] = useState([]) // 최신 점수용
 
   const coachName = matchedCoach?.coachName || '플로카 코치'
   const coachId = matchedCoach?.coachId
@@ -55,16 +57,50 @@ export function MessagesPage() {
     loadNextSession()
   }, [user?.id])
 
-  // 메시지에서 확정된 목표 합의서 찾기
+  // 코칭 주제 (최신 점수) 로드
+  useEffect(() => {
+    async function loadCoachingTopics() {
+      if (!user?.id || !isSupabaseConfigured()) return
+      try {
+        const topics = await getCoachingTopics(user.id)
+        setCoachingTopics(topics || [])
+      } catch (error) {
+        console.error('Failed to load coaching topics:', error)
+      }
+    }
+    loadCoachingTopics()
+  }, [user?.id])
+
+  // 메시지에서 확정된 목표 합의서 찾기 + 최신 점수 병합
   const confirmedGoal = useMemo(() => {
     const goalMessages = messages.filter(
       m => m.type === 'goal_agreement' && m.goalData?.status === 'confirmed'
     )
     if (goalMessages.length > 0) {
-      return goalMessages[goalMessages.length - 1].goalData
+      const goalData = goalMessages[goalMessages.length - 1].goalData
+
+      // 최신 점수로 업데이트
+      if (goalData.goals && coachingTopics.length > 0) {
+        const updatedGoals = goalData.goals.map(goal => {
+          // 제목으로 매칭해서 최신 currentScore 가져오기
+          const latestTopic = coachingTopics.find(t =>
+            t.title?.toLowerCase().trim() === goal.topic?.toLowerCase().trim()
+          )
+          if (latestTopic) {
+            return {
+              ...goal,
+              currentScore: latestTopic.currentScore ?? goal.currentScore
+            }
+          }
+          return goal
+        })
+        return { ...goalData, goals: updatedGoals }
+      }
+
+      return goalData
     }
     return null
-  }, [messages])
+  }, [messages, coachingTopics])
 
   return (
     <div className="max-w-3xl mx-auto space-y-3 md:space-y-4">
