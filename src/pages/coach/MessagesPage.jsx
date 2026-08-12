@@ -8,7 +8,7 @@ import { MessageList } from '../../components/messages/MessageList'
 import { PACKAGES, COACHING_AREAS } from '../../data/coachData'
 import { useStore } from '../../store/useStore'
 import { coacheeService } from '../../lib'
-import { getOrCreateConversation, sendMessage, getMessages, getConfirmedGoals, getAllUnreadCounts } from '../../lib/messageService'
+import { getOrCreateConversation, sendMessage, getMessages, getConfirmedGoals, getAllUnreadCounts, markAllAsRead } from '../../lib/messageService'
 import { saveCoachingTopicsFromGoal } from '../../lib/coacheeService'
 import { getOrCreateSession, saveSessionNote, getSessionNote, deleteSession, scheduleFollowUpSession, getCoacheeSessions } from '../../lib/sessionService'
 import { isSupabaseConfigured } from '../../lib/supabase'
@@ -144,6 +144,13 @@ export function CoachMessagesPage() {
         const conversation = await getOrCreateConversation(user.id, selectedCoachee.userId)
         console.log('[MessagesPage] 대화방 조회 결과:', conversation)
         setConversationId(conversation.id)
+
+        // 메시지 읽음 처리
+        await markAllAsRead(conversation.id, user.id)
+
+        // 안 읽은 메시지 수 갱신
+        const counts = await getAllUnreadCounts(user.id)
+        setUnreadCounts(counts)
       } catch (err) {
         console.error('대화방 생성 실패:', err)
         setConversationId(null)
