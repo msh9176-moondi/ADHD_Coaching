@@ -7,8 +7,9 @@ import { Avatar } from '../common/Avatar'
 import { useStore } from '../../store/useStore'
 import { getOrCreateSession, saveSessionNote, getSessionNote, deleteSessionNote, deleteSession } from '../../lib/sessionService'
 import { isSupabaseConfigured } from '../../lib/supabase'
-import { getOrCreateConversation, getMessages } from '../../lib/messageService'
+import { getOrCreateConversation, getMessages, getConfirmedGoals } from '../../lib/messageService'
 import { getSessionNoteAssist, isAIConfigured } from '../../lib/aiService'
+import { getCoacheeReflections } from '../../lib/reflectionService'
 import {
   FileText, Target, CheckSquare, Brain, Heart,
   AlertTriangle, Lightbulb, Rocket, Save, Sparkles, CheckCircle, AlertCircle, Loader2, Trash2, RotateCcw
@@ -39,6 +40,13 @@ export function SessionNote({ coachee, sessionNumber = 1, session, onDelete, onB
   const [saveStatus, setSaveStatus] = useState(null) // 'success' | 'error' | null
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [isAIGenerating, setIsAIGenerating] = useState(false)
+  const [coacheeData, setCoacheeData] = useState({
+    topics: [],
+    recentScore: 0,
+    targetScore: 0,
+    lastCheckin: '-',
+    reflectionCount: 0
+  })
 
   // 세션 및 기존 일지 로드
   useEffect(() => {
@@ -69,6 +77,64 @@ export function SessionNote({ coachee, sessionNumber = 1, session, onDelete, onB
 
     loadSessionNote()
   }, [user?.id, coachee?.userId, session?.coacheeUserId, sessionNumber])
+
+  // 피코치 목표 및 성찰일지 데이터 로드
+  useEffect(() => {
+    async function loadCoacheeData() {
+      const coacheeUserId = coachee?.userId || session?.coacheeUserId
+      if (!coacheeUserId || !isSupabaseConfigured()) return
+
+      try {
+        // 확정된 목표 합의서 조회
+        const confirmedGoals = await getConfirmedGoals(coacheeUserId)
+
+        // 성찰일지 조회
+        const reflections = await getCoacheeReflections(coacheeUserId)
+
+        // 목표 데이터 추출
+        let topics = []
+        let targetScore = 0
+        let recentScore = 0
+
+        if (confirmedGoals && confirmedGoals.length > 0) {
+          const latestGoal = confirmedGoals[0]
+          if (latestGoal.goals && latestGoal.goals.length > 0) {
+            topics = latestGoal.goals.map(g => g.topic).filter(Boolean)
+            // 첫 번째 목표의 점수 사용 (또는 평균)
+            const firstGoal = latestGoal.goals[0]
+            targetScore = firstGoal.targetScore || 0
+            recentScore = firstGoal.currentScore || firstGoal.startScore || 0
+          }
+        }
+
+        // 성찰일지에서 최신 점수 가져오기
+        let lastCheckin = '-'
+        if (reflections && reflections.length > 0) {
+          const latestReflection = reflections[0]
+          if (latestReflection.currentScore) {
+            recentScore = latestReflection.currentScore
+          }
+          // 마지막 체크인 날짜
+          if (latestReflection.createdAt) {
+            const date = new Date(latestReflection.createdAt)
+            lastCheckin = `${date.getMonth() + 1}/${date.getDate()}`
+          }
+        }
+
+        setCoacheeData({
+          topics,
+          recentScore,
+          targetScore,
+          lastCheckin,
+          reflectionCount: reflections?.length || 0
+        })
+      } catch (err) {
+        console.warn('피코치 데이터 로드 실패:', err)
+      }
+    }
+
+    loadCoacheeData()
+  }, [coachee?.userId, session?.coacheeUserId])
 
   const handleChange = (field, value) => {
     setNote(prev => ({ ...prev, [field]: value }))
@@ -216,15 +282,15 @@ export function SessionNote({ coachee, sessionNumber = 1, session, onDelete, onB
             <span className="text-xs text-gray-500 hidden group-open:inline">접기</span>
           </summary>
           <div className="mt-2 space-y-3">
-            <CoacheeInfoCard coachee={coachee} />
+            <CoacheeInfoCard coachee={coachee} coacheeData={coacheeData} />
           </div>
         </details>
       </div>
 
       {/* 데스크톱: 왼쪽 사이드바 */}
       <div className="hidden lg:block space-y-4">
-        <CoacheeInfoCard coachee={coachee} />
-        <RecentRecordsCard />
+        <CoacheeInfoCard coachee={coachee} coacheeData={coacheeData} />
+        <RecentRecordsCard coacheeData={coacheeData} />
       </div>
 
       {/* 세션 노트 */}
@@ -520,13 +586,14 @@ export function SessionNote({ coachee, sessionNumber = 1, session, onDelete, onB
   )
 }
 
-function CoacheeInfoCard({ coachee }) {
+function CoacheeInfoCard({ coachee, coacheeData }) {
   const name = coachee?.name || '피코치'
   const currentSession = coachee?.currentSession || 1
   const totalSessions = coachee?.totalSessions || 6
-  const topics = coachee?.topics || []
-  const recentScore = coachee?.recentScore || 0
-  const targetScore = coachee?.targetScore || 0
+  // coacheeData에서 실제 데이터 사용 (없으면 coachee에서)
+  const topics = coacheeData?.topics?.length > 0 ? coacheeData.topics : (coachee?.topics || [])
+  const recentScore = coacheeData?.recentScore || coachee?.recentScore || 0
+  const targetScore = coacheeData?.targetScore || coachee?.targetScore || 0
 
   return (
     <Card>
@@ -569,11 +636,10 @@ function CoacheeInfoCard({ coachee }) {
   )
 }
 
-function RecentRecordsCard({ coachee }) {
+function RecentRecordsCard({ coacheeData }) {
   // 실제 데이터가 있으면 사용, 없으면 기본값
-  const lastCheckin = coachee?.lastCheckin || '-'
-  const weeklyStarts = coachee?.weeklyStarts ?? '-'
-  const returnCount = coachee?.returnCount ?? '-'
+  const lastCheckin = coacheeData?.lastCheckin || '-'
+  const reflectionCount = coacheeData?.reflectionCount ?? 0
 
   return (
     <Card>
@@ -582,16 +648,12 @@ function RecentRecordsCard({ coachee }) {
       </CardHeader>
       <CardContent className="py-2 space-y-2">
         <div className="text-sm">
-          <p className="text-gray-500">마지막 체크인</p>
+          <p className="text-gray-500">마지막 성찰일지</p>
           <p className="text-gray-900">{lastCheckin}</p>
         </div>
         <div className="text-sm">
-          <p className="text-gray-500">이번 주 시작 횟수</p>
-          <p className="text-gray-900">{weeklyStarts}회</p>
-        </div>
-        <div className="text-sm">
-          <p className="text-gray-500">복귀 횟수</p>
-          <p className="text-gray-900">{returnCount}회</p>
+          <p className="text-gray-500">총 성찰일지</p>
+          <p className="text-gray-900">{reflectionCount}개</p>
         </div>
       </CardContent>
     </Card>
