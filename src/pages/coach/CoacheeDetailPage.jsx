@@ -298,86 +298,91 @@ export function CoacheeDetailPage() {
   return (
     <div className="space-y-6">
       {/* 헤더 */}
-      <div className="flex items-center gap-4">
-        <Button variant="ghost" onClick={() => navigate('/coach/coachees')}>
-          <ArrowLeft className="w-5 h-5" />
-        </Button>
-        <div className="flex-1">
-          <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-bold text-gray-900">{coachee.name}</h1>
-            {isPending && (
-              <Badge variant="warning" className="text-sm">신청 대기중</Badge>
-            )}
+      <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+        <div className="flex items-center gap-4 flex-1">
+          <Button variant="ghost" onClick={() => navigate('/coach/coachees')}>
+            <ArrowLeft className="w-5 h-5" />
+          </Button>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h1 className="text-xl sm:text-2xl font-bold text-gray-900">{coachee.name}</h1>
+              {isPending && (
+                <Badge variant="warning" className="text-sm">신청 대기중</Badge>
+              )}
+            </div>
+            <p className="text-gray-500 text-sm truncate">{coachee.email}</p>
           </div>
-          <p className="text-gray-500">{coachee.email}</p>
         </div>
 
         {/* 대기 중인 신청자: 수락/거절 버튼 */}
         {isPending ? (
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 ml-auto sm:ml-0">
             <Button
               variant="outline"
               onClick={handleReject}
               className="border-red-200 text-red-600 hover:bg-red-50"
+              size="sm"
             >
-              <UserX className="w-4 h-4 mr-2" />
-              거절
+              <UserX className="w-4 h-4 sm:mr-2" />
+              <span className="hidden sm:inline">거절</span>
             </Button>
             <Button
               onClick={handleAccept}
               disabled={accepting}
               className="bg-green-600 hover:bg-green-700"
+              size="sm"
             >
               {accepting ? (
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                <Loader2 className="w-4 h-4 sm:mr-2 animate-spin" />
               ) : (
-                <UserCheck className="w-4 h-4 mr-2" />
+                <UserCheck className="w-4 h-4 sm:mr-2" />
               )}
-              {accepting ? '처리 중...' : '수락하기'}
+              <span className="hidden sm:inline">{accepting ? '처리 중...' : '수락하기'}</span>
             </Button>
           </div>
         ) : (
-          <Button onClick={() => navigate(`/coach/messages?coachee=${coachee.id}`)}>
-            <MessageCircle className="w-4 h-4 mr-2" />
-            메시지 보내기
+          <Button onClick={() => navigate(`/coach/messages?coachee=${coachee.id}`)} size="sm">
+            <MessageCircle className="w-4 h-4 sm:mr-2" />
+            <span className="hidden sm:inline">메시지 보내기</span>
           </Button>
         )}
       </div>
 
       {/* 기본 정보 카드 */}
       <Card>
-        <CardContent className="p-6">
-          <div className="flex items-start gap-6">
-            <Avatar name={coachee.name} size="xl" />
-            <div className="flex-1">
-              <div className="flex items-center gap-3 mb-2">
-                <h2 className="text-xl font-bold text-gray-900">{coachee.name}</h2>
+        <CardContent className="p-4 sm:p-6">
+          <div className="flex flex-col sm:flex-row items-start gap-4 sm:gap-6">
+            <Avatar name={coachee.name} size="lg" className="hidden sm:flex" />
+            <div className="flex-1 w-full">
+              <div className="flex items-center gap-2 flex-wrap mb-2">
+                <Avatar name={coachee.name} size="md" className="sm:hidden" />
+                <h2 className="text-lg sm:text-xl font-bold text-gray-900">{coachee.name}</h2>
                 {pkg && (
-                  <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium border ${packageColors[coachee.packageType]}`}>
-                    <Package className="w-3.5 h-3.5" />
+                  <span className={`inline-flex items-center gap-1 px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium border ${packageColors[coachee.packageType]}`}>
+                    <Package className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                     {pkg.name} {pkg.sessions}회기
                   </span>
                 )}
                 {coachee.hasWarning && (
-                  <Badge variant="warning" className="flex items-center gap-1">
+                  <Badge variant="warning" className="flex items-center gap-1 text-xs">
                     <AlertTriangle className="w-3 h-3" />
-                    {coachee.warningReason || '주의 필요'}
+                    <span className="hidden sm:inline">{coachee.warningReason || '주의 필요'}</span>
                   </Badge>
                 )}
               </div>
 
-              <div className="grid grid-cols-3 gap-6 mt-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-6 mt-4">
                 <div>
-                  <p className="text-sm text-gray-500 mb-1">코칭 시작일</p>
-                  <p className="font-medium">{coachee.matchedAt}</p>
+                  <p className="text-xs sm:text-sm text-gray-500 mb-1">코칭 시작일</p>
+                  <p className="text-sm sm:text-base font-medium truncate">{coachee.matchedAt?.split('T')[0] || coachee.matchedAt}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500 mb-1">다음 세션</p>
-                  <p className="font-medium">{coachee.nextSession}</p>
+                  <p className="text-xs sm:text-sm text-gray-500 mb-1">다음 세션</p>
+                  <p className="text-sm sm:text-base font-medium">{coachee.nextSession || '-'}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500 mb-1">연락처</p>
-                  <p className="font-medium">{coachee.phone}</p>
+                  <p className="text-xs sm:text-sm text-gray-500 mb-1">연락처</p>
+                  <p className="text-sm sm:text-base font-medium">{coachee.phone || '-'}</p>
                 </div>
               </div>
 
@@ -446,7 +451,7 @@ export function CoacheeDetailPage() {
         </div>
       )}
 
-      <div className="grid grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         {/* 자기소개 */}
         <Card>
           <CardHeader>
@@ -545,7 +550,7 @@ export function CoacheeDetailPage() {
                   </div>
 
                   {/* 점수 */}
-                  <div className="grid grid-cols-3 gap-3">
+                  <div className="grid grid-cols-3 gap-2 sm:gap-3">
                     {[
                       { label: '주의력', score: coachee.asrsResult?.inattentionScore, max: 36, color: 'purple' },
                       { label: '과잉행동', score: coachee.asrsResult?.hyperactivityScore, max: 20, color: 'orange' },
@@ -618,12 +623,12 @@ export function CoacheeDetailPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         {/* 현재 코칭 목표 */}
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Target className="w-5 h-5 text-green-600" />
+            <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+              <Target className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
               현재 코칭 목표
             </CardTitle>
           </CardHeader>
@@ -736,9 +741,9 @@ export function CoacheeDetailPage() {
 
         {/* 세션 기록 */}
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle className="flex items-center gap-2">
-              <FileText className="w-5 h-5 text-emerald-600" />
+          <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+              <FileText className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-600" />
               세션 기록
             </CardTitle>
             <div className="flex items-center gap-2">
@@ -746,17 +751,19 @@ export function CoacheeDetailPage() {
                 variant="outline"
                 size="sm"
                 onClick={() => navigate(`/coach/schedule?coachee=${coachee.id}`)}
+                className="text-xs sm:text-sm"
               >
-                <CalendarPlus className="w-3.5 h-3.5 mr-1" />
-                세션 예약
+                <CalendarPlus className="w-3.5 h-3.5 sm:mr-1" />
+                <span className="hidden sm:inline">세션 예약</span>
               </Button>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => handleWriteNote()}
+                className="text-xs sm:text-sm"
               >
-                <Edit3 className="w-3.5 h-3.5 mr-1" />
-                일지 작성
+                <Edit3 className="w-3.5 h-3.5 sm:mr-1" />
+                <span className="hidden sm:inline">일지 작성</span>
               </Button>
             </div>
           </CardHeader>

@@ -182,7 +182,7 @@ export function MessageList({
     async function loadMessages() {
       try {
         console.log('[MessageList] 메시지 로드 시작:', { conversationId, coacheeName })
-        const dbMessages = await getMessages(conversationId, 100)
+        const dbMessages = await getMessages(conversationId, 500)
         console.log('[MessageList] DB에서 가져온 메시지:', dbMessages?.length, '개')
         let formattedMessages = dbMessages.map(msg => {
           const metadata = msg.metadata || {}
