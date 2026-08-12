@@ -143,16 +143,34 @@ export function SessionNote({ coachee, sessionNumber = 1, session, onDelete, onB
   }
 
   return (
-    <div className="grid grid-cols-3 gap-6">
-      {/* 왼쪽: 피코치 정보 */}
-      <div className="space-y-4">
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
+      {/* 모바일: 피코치 정보 (접이식) */}
+      <div className="lg:hidden space-y-3">
+        <details className="group">
+          <summary className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200 cursor-pointer list-none">
+            <div className="flex items-center gap-3">
+              <Avatar name={coachee?.name || '피코치'} size="sm" />
+              <span className="font-medium text-gray-900">{coachee?.name || '피코치'}</span>
+            </div>
+            <span className="text-xs text-gray-500 group-open:hidden">정보 보기</span>
+            <span className="text-xs text-gray-500 hidden group-open:inline">접기</span>
+          </summary>
+          <div className="mt-2 space-y-3">
+            <CoacheeInfoCard coachee={coachee} />
+            <AIAssistCard />
+          </div>
+        </details>
+      </div>
+
+      {/* 데스크톱: 왼쪽 사이드바 */}
+      <div className="hidden lg:block space-y-4">
         <CoacheeInfoCard coachee={coachee} />
         <RecentRecordsCard />
         <AIAssistCard />
       </div>
 
-      {/* 중앙: 세션 노트 */}
-      <div className="col-span-2 space-y-4">
+      {/* 세션 노트 */}
+      <div className="lg:col-span-2 space-y-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="flex items-center gap-2">
@@ -161,9 +179,9 @@ export function SessionNote({ coachee, sessionNumber = 1, session, onDelete, onB
             </CardTitle>
             <Badge variant="primary">작성 중</Badge>
           </CardHeader>
-          <CardContent className="space-y-6">
+          <CardContent className="space-y-4 sm:space-y-6">
             {/* 기본 정보 */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               <Input
                 label="코칭 목표"
                 value={note.coachingGoal}
@@ -179,12 +197,12 @@ export function SessionNote({ coachee, sessionNumber = 1, session, onDelete, onB
             </div>
 
             {/* 컨디션 체크 */}
-            <div className="p-4 bg-gray-50 rounded-lg space-y-4">
-              <h4 className="font-medium text-gray-700 flex items-center gap-2">
+            <div className="p-3 sm:p-4 bg-gray-50 rounded-lg space-y-3 sm:space-y-4">
+              <h4 className="font-medium text-gray-700 flex items-center gap-2 text-sm sm:text-base">
                 <Heart className="w-4 h-4 text-pink-500" />
                 오늘의 컨디션
               </h4>
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
                 <Select
                   label="기분"
                   value={note.mood}
@@ -240,7 +258,7 @@ export function SessionNote({ coachee, sessionNumber = 1, session, onDelete, onB
             />
 
             {/* 자동사고 & 회피 */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               <Textarea
                 label="자동사고"
                 value={note.autoThought}
@@ -272,7 +290,7 @@ export function SessionNote({ coachee, sessionNumber = 1, session, onDelete, onB
             />
 
             {/* 코칭 성과 & 바람직한 결과 */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               <Textarea
                 label="코칭 성과"
                 value={note.achievement}
@@ -375,35 +393,37 @@ export function SessionNote({ coachee, sessionNumber = 1, session, onDelete, onB
             )}
 
             {/* 버튼 영역 */}
-            <div className="flex gap-3 pt-4">
+            <div className="flex flex-wrap gap-2 sm:gap-3 pt-4">
               <Button
                 variant="outline"
+                size="sm"
                 className="text-gray-500"
                 onClick={handleReset}
                 disabled={isSaving || isDeleting}
               >
-                <RotateCcw className="w-4 h-4 mr-2" />
-                초기화
+                <RotateCcw className="w-4 h-4 sm:mr-2" />
+                <span className="hidden sm:inline">초기화</span>
               </Button>
               <Button
                 variant="outline"
+                size="sm"
                 className="text-red-500 border-red-200 hover:bg-red-50"
                 onClick={() => setShowDeleteConfirm(true)}
                 disabled={isSaving || isDeleting || !sessionId}
               >
-                <Trash2 className="w-4 h-4 mr-2" />
-                삭제
+                <Trash2 className="w-4 h-4 sm:mr-2" />
+                <span className="hidden sm:inline">삭제</span>
               </Button>
-              <Button onClick={handleSave} className="flex-1" disabled={isSaving || isDeleting}>
+              <Button onClick={handleSave} size="sm" className="flex-1 min-w-[100px]" disabled={isSaving || isDeleting}>
                 {isSaving ? (
                   <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    저장 중...
+                    <Loader2 className="w-4 h-4 sm:mr-2 animate-spin" />
+                    <span className="hidden sm:inline">저장 중...</span>
                   </>
                 ) : (
                   <>
-                    <Save className="w-4 h-4 mr-2" />
-                    저장
+                    <Save className="w-4 h-4 sm:mr-2" />
+                    <span>저장</span>
                   </>
                 )}
               </Button>
