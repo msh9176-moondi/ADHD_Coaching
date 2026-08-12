@@ -7,6 +7,8 @@ import { Avatar } from '../common/Avatar'
 import { useStore } from '../../store/useStore'
 import { getOrCreateSession, saveSessionNote, getSessionNote, deleteSessionNote, deleteSession } from '../../lib/sessionService'
 import { isSupabaseConfigured } from '../../lib/supabase'
+import { getOrCreateConversation, getMessages } from '../../lib/messageService'
+import { getSessionNoteAssist, isAIConfigured } from '../../lib/aiService'
 import {
   FileText, Target, CheckSquare, Brain, Heart,
   AlertTriangle, Lightbulb, Rocket, Save, Sparkles, CheckCircle, AlertCircle, Loader2, Trash2, RotateCcw
@@ -36,6 +38,7 @@ export function SessionNote({ coachee, sessionNumber = 1, session, onDelete, onB
   const [isDeleting, setIsDeleting] = useState(false)
   const [saveStatus, setSaveStatus] = useState(null) // 'success' | 'error' | null
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [isAIGenerating, setIsAIGenerating] = useState(false)
 
   // 세션 및 기존 일지 로드
   useEffect(() => {
@@ -114,6 +117,63 @@ export function SessionNote({ coachee, sessionNumber = 1, session, onDelete, onB
     setSaveStatus(null)
   }
 
+  // AI 자동작성
+  const handleAIAssist = async () => {
+    const coacheeUserId = coachee?.userId || session?.coacheeUserId
+    if (!user?.id || !coacheeUserId || !isAIConfigured()) return
+
+    setIsAIGenerating(true)
+    try {
+      // 대화방 조회
+      const conversation = await getOrCreateConversation(user.id, coacheeUserId)
+      if (!conversation?.id) {
+        console.warn('대화방을 찾을 수 없습니다')
+        setIsAIGenerating(false)
+        return
+      }
+
+      // 메시지 로드
+      const messages = await getMessages(conversation.id, 100)
+      if (!messages || messages.length === 0) {
+        console.warn('분석할 채팅 기록이 없습니다')
+        setIsAIGenerating(false)
+        return
+      }
+
+      // AI 분석 요청
+      const coacheeInfo = {
+        name: coachee?.name || '피코치',
+        coachingGoal: coachee?.coachingGoal?.goal || '',
+        topics: coachee?.topics || []
+      }
+
+      const result = await getSessionNoteAssist(messages, coacheeInfo, sessionNumber)
+
+      if (result) {
+        setNote(prev => ({
+          ...prev,
+          coachingGoal: result.coachingGoal || prev.coachingGoal,
+          sessionTopic: result.sessionTopic || prev.sessionTopic,
+          mood: result.mood || prev.mood,
+          emotion: result.emotion || prev.emotion,
+          bodyResponse: result.bodyResponse || prev.bodyResponse,
+          content: result.content || prev.content,
+          autoThought: result.autoThought || prev.autoThought,
+          avoidance: result.avoidance || prev.avoidance,
+          helpfulAction: result.helpfulAction || prev.helpfulAction,
+          achievement: result.achievement || prev.achievement,
+          desiredResult: result.desiredResult || prev.desiredResult,
+          nextTask: result.nextTask || prev.nextTask,
+          taskReview: result.taskReview || prev.taskReview,
+        }))
+      }
+    } catch (err) {
+      console.error('AI 분석 실패:', err)
+    } finally {
+      setIsAIGenerating(false)
+    }
+  }
+
   // 세션 및 일지 삭제
   const handleDelete = async () => {
     if (!sessionId) return
@@ -172,12 +232,39 @@ export function SessionNote({ coachee, sessionNumber = 1, session, onDelete, onB
       {/* 세션 노트 */}
       <div className="lg:col-span-2 space-y-4">
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
+          <CardHeader className="flex flex-row items-center justify-between gap-2">
             <CardTitle className="flex items-center gap-2">
               <FileText className="w-5 h-5 text-emerald-600" />
               {sessionNumber}회기 세션 일지
             </CardTitle>
-            <Badge variant="primary">작성 중</Badge>
+            <div className="flex items-center gap-2">
+              {isAIConfigured() && (
+                <button
+                  onClick={handleAIAssist}
+                  disabled={isAIGenerating}
+                  className={`flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium rounded-lg transition-colors ${
+                    isAIGenerating
+                      ? 'bg-purple-100 text-purple-400'
+                      : 'bg-gradient-to-r from-purple-500 to-indigo-500 text-white hover:from-purple-600 hover:to-indigo-600 shadow-sm'
+                  }`}
+                >
+                  {isAIGenerating ? (
+                    <>
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      <span className="hidden sm:inline">채팅 분석 중...</span>
+                      <span className="sm:hidden">분석 중</span>
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="w-3.5 h-3.5" />
+                      <span className="hidden sm:inline">AI 자동작성</span>
+                      <span className="sm:hidden">AI</span>
+                    </>
+                  )}
+                </button>
+              )}
+              <Badge variant="primary" className="hidden sm:inline-flex">작성 중</Badge>
+            </div>
           </CardHeader>
           <CardContent className="space-y-4 sm:space-y-6">
             {/* 기본 정보 */}
