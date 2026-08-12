@@ -182,6 +182,41 @@ export async function getUnreadCount(conversationId, userId) {
   return count || 0
 }
 
+// 코치의 모든 대화방 안 읽은 메시지 수 조회
+export async function getAllUnreadCounts(coachId) {
+  if (!isSupabaseConfigured() || !coachId) return {}
+
+  try {
+    // 코치의 모든 대화방 조회
+    const { data: conversations, error: convError } = await supabase
+      .from('conversations')
+      .select('id, coachee_id')
+      .eq('coach_id', coachId)
+
+    if (convError || !conversations) return {}
+
+    // 각 대화방의 안 읽은 메시지 수 조회
+    const unreadCounts = {}
+    for (const conv of conversations) {
+      const { count } = await supabase
+        .from('messages')
+        .select('*', { count: 'exact', head: true })
+        .eq('conversation_id', conv.id)
+        .eq('read', false)
+        .neq('sender_id', coachId)
+
+      if (count > 0) {
+        unreadCounts[conv.coachee_id] = count
+      }
+    }
+
+    return unreadCounts
+  } catch (err) {
+    console.error('안 읽은 메시지 수 조회 실패:', err)
+    return {}
+  }
+}
+
 // 메시지 메타데이터 업데이트
 export async function updateMessageMetadata(messageId, metadata) {
   if (!isSupabaseConfigured()) throw new Error('LOCAL_MODE')

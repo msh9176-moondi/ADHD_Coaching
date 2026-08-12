@@ -8,7 +8,7 @@ import { MessageList } from '../../components/messages/MessageList'
 import { PACKAGES, COACHING_AREAS } from '../../data/coachData'
 import { useStore } from '../../store/useStore'
 import { coacheeService } from '../../lib'
-import { getOrCreateConversation, sendMessage, getMessages, getConfirmedGoals } from '../../lib/messageService'
+import { getOrCreateConversation, sendMessage, getMessages, getConfirmedGoals, getAllUnreadCounts } from '../../lib/messageService'
 import { saveCoachingTopicsFromGoal } from '../../lib/coacheeService'
 import { getOrCreateSession, saveSessionNote, getSessionNote, deleteSession, scheduleFollowUpSession, getCoacheeSessions } from '../../lib/sessionService'
 import { isSupabaseConfigured } from '../../lib/supabase'
@@ -55,6 +55,7 @@ export function CoachMessagesPage() {
     subscribers: true,
     completed: false
   })
+  const [unreadCounts, setUnreadCounts] = useState({}) // 피코치별 안 읽은 메시지 수
 
   // 피코치 데이터 로드
   useEffect(() => {
@@ -103,6 +104,23 @@ export function CoachMessagesPage() {
       }
     }
     loadCoachees()
+  }, [user?.id])
+
+  // 안 읽은 메시지 수 로드
+  useEffect(() => {
+    async function loadUnreadCounts() {
+      if (!user?.id) return
+      try {
+        const counts = await getAllUnreadCounts(user.id)
+        setUnreadCounts(counts)
+      } catch (err) {
+        console.warn('안 읽은 메시지 수 로드 실패:', err)
+      }
+    }
+    loadUnreadCounts()
+    // 30초마다 갱신
+    const interval = setInterval(loadUnreadCounts, 30000)
+    return () => clearInterval(interval)
   }, [user?.id])
 
   const selectedCoachee = coacheesData.find(c => c.id === selectedCoacheeId)
@@ -171,6 +189,20 @@ export function CoachMessagesPage() {
       [section]: !prev[section]
     }))
   }
+
+  // 섹션별 안 읽은 메시지 총합 계산
+  const sectionUnreadCounts = useMemo(() => {
+    const inProgressUnread = categorizedCoachees.inProgress.reduce((sum, c) => {
+      return sum + (unreadCounts[c.userId] || 0)
+    }, 0)
+    const subscribersUnread = subscribers.reduce((sum, s) => {
+      return sum + (unreadCounts[s.userId] || 0)
+    }, 0)
+    const completedUnread = categorizedCoachees.completed.reduce((sum, c) => {
+      return sum + (unreadCounts[c.userId] || 0)
+    }, 0)
+    return { inProgress: inProgressUnread, subscribers: subscribersUnread, completed: completedUnread }
+  }, [categorizedCoachees, subscribers, unreadCounts])
 
   const getLastMessage = (coacheeId) => {
     const msgs = coacheeMessages[coacheeId] || []
@@ -326,11 +358,18 @@ export function CoachMessagesPage() {
                   <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
                   진행중 ({categorizedCoachees.inProgress.length})
                 </span>
-                {expandedSections.inProgress ? (
-                  <ChevronUp className="w-4 h-4 text-emerald-600" />
-                ) : (
-                  <ChevronDown className="w-4 h-4 text-emerald-600" />
-                )}
+                <div className="flex items-center gap-2">
+                  {!expandedSections.inProgress && sectionUnreadCounts.inProgress > 0 && (
+                    <span className="px-1.5 py-0.5 bg-red-500 text-white text-[10px] font-bold rounded-full min-w-[18px] text-center">
+                      {sectionUnreadCounts.inProgress}
+                    </span>
+                  )}
+                  {expandedSections.inProgress ? (
+                    <ChevronUp className="w-4 h-4 text-emerald-600" />
+                  ) : (
+                    <ChevronDown className="w-4 h-4 text-emerald-600" />
+                  )}
+                </div>
               </button>
               {expandedSections.inProgress && categorizedCoachees.inProgress.map((coachee) => (
                 <CoacheeListItem
@@ -355,11 +394,18 @@ export function CoachMessagesPage() {
                   <Crown className="w-3.5 h-3.5 text-amber-500" />
                   구독자 ({subscribers.length})
                 </span>
-                {expandedSections.subscribers ? (
-                  <ChevronUp className="w-4 h-4 text-amber-600" />
-                ) : (
-                  <ChevronDown className="w-4 h-4 text-amber-600" />
-                )}
+                <div className="flex items-center gap-2">
+                  {!expandedSections.subscribers && sectionUnreadCounts.subscribers > 0 && (
+                    <span className="px-1.5 py-0.5 bg-red-500 text-white text-[10px] font-bold rounded-full min-w-[18px] text-center">
+                      {sectionUnreadCounts.subscribers}
+                    </span>
+                  )}
+                  {expandedSections.subscribers ? (
+                    <ChevronUp className="w-4 h-4 text-amber-600" />
+                  ) : (
+                    <ChevronDown className="w-4 h-4 text-amber-600" />
+                  )}
+                </div>
               </button>
               {expandedSections.subscribers && subscribers.map((subscriber) => (
                 <SubscriberListItem
@@ -383,11 +429,18 @@ export function CoachMessagesPage() {
                   <CheckCircle className="w-3.5 h-3.5 text-gray-500" />
                   완료 ({categorizedCoachees.completed.length})
                 </span>
-                {expandedSections.completed ? (
-                  <ChevronUp className="w-4 h-4 text-gray-500" />
-                ) : (
-                  <ChevronDown className="w-4 h-4 text-gray-500" />
-                )}
+                <div className="flex items-center gap-2">
+                  {!expandedSections.completed && sectionUnreadCounts.completed > 0 && (
+                    <span className="px-1.5 py-0.5 bg-red-500 text-white text-[10px] font-bold rounded-full min-w-[18px] text-center">
+                      {sectionUnreadCounts.completed}
+                    </span>
+                  )}
+                  {expandedSections.completed ? (
+                    <ChevronUp className="w-4 h-4 text-gray-500" />
+                  ) : (
+                    <ChevronDown className="w-4 h-4 text-gray-500" />
+                  )}
+                </div>
               </button>
               {expandedSections.completed && categorizedCoachees.completed.map((coachee) => (
                 <CoacheeListItem
