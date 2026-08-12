@@ -798,22 +798,22 @@ function SessionNotePanel({ coachee, messages = [], onClose }) {
             <button
               onClick={handleAIAssist}
               disabled={isAIGenerating || !isAIConfigured()}
-              className={`flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-lg transition-colors ${
+              className={`flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium rounded-lg transition-colors ${
                 isAIGenerating
                   ? 'bg-purple-100 text-purple-400'
-                  : 'bg-purple-100 text-purple-700 hover:bg-purple-200'
+                  : 'bg-gradient-to-r from-purple-500 to-indigo-500 text-white hover:from-purple-600 hover:to-indigo-600 shadow-sm'
               }`}
-              title="AI가 채팅 내역을 분석하여 세션 일지를 작성합니다"
+              title="AI가 채팅 내역을 분석하여 세션 일지를 자동으로 작성합니다"
             >
               {isAIGenerating ? (
                 <>
                   <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                  <span className="hidden sm:inline">분석 중...</span>
+                  <span>채팅 분석 중...</span>
                 </>
               ) : (
                 <>
                   <Sparkles className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">AI 작성</span>
+                  <span>AI 자동작성</span>
                 </>
               )}
             </button>
