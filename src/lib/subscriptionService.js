@@ -285,20 +285,20 @@ export async function getCoachSubscribers(coachId) {
 
     if (!subscriptions || subscriptions.length === 0) return []
 
-    // 사용자 정보 별도 조회
+    // 사용자 정보 별도 조회 (users 테이블에서)
     const userIds = subscriptions.map(s => s.user_id)
-    const { data: profiles } = await supabase
-      .from('profiles')
+    const { data: users } = await supabase
+      .from('users')
       .select('id, name, email, avatar_url')
       .in('id', userIds)
 
     // 합치기
-    const profileMap = {}
-    profiles?.forEach(p => { profileMap[p.id] = p })
+    const userMap = {}
+    users?.forEach(u => { userMap[u.id] = u })
 
     return subscriptions.map(s => ({
       ...s,
-      user: profileMap[s.user_id] || null
+      user: userMap[s.user_id] || null
     }))
   } catch (err) {
     console.error('구독자 조회 오류:', err)
