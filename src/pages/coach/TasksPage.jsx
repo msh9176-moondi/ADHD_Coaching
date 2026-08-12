@@ -12,11 +12,13 @@ import { useStore } from '../../store/useStore'
 import { useCollapsibleList } from '../../hooks'
 import { coacheeService } from '../../lib'
 import { getOrCreateConversation, getMessages, sendMessage } from '../../lib/messageService'
+import { getCoachSubscribers } from '../../lib/subscriptionService'
 import { isSupabaseConfigured } from '../../lib/supabase'
 import {
   Plus, CheckCircle, Clock, AlertCircle,
   ChevronDown, ChevronRight, FileText, MessageCircle,
-  Calendar, X, Send, User, Target, ClipboardList, Loader2
+  Calendar, X, Send, User, Target, ClipboardList, Loader2,
+  Play, Crown
 } from 'lucide-react'
 
 // 패키지 색상 설정
@@ -29,11 +31,19 @@ const packageColors = {
 export function TasksPage() {
   const { user } = useStore()
   const [coachees, setCoachees] = useState([])
+  const [subscribers, setSubscribers] = useState([])
   const [loading, setLoading] = useState(true)
   const [isAssignModalOpen, setIsAssignModalOpen] = useState(false)
   const [preselectedCoacheeId, setPreselectedCoacheeId] = useState(null)
   const [tasks, setTasks] = useState([])
   const [searchQuery, setSearchQuery] = useState('')
+
+  // 섹션 펼침/접힘 상태
+  const [expandedSections, setExpandedSections] = useState({
+    inProgress: true,
+    subscribers: true,
+    completed: false
+  })
 
   // useCollapsibleList 훅 사용
   const {
@@ -42,6 +52,10 @@ export function TasksPage() {
     expandAll: expandAllCoachees,
     collapseAll
   } = useCollapsibleList([])
+
+  const toggleSection = (section) => {
+    setExpandedSections(prev => ({ ...prev, [section]: !prev[section] }))
+  }
 
   // 피코치 데이터 및 과제 로드
   useEffect(() => {
@@ -56,6 +70,7 @@ export function TasksPage() {
         const data = await coacheeService.getCoachCoachees(user.id)
         const formatted = data.map(c => ({
           id: c.id,
+          oderId: c.id, // 코치 관리용 ID
           userId: c.user_id,  // 실제 사용자 ID (대화방용)
           name: c.name,
           email: c.email,
@@ -66,6 +81,30 @@ export function TasksPage() {
           tasks: []
         }))
         setCoachees(formatted)
+
+        // 구독자 로드
+        try {
+          const subs = await getCoachSubscribers(user.id)
+          const formattedSubs = subs
+            .filter(s => s.status === 'active')
+            .map(s => ({
+              id: `sub-${s.id}`,
+              oderId: s.id,
+              subscriptionId: s.id,
+              userId: s.user_id,
+              name: s.user?.name || '구독자',
+              email: s.user?.email || '',
+              planType: s.plan_type,
+              status: s.status,
+              sessionsUsed: s.sessions_used_this_month || 0,
+              sessionsPerMonth: s.sessions_per_month || 3,
+              isSubscriber: true,
+              tasks: []
+            }))
+          setSubscribers(formattedSubs)
+        } catch {
+          setSubscribers([])
+        }
 
         // 각 피코치와의 대화에서 과제 메시지 로드
         if (isSupabaseConfigured()) {
@@ -180,9 +219,36 @@ export function TasksPage() {
     })
   }, [coachees, tasks])
 
+  // 구독자별로 과제 그룹화
+  const subscribersWithTasks = useMemo(() => {
+    return subscribers.map(sub => {
+      const subTasks = tasks.filter(t => t.coacheeId === sub.id)
+      return {
+        ...sub,
+        tasks: subTasks,
+        pendingCount: subTasks.filter(t => t.status !== 'completed').length,
+        completedCount: subTasks.filter(t => t.status === 'completed').length,
+        submittedCount: subTasks.filter(t => t.hasSubmission && t.status !== 'completed').length
+      }
+    })
+  }, [subscribers, tasks])
+
+  // 피코치 카테고리 분류
+  const categorizedCoachees = useMemo(() => {
+    const inProgress = coacheesWithTasks.filter(c => c.currentSession <= c.totalSessions)
+    const completed = coacheesWithTasks.filter(c => c.currentSession > c.totalSessions)
+    return { inProgress, completed }
+  }, [coacheesWithTasks])
+
   // 검색 필터링
-  const filteredCoachees = coacheesWithTasks.filter(coachee =>
-    !searchQuery || coachee.name.includes(searchQuery)
+  const filteredInProgress = categorizedCoachees.inProgress.filter(c =>
+    !searchQuery || c.name.includes(searchQuery)
+  )
+  const filteredSubscribers = subscribersWithTasks.filter(s =>
+    !searchQuery || s.name.includes(searchQuery)
+  )
+  const filteredCompleted = categorizedCoachees.completed.filter(c =>
+    !searchQuery || c.name.includes(searchQuery)
   )
 
   // 전체 통계
@@ -475,40 +541,157 @@ export function TasksPage() {
         className="max-w-md"
       />
 
-      {/* 피코치별 서랍형 과제 목록 */}
-      <div className="space-y-3">
-        {filteredCoachees.length === 0 ? (
-          <Card>
-            <CardContent>
-              <EmptyState
-                icon={User}
-                title="해당하는 피코치가 없습니다"
-                description={searchQuery ? "다른 검색어로 시도해보세요." : undefined}
-              />
-            </CardContent>
-          </Card>
-        ) : (
-          filteredCoachees.map((coachee) => (
-            <CoacheeDrawer
-              key={coachee.id}
-              coachee={coachee}
-              isExpanded={isExpanded(coachee.id)}
-              onToggle={() => toggleCoachee(coachee.id)}
-              onCompleteTask={handleCompleteTask}
-              onAssignTask={() => {
-                setPreselectedCoacheeId(coachee.id)
-                setIsAssignModalOpen(true)
-              }}
-              onSendReminder={handleSendReminder}
-            />
-          ))
-        )}
+      {/* 피코치별 서랍형 과제 목록 - 섹션별 */}
+      <div className="space-y-4">
+        {/* 진행 중 섹션 */}
+        <div>
+          <button
+            onClick={() => toggleSection('inProgress')}
+            className="w-full flex items-center gap-3 px-4 py-3 bg-emerald-50 border border-emerald-200 rounded-xl hover:bg-emerald-100 transition-colors"
+          >
+            <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${
+              expandedSections.inProgress ? 'bg-emerald-500' : 'bg-emerald-200'
+            }`}>
+              {expandedSections.inProgress ? (
+                <ChevronDown className="w-5 h-5 text-white" />
+              ) : (
+                <ChevronRight className="w-5 h-5 text-emerald-600" />
+              )}
+            </div>
+            <Play className="w-5 h-5 text-emerald-600" />
+            <span className="font-semibold text-emerald-800">진행 중</span>
+            <span className="px-2 py-0.5 bg-emerald-200 text-emerald-700 rounded-full text-sm font-medium">
+              {filteredInProgress.length}
+            </span>
+          </button>
+
+          {expandedSections.inProgress && (
+            <div className="mt-2 space-y-3">
+              {filteredInProgress.length === 0 ? (
+                <div className="py-6 text-center text-gray-500 text-sm bg-gray-50 rounded-lg">
+                  진행 중인 피코치가 없습니다
+                </div>
+              ) : (
+                filteredInProgress.map((coachee) => (
+                  <CoacheeDrawer
+                    key={coachee.id}
+                    coachee={coachee}
+                    isExpanded={isExpanded(coachee.id)}
+                    onToggle={() => toggleCoachee(coachee.id)}
+                    onCompleteTask={handleCompleteTask}
+                    onAssignTask={() => {
+                      setPreselectedCoacheeId(coachee.id)
+                      setIsAssignModalOpen(true)
+                    }}
+                    onSendReminder={handleSendReminder}
+                  />
+                ))
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* 구독자 섹션 */}
+        <div>
+          <button
+            onClick={() => toggleSection('subscribers')}
+            className="w-full flex items-center gap-3 px-4 py-3 bg-amber-50 border border-amber-200 rounded-xl hover:bg-amber-100 transition-colors"
+          >
+            <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${
+              expandedSections.subscribers ? 'bg-amber-500' : 'bg-amber-200'
+            }`}>
+              {expandedSections.subscribers ? (
+                <ChevronDown className="w-5 h-5 text-white" />
+              ) : (
+                <ChevronRight className="w-5 h-5 text-amber-600" />
+              )}
+            </div>
+            <Crown className="w-5 h-5 text-amber-600" />
+            <span className="font-semibold text-amber-800">구독자</span>
+            <span className="px-2 py-0.5 bg-amber-200 text-amber-700 rounded-full text-sm font-medium">
+              {filteredSubscribers.length}
+            </span>
+          </button>
+
+          {expandedSections.subscribers && (
+            <div className="mt-2 space-y-3">
+              {filteredSubscribers.length === 0 ? (
+                <div className="py-6 text-center text-gray-500 text-sm bg-gray-50 rounded-lg">
+                  구독자가 없습니다
+                </div>
+              ) : (
+                filteredSubscribers.map((subscriber) => (
+                  <SubscriberDrawer
+                    key={subscriber.id}
+                    subscriber={subscriber}
+                    isExpanded={isExpanded(subscriber.id)}
+                    onToggle={() => toggleCoachee(subscriber.id)}
+                    onCompleteTask={handleCompleteTask}
+                    onAssignTask={() => {
+                      setPreselectedCoacheeId(subscriber.id)
+                      setIsAssignModalOpen(true)
+                    }}
+                    onSendReminder={handleSendReminder}
+                  />
+                ))
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* 완료 섹션 */}
+        <div>
+          <button
+            onClick={() => toggleSection('completed')}
+            className="w-full flex items-center gap-3 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl hover:bg-gray-100 transition-colors"
+          >
+            <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${
+              expandedSections.completed ? 'bg-gray-500' : 'bg-gray-200'
+            }`}>
+              {expandedSections.completed ? (
+                <ChevronDown className="w-5 h-5 text-white" />
+              ) : (
+                <ChevronRight className="w-5 h-5 text-gray-600" />
+              )}
+            </div>
+            <CheckCircle className="w-5 h-5 text-gray-500" />
+            <span className="font-semibold text-gray-700">완료</span>
+            <span className="px-2 py-0.5 bg-gray-200 text-gray-600 rounded-full text-sm font-medium">
+              {filteredCompleted.length}
+            </span>
+          </button>
+
+          {expandedSections.completed && (
+            <div className="mt-2 space-y-3">
+              {filteredCompleted.length === 0 ? (
+                <div className="py-6 text-center text-gray-500 text-sm bg-gray-50 rounded-lg">
+                  완료된 피코치가 없습니다
+                </div>
+              ) : (
+                filteredCompleted.map((coachee) => (
+                  <CoacheeDrawer
+                    key={coachee.id}
+                    coachee={coachee}
+                    isExpanded={isExpanded(coachee.id)}
+                    onToggle={() => toggleCoachee(coachee.id)}
+                    onCompleteTask={handleCompleteTask}
+                    onAssignTask={() => {
+                      setPreselectedCoacheeId(coachee.id)
+                      setIsAssignModalOpen(true)
+                    }}
+                    onSendReminder={handleSendReminder}
+                  />
+                ))
+              )}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* 과제 부여 모달 */}
       {isAssignModalOpen && (
         <TaskAssignModal
-          coachees={coachees}
+          coachees={[...coachees, ...subscribers]}
           preselectedCoacheeId={preselectedCoacheeId}
           onClose={() => {
             setIsAssignModalOpen(false)
@@ -613,6 +796,111 @@ function CoacheeDrawer({ coachee, isExpanded, onToggle, onCompleteTask, onAssign
             <Button variant="outline" size="sm" className="w-full" onClick={onAssignTask}>
               <Plus className="w-4 h-4 mr-2" />
               {coachee.name}님에게 과제 부여
+            </Button>
+          </div>
+        </div>
+      )}
+    </Card>
+  )
+}
+
+function SubscriberDrawer({ subscriber, isExpanded, onToggle, onCompleteTask, onAssignTask, onSendReminder }) {
+  const hasOverdue = subscriber.tasks?.some(t => {
+    if (t.status === 'completed') return false
+    const dueDate = new Date(t.dueDate)
+    return dueDate < new Date()
+  }) || false
+
+  const planLabel = subscriber.planType === 'monthly' ? '월간' : subscriber.planType === 'quarterly' ? '분기' : '연간'
+
+  return (
+    <Card className={`overflow-hidden transition-all border-amber-200 ${isExpanded ? 'ring-2 ring-amber-300' : ''}`}>
+      {/* 구독자 헤더 */}
+      <button
+        onClick={onToggle}
+        className="w-full p-4 flex items-center gap-4 hover:bg-amber-50 transition-colors text-left"
+      >
+        {/* 펼침/접힘 아이콘 */}
+        <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${
+          isExpanded ? 'bg-amber-100' : 'bg-gray-100'
+        }`}>
+          {isExpanded ? (
+            <ChevronDown className={`w-5 h-5 ${isExpanded ? 'text-amber-600' : 'text-gray-500'}`} />
+          ) : (
+            <ChevronRight className="w-5 h-5 text-gray-500" />
+          )}
+        </div>
+
+        {/* 구독자 정보 */}
+        <div className="relative">
+          <Avatar name={subscriber.name} size="lg" />
+          <div className="absolute -top-1 -right-1 w-5 h-5 bg-amber-400 border-2 border-white rounded-full flex items-center justify-center">
+            <Crown className="w-3 h-3 text-white" />
+          </div>
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 mb-1">
+            <h3 className="font-semibold text-gray-900">{subscriber.name}</h3>
+            <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700">
+              👑 {planLabel} 구독
+            </span>
+            {hasOverdue && (
+              <Badge variant="danger" className="text-xs">
+                <AlertCircle className="w-3 h-3 mr-1" />
+                마감 초과
+              </Badge>
+            )}
+          </div>
+          <p className="text-sm text-gray-500">
+            세션 {subscriber.sessionsUsed}/{subscriber.sessionsPerMonth}회 사용
+          </p>
+        </div>
+
+        {/* 과제 통계 */}
+        <div className="flex items-center gap-4">
+          {subscriber.submittedCount > 0 && (
+            <div className="flex items-center gap-1.5 text-sm">
+              <div className="w-2 h-2 bg-purple-500 rounded-full animate-pulse" />
+              <span className="text-purple-600 font-medium">{subscriber.submittedCount}개 검토 대기</span>
+            </div>
+          )}
+          <div className="flex items-center gap-1.5 text-sm">
+            <div className="w-2 h-2 bg-amber-500 rounded-full" />
+            <span className="text-gray-600">{subscriber.pendingCount}개 진행 중</span>
+          </div>
+          <div className="flex items-center gap-1.5 text-sm">
+            <div className="w-2 h-2 bg-green-500 rounded-full" />
+            <span className="text-gray-600">{subscriber.completedCount}개 완료</span>
+          </div>
+        </div>
+      </button>
+
+      {/* 과제 목록 */}
+      {isExpanded && (
+        <div className="border-t border-amber-100 bg-amber-50/50">
+          {(!subscriber.tasks || subscriber.tasks.length === 0) ? (
+            <div className="py-8 text-center text-gray-500">
+              아직 부여된 과제가 없습니다.
+            </div>
+          ) : (
+            <div className="divide-y divide-amber-100">
+              {subscriber.tasks.map((task) => (
+                <TaskRow
+                  key={task.id}
+                  task={task}
+                  coacheeUserId={subscriber.userId}
+                  onComplete={() => onCompleteTask(task.id)}
+                  onSendReminder={onSendReminder}
+                />
+              ))}
+            </div>
+          )}
+
+          {/* 새 과제 부여 버튼 */}
+          <div className="p-3 bg-white border-t border-amber-100">
+            <Button variant="outline" size="sm" className="w-full border-amber-300 text-amber-700 hover:bg-amber-50" onClick={onAssignTask}>
+              <Plus className="w-4 h-4 mr-2" />
+              {subscriber.name}님에게 과제 부여
             </Button>
           </div>
         </div>
@@ -920,7 +1208,7 @@ function TaskAssignModal({ coachees = [], preselectedCoacheeId = null, onClose, 
               <option value="">선택하세요</option>
               {coachees.map(coachee => (
                 <option key={coachee.id} value={coachee.id}>
-                  {coachee.name}
+                  {coachee.isSubscriber ? `👑 ${coachee.name} (구독자)` : coachee.name}
                 </option>
               ))}
             </select>

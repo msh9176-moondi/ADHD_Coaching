@@ -1,9 +1,51 @@
 /**
  * AI 분석 서비스
- * OpenAI GPT-4 API를 사용하여 코칭 대화 분석
+ * Ollama 로컬 AI (adhd-coach) 또는 OpenAI GPT-4 사용
  */
 
+// Ollama 로컬 API (기본값)
+const OLLAMA_API_URL = 'http://localhost:11434/v1/chat/completions'
 const OPENAI_API_URL = 'https://api.openai.com/v1/chat/completions'
+
+// 환경변수로 AI 제공자 선택 (ollama 또는 openai)
+const AI_PROVIDER = import.meta.env.VITE_AI_PROVIDER || 'ollama'
+const API_URL = AI_PROVIDER === 'openai' ? OPENAI_API_URL : OLLAMA_API_URL
+const MODEL_NAME = AI_PROVIDER === 'openai' ? 'gpt-4' : 'adhd-coach'
+
+/**
+ * AI API 호출 공통 함수
+ */
+async function callAI(messages, options = {}) {
+  const { temperature = 0.7, max_tokens = 2000 } = options
+  const apiKey = import.meta.env.VITE_OPENAI_API_KEY
+
+  if (AI_PROVIDER === 'openai' && !apiKey) {
+    throw new Error('OpenAI API 키가 설정되지 않았습니다.')
+  }
+
+  const headers = { 'Content-Type': 'application/json' }
+  if (AI_PROVIDER === 'openai') {
+    headers['Authorization'] = `Bearer ${apiKey}`
+  }
+
+  const response = await fetch(API_URL, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({
+      model: MODEL_NAME,
+      messages,
+      temperature,
+      max_tokens
+    })
+  })
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({}))
+    throw new Error(error.error?.message || `API 요청 실패: ${response.status}`)
+  }
+
+  return response.json()
+}
 
 // 코칭 분석을 위한 시스템 프롬프트
 const COACHING_ANALYSIS_PROMPT = `당신은 ADHD 코칭 전문가 어시스턴트입니다.
@@ -114,7 +156,8 @@ function parseAnalysisResponse(data) {
 export async function analyzeConversation(messages, coacheeInfo) {
   const apiKey = import.meta.env.VITE_OPENAI_API_KEY
 
-  if (!apiKey) {
+  // Ollama는 API 키 불필요, OpenAI는 필요
+  if (AI_PROVIDER === 'openai' && !apiKey) {
     throw new Error('OpenAI API 키가 설정되지 않았습니다. .env.local 파일에 VITE_OPENAI_API_KEY를 설정해주세요.')
   }
 
@@ -122,14 +165,16 @@ export async function analyzeConversation(messages, coacheeInfo) {
     throw new Error('분석할 대화 내용이 없습니다.')
   }
 
-  const response = await fetch(OPENAI_API_URL, {
+  const headers = { 'Content-Type': 'application/json' }
+  if (AI_PROVIDER === 'openai') {
+    headers['Authorization'] = `Bearer ${apiKey}`
+  }
+
+  const response = await fetch(API_URL, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${apiKey}`
-    },
+    headers,
     body: JSON.stringify({
-      model: 'gpt-4',
+      model: MODEL_NAME,
       messages: [
         { role: 'system', content: COACHING_ANALYSIS_PROMPT },
         { role: 'user', content: buildAnalysisRequest(messages, coacheeInfo) }
@@ -149,10 +194,19 @@ export async function analyzeConversation(messages, coacheeInfo) {
 }
 
 /**
- * API 키 유효성 확인
+ * AI 설정 확인
+ * Ollama: 항상 true (로컬), OpenAI: API 키 필요
  */
 export function isAIConfigured() {
+  if (AI_PROVIDER === 'ollama') return true
   return !!import.meta.env.VITE_OPENAI_API_KEY
+}
+
+/**
+ * 현재 AI 제공자 반환
+ */
+export function getAIProvider() {
+  return AI_PROVIDER
 }
 
 // ============================================
@@ -167,7 +221,7 @@ export function isAIConfigured() {
  */
 export async function chatWithAI(userMessage, history = [], context = {}) {
   const apiKey = import.meta.env.VITE_OPENAI_API_KEY
-  if (!apiKey) throw new Error('API 키가 설정되지 않았습니다.')
+  if (AI_PROVIDER === 'openai' && !apiKey) throw new Error('API 키가 설정되지 않았습니다.')
 
   const systemPrompt = `당신은 따뜻하고 공감적인 ADHD 코칭 서포터입니다.
 피코치의 일상적인 체크인을 도와주세요.
@@ -195,14 +249,16 @@ ${context.currentTask ? `진행 중인 과제: ${context.currentTask}` : ''}`
     { role: 'user', content: userMessage }
   ]
 
-  const response = await fetch(OPENAI_API_URL, {
+  const headers = { 'Content-Type': 'application/json' }
+  if (AI_PROVIDER === 'openai') {
+    headers['Authorization'] = `Bearer ${apiKey}`
+  }
+
+  const response = await fetch(API_URL, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${apiKey}`
-    },
+    headers,
     body: JSON.stringify({
-      model: 'gpt-4',
+      model: MODEL_NAME,
       messages,
       temperature: 0.8,
       max_tokens: 500
@@ -225,8 +281,9 @@ ${context.currentTask ? `진행 중인 과제: ${context.currentTask}` : ''}`
  * @param {number} sessionNumber - 회기 번호
  */
 export async function getSessionReflectionHelper(messages = [], topicTitle = '', sessionNumber = 1) {
-  const apiKey = import.meta.env.VITE_OPENAI_API_KEY
-  if (!apiKey) throw new Error('API 키가 설정되지 않았습니다.')
+  if (AI_PROVIDER === 'openai' && !import.meta.env.VITE_OPENAI_API_KEY) {
+    throw new Error('API 키가 설정되지 않았습니다.')
+  }
 
   // 최근 메시지만 분석 (토큰 제한 고려)
   const recentMessages = messages.slice(-40)
@@ -272,14 +329,16 @@ JSON 응답 형식:
   "scoreHint": "점수 변화에 대한 힌트 (예: '오늘 새로운 시도를 했으니 점수를 올려도 좋을 것 같아요')"
 }`
 
-  const response = await fetch(OPENAI_API_URL, {
+  const headers = { 'Content-Type': 'application/json' }
+  if (AI_PROVIDER === 'openai') {
+    headers['Authorization'] = `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}`
+  }
+
+  const response = await fetch(API_URL, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${apiKey}`
-    },
+    headers,
     body: JSON.stringify({
-      model: 'gpt-4',
+      model: MODEL_NAME,
       messages: [{ role: 'user', content: prompt }],
       temperature: 0.7,
       max_tokens: 1500
@@ -317,8 +376,9 @@ JSON 응답 형식:
  * @param {Object} context - 현재 성찰 내용
  */
 export async function getReflectionQuestions(context = {}) {
-  const apiKey = import.meta.env.VITE_OPENAI_API_KEY
-  if (!apiKey) throw new Error('API 키가 설정되지 않았습니다.')
+  if (AI_PROVIDER === 'openai' && !import.meta.env.VITE_OPENAI_API_KEY) {
+    throw new Error('API 키가 설정되지 않았습니다.')
+  }
 
   const prompt = `ADHD 피코치의 성찰일지 작성을 돕는 질문을 3개 생성해주세요.
 
@@ -337,14 +397,16 @@ JSON 형식으로 응답:
   "encouragement": "짧은 격려 메시지"
 }`
 
-  const response = await fetch(OPENAI_API_URL, {
+  const headers = { 'Content-Type': 'application/json' }
+  if (AI_PROVIDER === 'openai') {
+    headers['Authorization'] = `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}`
+  }
+
+  const response = await fetch(API_URL, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${apiKey}`
-    },
+    headers,
     body: JSON.stringify({
-      model: 'gpt-4',
+      model: MODEL_NAME,
       messages: [{ role: 'user', content: prompt }],
       temperature: 0.7,
       max_tokens: 500
@@ -378,8 +440,9 @@ JSON 형식으로 응답:
  * @param {Object} reflection - 작성된 성찰 내용
  */
 export async function getReflectionInsight(reflection) {
-  const apiKey = import.meta.env.VITE_OPENAI_API_KEY
-  if (!apiKey) throw new Error('API 키가 설정되지 않았습니다.')
+  if (AI_PROVIDER === 'openai' && !import.meta.env.VITE_OPENAI_API_KEY) {
+    throw new Error('API 키가 설정되지 않았습니다.')
+  }
 
   const prompt = `피코치가 작성한 성찰일지를 읽고 간단한 인사이트를 제공해주세요.
 
@@ -398,14 +461,16 @@ JSON 형식으로 응답 (각 항목 1-2문장):
   "tip": "ADHD 관점에서 도움될 팁"
 }`
 
-  const response = await fetch(OPENAI_API_URL, {
+  const headers = { 'Content-Type': 'application/json' }
+  if (AI_PROVIDER === 'openai') {
+    headers['Authorization'] = `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}`
+  }
+
+  const response = await fetch(API_URL, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${apiKey}`
-    },
+    headers,
     body: JSON.stringify({
-      model: 'gpt-4',
+      model: MODEL_NAME,
       messages: [{ role: 'user', content: prompt }],
       temperature: 0.7,
       max_tokens: 500
@@ -451,8 +516,9 @@ JSON 형식으로 응답 (각 항목 1-2문장):
  * @returns {Promise<Object>} 코칭 브리핑 결과
  */
 export async function generateCoachingBriefing(coacheeData, messages = [], sessionNotes = [], reflections = [], currentSessionNumber = 1) {
-  const apiKey = import.meta.env.VITE_OPENAI_API_KEY
-  if (!apiKey) throw new Error('API 키가 설정되지 않았습니다.')
+  if (AI_PROVIDER === 'openai' && !import.meta.env.VITE_OPENAI_API_KEY) {
+    throw new Error('API 키가 설정되지 않았습니다.')
+  }
 
   // 회기별 차별화된 분석 포커스
   const sessionFocus = getSessionFocus(currentSessionNumber)
@@ -565,14 +631,16 @@ ${sessionFocus}
   // 데이터 구성
   const analysisData = buildBriefingData(coacheeData, messages, sessionNotes, reflections, currentSessionNumber)
 
-  const response = await fetch(OPENAI_API_URL, {
+  const headers = { 'Content-Type': 'application/json' }
+  if (AI_PROVIDER === 'openai') {
+    headers['Authorization'] = `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}`
+  }
+
+  const response = await fetch(API_URL, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${apiKey}`
-    },
+    headers,
     body: JSON.stringify({
-      model: 'gpt-4',
+      model: MODEL_NAME,
       messages: [
         { role: 'system', content: systemPrompt },
         { role: 'user', content: analysisData }
@@ -786,8 +854,9 @@ function getDefaultBriefing() {
  * 빠른 세션 준비 브리핑 (간소화 버전)
  */
 export async function getQuickSessionBriefing(coacheeData, recentMessages = []) {
-  const apiKey = import.meta.env.VITE_OPENAI_API_KEY
-  if (!apiKey) throw new Error('API 키가 설정되지 않았습니다.')
+  if (AI_PROVIDER === 'openai' && !import.meta.env.VITE_OPENAI_API_KEY) {
+    throw new Error('API 키가 설정되지 않았습니다.')
+  }
 
   const messagesText = recentMessages.slice(-20).map(msg => {
     const role = msg.sender_role === 'coach' ? '코치' : '피코치'
@@ -811,14 +880,16 @@ JSON 응답:
   "caution": "주의할 점 (있으면)"
 }`
 
-  const response = await fetch(OPENAI_API_URL, {
+  const headers = { 'Content-Type': 'application/json' }
+  if (AI_PROVIDER === 'openai') {
+    headers['Authorization'] = `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}`
+  }
+
+  const response = await fetch(API_URL, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${apiKey}`
-    },
+    headers,
     body: JSON.stringify({
-      model: 'gpt-4',
+      model: MODEL_NAME,
       messages: [{ role: 'user', content: prompt }],
       temperature: 0.7,
       max_tokens: 500
@@ -854,8 +925,9 @@ JSON 응답:
  * @param {number} sessionNumber - 회기 번호
  */
 export async function getSessionNoteAssist(messages = [], coacheeInfo = {}, sessionNumber = 1) {
-  const apiKey = import.meta.env.VITE_OPENAI_API_KEY
-  if (!apiKey) throw new Error('API 키가 설정되지 않았습니다.')
+  if (AI_PROVIDER === 'openai' && !import.meta.env.VITE_OPENAI_API_KEY) {
+    throw new Error('API 키가 설정되지 않았습니다.')
+  }
 
   // 최근 메시지만 분석 (토큰 제한 고려)
   const recentMessages = messages.slice(-50)
@@ -898,14 +970,16 @@ JSON 응답 형식:
   "confidence": "제안 내용의 신뢰도 (high/medium/low)"
 }`
 
-  const response = await fetch(OPENAI_API_URL, {
+  const headers = { 'Content-Type': 'application/json' }
+  if (AI_PROVIDER === 'openai') {
+    headers['Authorization'] = `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}`
+  }
+
+  const response = await fetch(API_URL, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${apiKey}`
-    },
+    headers,
     body: JSON.stringify({
-      model: 'gpt-4',
+      model: MODEL_NAME,
       messages: [{ role: 'user', content: prompt }],
       temperature: 0.6,
       max_tokens: 2000
@@ -947,8 +1021,9 @@ JSON 응답 형식:
 }
 
 export async function getTaskSupport(task, type = 'encourage') {
-  const apiKey = import.meta.env.VITE_OPENAI_API_KEY
-  if (!apiKey) throw new Error('API 키가 설정되지 않았습니다.')
+  if (AI_PROVIDER === 'openai' && !import.meta.env.VITE_OPENAI_API_KEY) {
+    throw new Error('API 키가 설정되지 않았습니다.')
+  }
 
   const prompts = {
     hint: `ADHD 피코치가 과제를 시작하기 어려워합니다. 첫 단계를 위한 구체적인 힌트를 주세요.
@@ -990,14 +1065,16 @@ JSON 응답:
 }`
   }
 
-  const response = await fetch(OPENAI_API_URL, {
+  const headers = { 'Content-Type': 'application/json' }
+  if (AI_PROVIDER === 'openai') {
+    headers['Authorization'] = `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}`
+  }
+
+  const response = await fetch(API_URL, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${apiKey}`
-    },
+    headers,
     body: JSON.stringify({
-      model: 'gpt-4',
+      model: MODEL_NAME,
       messages: [{ role: 'user', content: prompts[type] || prompts.encourage }],
       temperature: 0.8,
       max_tokens: 400

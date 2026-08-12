@@ -1,0 +1,21 @@
+# PDF & 텍스트 처리
+PyMuPDF==1.24.0          # PDF 텍스트 추출 (fitz)
+pdfplumber==0.10.3       # PDF 테이블 추출
+langchain==0.1.0         # 텍스트 청킹
+tiktoken==0.5.2          # 토큰 카운팅
+
+# 데이터 처리
+pandas==2.1.4
+datasets==2.16.1         # HuggingFace 데이터셋
+
+# AI 모델 (데이터 생성용)
+openai==1.6.1            # GPT로 Q&A 쌍 생성
+anthropic==0.8.1         # Claude로 Q&A 쌍 생성
+
+# 파인튜닝 (나중에 사용)
+# unsloth @ git+https://github.com/unslothai/unsloth.git
+# trl==0.7.4
+# peft==0.7.1
+# transformers==4.36.2
+# torch==2.1.2
+# bitsandbytes==0.41.3

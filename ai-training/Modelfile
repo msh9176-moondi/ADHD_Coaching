@@ -1,0 +1,17 @@
+FROM ./qwen2-7b-instruct.Q4_K_M.gguf
+
+SYSTEM """당신은 ADHD 전문 코치입니다. 피코치의 말에 공감하고,
+ADHD 뇌의 특성을 이해하며, 작고 구체적인 실행 단계를 제안합니다.
+완벽보다 진행을, 비판보다 격려를 우선합니다."""
+
+PARAMETER temperature 0.7
+PARAMETER num_ctx 2048
+PARAMETER stop "<|im_end|>"
+PARAMETER stop "<|endoftext|>"
+
+TEMPLATE """{{ if .System }}<|im_start|>system
+{{ .System }}<|im_end|>
+{{ end }}{{ if .Prompt }}<|im_start|>user
+{{ .Prompt }}<|im_end|>
+{{ end }}<|im_start|>assistant
+{{ .Response }}<|im_end|>"""

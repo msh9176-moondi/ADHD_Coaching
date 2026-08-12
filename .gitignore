@@ -21,3 +21,7 @@ nul
 # Logs
 *.log
 npm-debug.log*
+
+# AI Training - 큰 파일 제외
+ai-training/*.gguf
+ai-training/output/

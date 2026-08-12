@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
 import {
   LayoutDashboard,
@@ -12,11 +13,33 @@ import {
   X
 } from 'lucide-react'
 import { useStore } from '../../store/useStore'
+import { getAllUnreadCounts } from '../../lib/messageService'
 
 export function Sidebar({ isOpen, onClose }) {
   const navigate = useNavigate()
   const { user, resetAll } = useStore()
+  const [totalUnread, setTotalUnread] = useState(0)
   const isCoach = user?.role === 'coach'
+
+  // 안 읽은 메시지 수 로드
+  useEffect(() => {
+    if (!user?.id) return
+
+    async function loadUnreadCounts() {
+      try {
+        const counts = await getAllUnreadCounts(user.id)
+        const total = Object.values(counts).reduce((sum, count) => sum + count, 0)
+        setTotalUnread(total)
+      } catch (err) {
+        console.error('안 읽은 메시지 수 로드 실패:', err)
+      }
+    }
+
+    loadUnreadCounts()
+    // 30초마다 갱신
+    const interval = setInterval(loadUnreadCounts, 30000)
+    return () => clearInterval(interval)
+  }, [user?.id])
 
   const handleLogout = () => {
     resetAll()
@@ -74,24 +97,38 @@ export function Sidebar({ isOpen, onClose }) {
       </div>
 
       <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
-        {menuItems.map((item) => (
-          <NavLink
-            key={item.path}
-            to={item.path}
-            end={item.path === '/coach' || item.path === '/coachee'}
-            onClick={handleNavClick}
-            className={({ isActive }) =>
-              `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                isActive
-                  ? 'bg-emerald-50 text-emerald-700'
-                  : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-              }`
-            }
-          >
-            <item.icon className="w-5 h-5" />
-            {item.label}
-          </NavLink>
-        ))}
+        {menuItems.map((item) => {
+          const isMessageItem = item.label === '메시지'
+          const showBadge = isMessageItem && totalUnread > 0
+
+          return (
+            <NavLink
+              key={item.path}
+              to={item.path}
+              end={item.path === '/coach' || item.path === '/coachee'}
+              onClick={handleNavClick}
+              className={({ isActive }) =>
+                `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                  isActive
+                    ? 'bg-emerald-50 text-emerald-700'
+                    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                }`
+              }
+            >
+              <div className="relative">
+                <item.icon className="w-5 h-5" />
+                {showBadge && (
+                  <div className="absolute -top-1.5 -right-1.5 min-w-[16px] h-[16px] bg-red-500 rounded-full flex items-center justify-center px-1">
+                    <span className="text-[9px] font-bold text-white">
+                      {totalUnread > 99 ? '99+' : totalUnread}
+                    </span>
+                  </div>
+                )}
+              </div>
+              {item.label}
+            </NavLink>
+          )
+        })}
       </nav>
 
       <div className="px-3 py-4 border-t border-gray-100 space-y-1">
