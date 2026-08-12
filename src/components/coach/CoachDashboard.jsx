@@ -23,6 +23,7 @@ export function CoachDashboard() {
   const [pendingApplicants, setPendingApplicants] = useState([])
   const [pendingSubscriptions, setPendingSubscriptions] = useState([])
   const [todaySessions, setTodaySessions] = useState([])
+  const [allSubscribers, setAllSubscribers] = useState([])
   const [loading, setLoading] = useState(true)
   const [stats, setStats] = useState({
     totalCoachees: 0,
@@ -79,14 +80,28 @@ export function CoachDashboard() {
           setTodaySessions([])
         }
 
-        // 입금 대기 중인 구독 로드
+        // 구독자 로드
         try {
           const subscribers = await getCoachSubscribers(user?.id)
           const pendingSubs = subscribers.filter(s => s.status === 'pending')
           setPendingSubscriptions(pendingSubs)
           setStats(prev => ({ ...prev, pendingSubscriptions: pendingSubs.length }))
+          // 모든 구독자를 CoacheeQuickList용으로 포맷
+          const formattedSubs = subscribers.map(s => ({
+            id: s.id,
+            subscriptionId: s.id,
+            userId: s.user_id,
+            name: s.user?.name || '구독자',
+            email: s.user?.email || '',
+            planType: s.plan_type,
+            status: s.status,
+            sessionsUsed: s.sessions_used_this_month || 0,
+            sessionsPerMonth: s.sessions_per_month || 3
+          }))
+          setAllSubscribers(formattedSubs)
         } catch {
           setPendingSubscriptions([])
+          setAllSubscribers([])
         }
       } catch (err) {
         console.warn('대시보드 데이터 로드 실패:', err)
@@ -212,7 +227,7 @@ export function CoachDashboard() {
           </button>
         </CardHeader>
         <CardContent>
-          <CoacheeQuickList coachees={coachees} />
+          <CoacheeQuickList coachees={coachees} subscribers={allSubscribers} />
         </CardContent>
       </Card>
     </div>

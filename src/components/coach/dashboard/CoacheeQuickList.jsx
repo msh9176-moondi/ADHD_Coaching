@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Users, TrendingUp, CheckCircle, Play } from 'lucide-react'
+import { Users, TrendingUp, CheckCircle, Play, Crown } from 'lucide-react'
 import { Avatar } from '../../common/Avatar'
 import { ProgressBar } from '../../common/ProgressBar'
 import { PACKAGES } from '../../../data/coachData'
@@ -8,10 +8,11 @@ import { PACKAGE_COLORS } from '../../../constants/styles'
 
 const TABS = [
   { id: 'active', label: '진행 중', icon: Play },
+  { id: 'subscriber', label: '구독자', icon: Crown },
   { id: 'completed', label: '완료', icon: CheckCircle }
 ]
 
-export function CoacheeQuickList({ coachees = [] }) {
+export function CoacheeQuickList({ coachees = [], subscribers = [] }) {
   const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState('active')
 
@@ -19,7 +20,9 @@ export function CoacheeQuickList({ coachees = [] }) {
   const activeCoachees = coachees.filter(c => c.currentSession <= c.totalSessions)
   const completedCoachees = coachees.filter(c => c.currentSession > c.totalSessions)
 
-  const displayedCoachees = activeTab === 'active' ? activeCoachees : completedCoachees
+  const displayedCoachees = activeTab === 'active' ? activeCoachees
+    : activeTab === 'subscriber' ? subscribers
+    : completedCoachees
 
   if (coachees.length === 0) {
     return (
@@ -37,7 +40,9 @@ export function CoacheeQuickList({ coachees = [] }) {
       <div className="flex gap-2 mb-4 border-b">
         {TABS.map((tab) => {
           const Icon = tab.icon
-          const count = tab.id === 'active' ? activeCoachees.length : completedCoachees.length
+          const count = tab.id === 'active' ? activeCoachees.length
+            : tab.id === 'subscriber' ? subscribers.length
+            : completedCoachees.length
           return (
             <button
               key={tab.id}
@@ -62,7 +67,49 @@ export function CoacheeQuickList({ coachees = [] }) {
 
       {displayedCoachees.length === 0 ? (
         <div className="py-8 text-center text-gray-500">
-          <p>{activeTab === 'active' ? '진행 중인 피코치가 없습니다.' : '완료된 피코치가 없습니다.'}</p>
+          <p>{activeTab === 'active' ? '진행 중인 피코치가 없습니다.'
+            : activeTab === 'subscriber' ? '구독자가 없습니다.'
+            : '완료된 피코치가 없습니다.'}</p>
+        </div>
+      ) : activeTab === 'subscriber' ? (
+        // 구독자 목록
+        <div className="space-y-3">
+          {subscribers.map((subscriber) => (
+            <div
+              key={subscriber.id}
+              onClick={() => navigate(`/coach/coachees/${subscriber.userId || subscriber.id}`)}
+              className="p-3 bg-amber-50 rounded-lg hover:bg-amber-100 cursor-pointer transition-colors border border-amber-200"
+            >
+              <div className="flex items-center gap-3 mb-2">
+                <div className="relative">
+                  <Avatar name={subscriber.name} size="sm" />
+                  <div className="absolute -top-1 -right-1 w-4 h-4 bg-amber-400 border-2 border-white rounded-full flex items-center justify-center">
+                    <Crown className="w-2.5 h-2.5 text-white" />
+                  </div>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <p className="font-medium text-gray-900 text-sm">{subscriber.name}</p>
+                    <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${
+                      subscriber.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
+                    }`}>
+                      {subscriber.status === 'active' ? '구독중' : '대기'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <div className="flex items-center justify-between text-xs text-gray-500">
+                <div className="flex items-center gap-3">
+                  <span className="flex items-center gap-1">
+                    <Crown className="w-3 h-3 text-amber-500" />
+                    {subscriber.planType === 'monthly' ? '월간' : subscriber.planType === 'quarterly' ? '분기' : '연간'} 구독
+                  </span>
+                  <span>{subscriber.sessionsUsed || 0}/{subscriber.sessionsPerMonth || 3}회 사용</span>
+                </div>
+                <span className="text-amber-600 font-medium">상세 →</span>
+              </div>
+            </div>
+          ))}
         </div>
       ) : (
         <>
