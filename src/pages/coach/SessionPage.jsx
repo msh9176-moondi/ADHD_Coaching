@@ -329,19 +329,19 @@ export function SessionPage() {
     const coachee = coachees.find(c => c.id === selectedSession.coacheeId)
     return (
       <div>
-        <div className="flex items-center gap-4 mb-6">
-          <Button variant="ghost" onClick={() => setSelectedSession(null)}>
-            <ChevronRight className="w-5 h-5 rotate-180" />
-            목록으로
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
+          <Button variant="ghost" onClick={() => setSelectedSession(null)} size="sm">
+            <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 rotate-180" />
+            <span className="hidden sm:inline ml-1">목록으로</span>
           </Button>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">
-              {selectedSession.coacheeName} - {selectedSession.sessionNumber}회기
+            <h1 className="text-lg sm:text-2xl font-bold text-gray-900 flex items-center flex-wrap gap-2">
+              <span>{selectedSession.coacheeName} - {selectedSession.sessionNumber}회기</span>
               {selectedSession.isNew && (
-                <Badge variant="warning" className="ml-2">새 일지</Badge>
+                <Badge variant="warning" className="text-xs">새 일지</Badge>
               )}
             </h1>
-            <p className="text-gray-500">{selectedSession.date}</p>
+            <p className="text-sm sm:text-base text-gray-500">{selectedSession.date}</p>
           </div>
         </div>
         <SessionNote
@@ -358,25 +358,25 @@ export function SessionPage() {
   return (
     <div className="space-y-6">
       {/* 헤더 */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">세션 일지</h1>
-          <p className="text-gray-600">
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-1 sm:mb-2">세션 일지</h1>
+          <p className="text-sm sm:text-base text-gray-600">
             피코치별로 세션 기록을 관리하고 일지를 작성하세요.
           </p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={handleExpandAll}>
+          <Button variant="outline" size="sm" onClick={handleExpandAll} className="text-xs sm:text-sm">
             전체 펼치기
           </Button>
-          <Button variant="outline" size="sm" onClick={handleCollapseAll}>
+          <Button variant="outline" size="sm" onClick={handleCollapseAll} className="text-xs sm:text-sm">
             전체 접기
           </Button>
         </div>
       </div>
 
       {/* 간단한 통계 */}
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
         <StatCard
           icon={User}
           label="피코치"
@@ -446,41 +446,55 @@ function CoacheeDrawer({ coachee, isExpanded, onToggle, onSelectSession, onCreat
       {/* 피코치 헤더 (클릭하면 펼침/접힘) */}
       <button
         onClick={onToggle}
-        className="w-full p-4 flex items-center gap-4 hover:bg-gray-50 transition-colors text-left"
+        className="w-full p-3 sm:p-4 flex items-start sm:items-center gap-3 sm:gap-4 hover:bg-gray-50 transition-colors text-left"
       >
         {/* 펼침/접힘 아이콘 */}
-        <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${
+        <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center transition-all flex-shrink-0 ${
           isExpanded ? 'bg-emerald-100' : 'bg-gray-100'
         }`}>
           {isExpanded ? (
-            <ChevronDown className={`w-5 h-5 ${isExpanded ? 'text-emerald-600' : 'text-gray-500'}`} />
+            <ChevronDown className={`w-4 h-4 sm:w-5 sm:h-5 ${isExpanded ? 'text-emerald-600' : 'text-gray-500'}`} />
           ) : (
-            <ChevronRight className="w-5 h-5 text-gray-500" />
+            <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 text-gray-500" />
           )}
         </div>
 
         {/* 피코치 정보 */}
-        <Avatar name={coachee.name} size="lg" />
+        <Avatar name={coachee.name} size="md" className="hidden sm:flex flex-shrink-0" />
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1">
-            <h3 className="font-semibold text-gray-900">{coachee.name}</h3>
+          <div className="flex items-center gap-2 mb-1 flex-wrap">
+            <h3 className="font-semibold text-gray-900 text-sm sm:text-base">{coachee.name}</h3>
             {coachee.packageType && PACKAGES[coachee.packageType] && (
-              <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${packageColors[coachee.packageType] || 'bg-gray-100 text-gray-700'}`}>
+              <span className={`px-1.5 sm:px-2 py-0.5 rounded-full text-[10px] sm:text-xs font-medium ${packageColors[coachee.packageType] || 'bg-gray-100 text-gray-700'}`}>
                 {PACKAGES[coachee.packageType].icon} {PACKAGES[coachee.packageType].name}
               </span>
             )}
-            <Badge variant="secondary">
+            <Badge variant="secondary" className="text-[10px] sm:text-xs">
               {Math.min(coachee.currentSession, coachee.totalSessions)}/{coachee.totalSessions} 회기
               {coachee.currentSession > coachee.totalSessions && ' ✓'}
             </Badge>
           </div>
-          <p className="text-sm text-gray-500 truncate">
+          <p className="text-xs sm:text-sm text-gray-500 truncate">
             {coachee.coachingGoal?.goal || '목표 미설정'}
           </p>
+
+          {/* 모바일: 세션 통계 인라인 */}
+          <div className="flex items-center gap-3 mt-2 sm:hidden">
+            {coachee.scheduledCount > 0 && (
+              <div className="flex items-center gap-1 text-xs">
+                <div className="w-1.5 h-1.5 bg-purple-500 rounded-full" />
+                <span className="text-gray-600">{coachee.scheduledCount}개 예정</span>
+              </div>
+            )}
+            <div className="flex items-center gap-1 text-xs">
+              <div className="w-1.5 h-1.5 bg-green-500 rounded-full" />
+              <span className="text-gray-600">{coachee.completedCount}개 완료</span>
+            </div>
+          </div>
         </div>
 
-        {/* 세션 통계 */}
-        <div className="flex items-center gap-4">
+        {/* 데스크톱: 세션 통계 */}
+        <div className="hidden sm:flex items-center gap-4">
           {coachee.scheduledCount > 0 && (
             <div className="flex items-center gap-1.5 text-sm">
               <div className="w-2 h-2 bg-purple-500 rounded-full" />
@@ -574,61 +588,61 @@ function SessionRow({ session, onClick }) {
   return (
     <div
       onClick={onClick}
-      className={`flex items-center gap-4 p-4 pl-16 hover:bg-emerald-50 cursor-pointer transition-colors ${config.bgColor}`}
+      className={`flex items-center gap-2 sm:gap-4 p-3 sm:p-4 pl-4 sm:pl-16 hover:bg-emerald-50 cursor-pointer transition-colors ${config.bgColor}`}
     >
       {/* 회기 번호 */}
-      <div className="w-12 h-12 bg-emerald-100 rounded-lg flex flex-col items-center justify-center flex-shrink-0">
-        <span className="text-base font-bold text-emerald-600">{session.sessionNumber}</span>
-        <span className="text-[10px] text-emerald-500">회기</span>
+      <div className="w-10 h-10 sm:w-12 sm:h-12 bg-emerald-100 rounded-lg flex flex-col items-center justify-center flex-shrink-0">
+        <span className="text-sm sm:text-base font-bold text-emerald-600">{session.sessionNumber}</span>
+        <span className="text-[8px] sm:text-[10px] text-emerald-500">회기</span>
       </div>
 
       {/* 세션 정보 */}
       <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2 mb-0.5">
-          <span className={`px-2 py-0.5 rounded-full text-xs font-medium flex items-center gap-1 ${config.badgeColor}`}>
-            <StatusIcon className="w-3 h-3" />
+        <div className="flex items-center gap-1 sm:gap-2 mb-0.5 flex-wrap">
+          <span className={`px-1.5 sm:px-2 py-0.5 rounded-full text-[10px] sm:text-xs font-medium flex items-center gap-0.5 sm:gap-1 ${config.badgeColor}`}>
+            <StatusIcon className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
             {config.label}
           </span>
-          <span className="text-sm font-medium text-gray-700">{session.topic || '주제 미정'}</span>
+          <span className="text-xs sm:text-sm font-medium text-gray-700 truncate">{session.topic || '주제 미정'}</span>
         </div>
-        <div className="flex items-center gap-3 text-xs text-gray-400">
-          <span className="flex items-center gap-1">
-            <Calendar className="w-3 h-3" />
+        <div className="flex items-center gap-2 sm:gap-3 text-[10px] sm:text-xs text-gray-400">
+          <span className="flex items-center gap-0.5 sm:gap-1">
+            <Calendar className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
             {session.date}
           </span>
           {session.time && (
-            <span className="flex items-center gap-1">
-              <Clock className="w-3 h-3" />
+            <span className="flex items-center gap-0.5 sm:gap-1">
+              <Clock className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
               {session.time}
             </span>
           )}
         </div>
       </div>
 
-      {/* 액션 버튼 */}
-      <div className="flex items-center gap-2">
+      {/* 액션 버튼 - 모바일에서는 아이콘만 */}
+      <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
         {session.status === 'scheduled' ? (
-          <Button size="sm">
-            <Play className="w-4 h-4 mr-1" />
-            세션 시작
+          <Button size="sm" className="px-2 sm:px-3">
+            <Play className="w-3.5 h-3.5 sm:w-4 sm:h-4 sm:mr-1" />
+            <span className="hidden sm:inline">세션 시작</span>
           </Button>
         ) : session.status === 'completed' ? (
-          <Button variant="outline" size="sm">
-            <Eye className="w-4 h-4 mr-1" />
-            일지 보기
+          <Button variant="outline" size="sm" className="px-2 sm:px-3">
+            <Eye className="w-3.5 h-3.5 sm:w-4 sm:h-4 sm:mr-1" />
+            <span className="hidden sm:inline">일지 보기</span>
           </Button>
         ) : session.status === 'draft' ? (
-          <Button variant="outline" size="sm">
-            <Edit className="w-4 h-4 mr-1" />
-            계속 작성
+          <Button variant="outline" size="sm" className="px-2 sm:px-3">
+            <Edit className="w-3.5 h-3.5 sm:w-4 sm:h-4 sm:mr-1" />
+            <span className="hidden sm:inline">계속 작성</span>
           </Button>
         ) : (
-          <Button variant="outline" size="sm">
-            <Edit className="w-4 h-4 mr-1" />
-            계속 작성
+          <Button variant="outline" size="sm" className="px-2 sm:px-3">
+            <Edit className="w-3.5 h-3.5 sm:w-4 sm:h-4 sm:mr-1" />
+            <span className="hidden sm:inline">계속 작성</span>
           </Button>
         )}
-        <ChevronRight className="w-5 h-5 text-gray-400" />
+        <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
       </div>
     </div>
   )
