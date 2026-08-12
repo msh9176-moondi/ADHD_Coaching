@@ -622,27 +622,27 @@ function SessionRow({ session, onClick }) {
       {/* 액션 버튼 - 모바일에서는 아이콘만 */}
       <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
         {session.status === 'scheduled' ? (
-          <Button size="sm" className="px-2 sm:px-3">
+          <Button size="sm" className="px-2 sm:px-3" onClick={onClick}>
             <Play className="w-3.5 h-3.5 sm:w-4 sm:h-4 sm:mr-1" />
             <span className="hidden sm:inline">세션 시작</span>
           </Button>
         ) : session.status === 'completed' ? (
-          <Button variant="outline" size="sm" className="px-2 sm:px-3">
+          <Button variant="outline" size="sm" className="px-2 sm:px-3" onClick={onClick}>
             <Eye className="w-3.5 h-3.5 sm:w-4 sm:h-4 sm:mr-1" />
             <span className="hidden sm:inline">일지 보기</span>
           </Button>
         ) : session.status === 'draft' ? (
-          <Button variant="outline" size="sm" className="px-2 sm:px-3">
+          <Button variant="outline" size="sm" className="px-2 sm:px-3" onClick={onClick}>
             <Edit className="w-3.5 h-3.5 sm:w-4 sm:h-4 sm:mr-1" />
             <span className="hidden sm:inline">계속 작성</span>
           </Button>
         ) : (
-          <Button variant="outline" size="sm" className="px-2 sm:px-3">
+          <Button variant="outline" size="sm" className="px-2 sm:px-3" onClick={onClick}>
             <Edit className="w-3.5 h-3.5 sm:w-4 sm:h-4 sm:mr-1" />
             <span className="hidden sm:inline">계속 작성</span>
           </Button>
         )}
-        <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
+        <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 cursor-pointer" onClick={onClick} />
       </div>
     </div>
   )
