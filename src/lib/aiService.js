@@ -846,6 +846,106 @@ JSON 응답:
   }
 }
 
+/**
+ * 코치용 세션 일지 작성 도우미
+ * 채팅 내역을 분석하여 세션 일지 필드 제안
+ * @param {Array} messages - 채팅 내역
+ * @param {Object} coacheeInfo - 피코치 정보
+ * @param {number} sessionNumber - 회기 번호
+ */
+export async function getSessionNoteAssist(messages = [], coacheeInfo = {}, sessionNumber = 1) {
+  const apiKey = import.meta.env.VITE_OPENAI_API_KEY
+  if (!apiKey) throw new Error('API 키가 설정되지 않았습니다.')
+
+  // 최근 메시지만 분석 (토큰 제한 고려)
+  const recentMessages = messages.slice(-50)
+  const conversationText = recentMessages.map(msg => {
+    const role = msg.sender === 'coach' || msg.sender_role === 'coach' ? '코치' : '피코치'
+    return `[${role}]: ${msg.content || ''}`
+  }).join('\n')
+
+  const prompt = `당신은 ADHD 코칭 세션 일지 작성을 돕는 전문 어시스턴트입니다.
+아래 코칭 대화를 분석하여 코치가 세션 일지를 작성하는 데 도움이 될 내용을 제안해주세요.
+
+## 피코치 정보
+- 이름: ${coacheeInfo.name || '미상'}
+- 회기: ${sessionNumber}회기
+- 코칭 주제: ${coacheeInfo.topics?.join(', ') || '미설정'}
+
+## 대화 내역
+${conversationText || '대화 내역 없음'}
+
+## 요청
+위 대화를 바탕으로 세션 일지 각 항목에 들어갈 내용을 제안해주세요.
+대화에서 직접 확인된 내용만 작성하고, 추측이 필요한 부분은 "~로 보임", "~것 같음" 등으로 표현해주세요.
+
+JSON 응답 형식:
+{
+  "coachingGoal": "이번 코칭 전체의 목표 (대화에서 확인된 내용)",
+  "sessionTopic": "오늘 세션에서 다룬 핵심 주제",
+  "mood": "good/normal/difficult 중 하나",
+  "emotion": "피코치가 표현한 주요 감정 (불안, 기대, 피로 등)",
+  "bodyResponse": "피코치가 언급한 신체 반응 (있으면)",
+  "taskReview": "지난 과제 수행 여부와 결과 (대화에서 확인된 내용)",
+  "content": "오늘 상담에서 다룬 핵심 내용 요약 (3-5문장)",
+  "autoThought": "피코치에게서 관찰된 자동적 사고 패턴",
+  "avoidance": "관찰된 회피 행동 패턴",
+  "helpfulAction": "피코치에게 효과적이었던 전략이나 행동",
+  "achievement": "이번 회기에서 얻은 성과나 진전",
+  "desiredResult": "앞으로 기대하는 변화",
+  "nextTask": "다음 회기까지 수행할 과제 제안",
+  "privateNote": "코치가 참고할 만한 개인 메모 (주의사항, 수퍼비전 필요 여부 등)",
+  "confidence": "제안 내용의 신뢰도 (high/medium/low)"
+}`
+
+  const response = await fetch(OPENAI_API_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${apiKey}`
+    },
+    body: JSON.stringify({
+      model: 'gpt-4',
+      messages: [{ role: 'user', content: prompt }],
+      temperature: 0.6,
+      max_tokens: 2000
+    })
+  })
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({}))
+    throw new Error(error.error?.message || 'AI 응답 실패')
+  }
+
+  const data = await response.json()
+  const content = data.choices[0]?.message?.content || ''
+
+  try {
+    let jsonStr = content
+    const match = content.match(/```(?:json)?\s*([\s\S]*?)```/)
+    if (match) jsonStr = match[1]
+    return JSON.parse(jsonStr.trim())
+  } catch {
+    return {
+      coachingGoal: '',
+      sessionTopic: '',
+      mood: '',
+      emotion: '',
+      bodyResponse: '',
+      taskReview: '',
+      content: '대화 내용을 분석하는 데 문제가 발생했습니다.',
+      autoThought: '',
+      avoidance: '',
+      helpfulAction: '',
+      achievement: '',
+      desiredResult: '',
+      nextTask: '',
+      privateNote: '',
+      confidence: 'low'
+    }
+  }
+}
+
 export async function getTaskSupport(task, type = 'encourage') {
   const apiKey = import.meta.env.VITE_OPENAI_API_KEY
   if (!apiKey) throw new Error('API 키가 설정되지 않았습니다.')
