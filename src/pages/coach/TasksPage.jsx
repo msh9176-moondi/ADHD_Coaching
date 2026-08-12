@@ -475,24 +475,24 @@ export function TasksPage() {
   return (
     <div className="space-y-6">
       {/* 헤더 */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">과제 관리</h1>
-          <p className="text-gray-600">
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-1 sm:mb-2">과제 관리</h1>
+          <p className="text-sm sm:text-base text-gray-600">
             피코치별로 과제 현황을 확인하고 새로운 과제를 부여하세요.
           </p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={expandAll}>
+          <Button variant="outline" size="sm" onClick={expandAll} className="hidden sm:inline-flex">
             전체 펼치기
           </Button>
-          <Button variant="outline" size="sm" onClick={collapseAll}>
+          <Button variant="outline" size="sm" onClick={collapseAll} className="hidden sm:inline-flex">
             전체 접기
           </Button>
           <Button onClick={() => {
             setPreselectedCoacheeId(null)
             setIsAssignModalOpen(true)
-          }}>
+          }} className="flex-1 sm:flex-none">
             <Plus className="w-4 h-4 mr-2" />
             과제 부여
           </Button>
@@ -500,7 +500,7 @@ export function TasksPage() {
       </div>
 
       {/* 통계 카드 */}
-      <div className="grid grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
         <StatCard
           icon={User}
           label="피코치"
@@ -530,6 +530,7 @@ export function TasksPage() {
           label="완료"
           value={totalStats.completed}
           color="green"
+          className="col-span-2 sm:col-span-1"
         />
       </div>
 
@@ -716,43 +717,53 @@ function CoacheeDrawer({ coachee, isExpanded, onToggle, onCompleteTask, onAssign
       {/* 피코치 헤더 */}
       <button
         onClick={onToggle}
-        className="w-full p-4 flex items-center gap-4 hover:bg-gray-50 transition-colors text-left"
+        className="w-full p-3 sm:p-4 flex items-center gap-2 sm:gap-4 hover:bg-gray-50 transition-colors text-left"
       >
         {/* 펼침/접힘 아이콘 */}
-        <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${
+        <div className={`w-6 h-6 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center transition-all flex-shrink-0 ${
           isExpanded ? 'bg-emerald-100' : 'bg-gray-100'
         }`}>
           {isExpanded ? (
-            <ChevronDown className={`w-5 h-5 ${isExpanded ? 'text-emerald-600' : 'text-gray-500'}`} />
+            <ChevronDown className={`w-4 h-4 sm:w-5 sm:h-5 ${isExpanded ? 'text-emerald-600' : 'text-gray-500'}`} />
           ) : (
-            <ChevronRight className="w-5 h-5 text-gray-500" />
+            <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 text-gray-500" />
           )}
         </div>
 
         {/* 피코치 정보 */}
-        <Avatar name={coachee.name} size="lg" />
+        <Avatar name={coachee.name} size="lg" className="hidden sm:flex" />
+        <Avatar name={coachee.name} size="md" className="flex sm:hidden" />
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1">
-            <h3 className="font-semibold text-gray-900">{coachee.name}</h3>
+          <div className="flex items-center gap-1 sm:gap-2 mb-0.5 sm:mb-1 flex-wrap">
+            <h3 className="font-semibold text-gray-900 text-sm sm:text-base">{coachee.name}</h3>
             {coachee.packageType && PACKAGES[coachee.packageType] && (
-              <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${packageColors[coachee.packageType] || 'bg-gray-100 text-gray-700'}`}>
-                {PACKAGES[coachee.packageType].icon} {PACKAGES[coachee.packageType].name}
+              <span className={`px-1.5 sm:px-2 py-0.5 rounded-full text-[10px] sm:text-xs font-medium ${packageColors[coachee.packageType] || 'bg-gray-100 text-gray-700'}`}>
+                {PACKAGES[coachee.packageType].icon} <span className="hidden sm:inline">{PACKAGES[coachee.packageType].name}</span>
               </span>
             )}
             {hasOverdue && (
-              <Badge variant="danger" className="text-xs">
-                <AlertCircle className="w-3 h-3 mr-1" />
-                마감 초과
+              <Badge variant="danger" className="text-[10px] sm:text-xs">
+                <AlertCircle className="w-3 h-3 mr-0.5 sm:mr-1" />
+                <span className="hidden sm:inline">마감 초과</span>
+                <span className="sm:hidden">초과</span>
               </Badge>
             )}
           </div>
-          <p className="text-sm text-gray-500 truncate">
+          <p className="text-xs sm:text-sm text-gray-500 truncate">
             {coachee.coachingGoal?.goal || '목표 미설정'}
           </p>
+          {/* 모바일용 과제 통계 - 한 줄로 */}
+          <div className="flex items-center gap-2 mt-1 sm:hidden">
+            {coachee.submittedCount > 0 && (
+              <span className="text-[10px] text-purple-600 font-medium">{coachee.submittedCount} 검토</span>
+            )}
+            <span className="text-[10px] text-gray-500">{coachee.pendingCount} 진행</span>
+            <span className="text-[10px] text-gray-500">{coachee.completedCount} 완료</span>
+          </div>
         </div>
 
-        {/* 과제 통계 */}
-        <div className="flex items-center gap-4">
+        {/* 과제 통계 - 데스크톱 */}
+        <div className="hidden sm:flex items-center gap-4">
           {coachee.submittedCount > 0 && (
             <div className="flex items-center gap-1.5 text-sm">
               <div className="w-2 h-2 bg-purple-500 rounded-full animate-pulse" />
@@ -818,46 +829,56 @@ function SubscriberDrawer({ subscriber, isExpanded, onToggle, onCompleteTask, on
       {/* 구독자 헤더 */}
       <button
         onClick={onToggle}
-        className="w-full p-4 flex items-center gap-4 hover:bg-amber-50 transition-colors text-left"
+        className="w-full p-3 sm:p-4 flex items-center gap-2 sm:gap-4 hover:bg-amber-50 transition-colors text-left"
       >
         {/* 펼침/접힘 아이콘 */}
-        <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${
+        <div className={`w-6 h-6 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center transition-all flex-shrink-0 ${
           isExpanded ? 'bg-amber-100' : 'bg-gray-100'
         }`}>
           {isExpanded ? (
-            <ChevronDown className={`w-5 h-5 ${isExpanded ? 'text-amber-600' : 'text-gray-500'}`} />
+            <ChevronDown className={`w-4 h-4 sm:w-5 sm:h-5 ${isExpanded ? 'text-amber-600' : 'text-gray-500'}`} />
           ) : (
-            <ChevronRight className="w-5 h-5 text-gray-500" />
+            <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 text-gray-500" />
           )}
         </div>
 
         {/* 구독자 정보 */}
-        <div className="relative">
-          <Avatar name={subscriber.name} size="lg" />
-          <div className="absolute -top-1 -right-1 w-5 h-5 bg-amber-400 border-2 border-white rounded-full flex items-center justify-center">
-            <Crown className="w-3 h-3 text-white" />
+        <div className="relative flex-shrink-0">
+          <Avatar name={subscriber.name} size="lg" className="hidden sm:flex" />
+          <Avatar name={subscriber.name} size="md" className="flex sm:hidden" />
+          <div className="absolute -top-1 -right-1 w-4 h-4 sm:w-5 sm:h-5 bg-amber-400 border-2 border-white rounded-full flex items-center justify-center">
+            <Crown className="w-2 h-2 sm:w-3 sm:h-3 text-white" />
           </div>
         </div>
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1">
-            <h3 className="font-semibold text-gray-900">{subscriber.name}</h3>
-            <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700">
-              👑 {planLabel} 구독
+          <div className="flex items-center gap-1 sm:gap-2 mb-0.5 sm:mb-1 flex-wrap">
+            <h3 className="font-semibold text-gray-900 text-sm sm:text-base">{subscriber.name}</h3>
+            <span className="px-1.5 sm:px-2 py-0.5 rounded-full text-[10px] sm:text-xs font-medium bg-amber-100 text-amber-700">
+              👑 <span className="hidden sm:inline">{planLabel} 구독</span><span className="sm:hidden">구독</span>
             </span>
             {hasOverdue && (
-              <Badge variant="danger" className="text-xs">
-                <AlertCircle className="w-3 h-3 mr-1" />
-                마감 초과
+              <Badge variant="danger" className="text-[10px] sm:text-xs">
+                <AlertCircle className="w-3 h-3 mr-0.5 sm:mr-1" />
+                <span className="hidden sm:inline">마감 초과</span>
+                <span className="sm:hidden">초과</span>
               </Badge>
             )}
           </div>
-          <p className="text-sm text-gray-500">
+          <p className="text-xs sm:text-sm text-gray-500">
             세션 {subscriber.sessionsUsed}/{subscriber.sessionsPerMonth}회 사용
           </p>
+          {/* 모바일용 과제 통계 */}
+          <div className="flex items-center gap-2 mt-1 sm:hidden">
+            {subscriber.submittedCount > 0 && (
+              <span className="text-[10px] text-purple-600 font-medium">{subscriber.submittedCount} 검토</span>
+            )}
+            <span className="text-[10px] text-gray-500">{subscriber.pendingCount} 진행</span>
+            <span className="text-[10px] text-gray-500">{subscriber.completedCount} 완료</span>
+          </div>
         </div>
 
-        {/* 과제 통계 */}
-        <div className="flex items-center gap-4">
+        {/* 과제 통계 - 데스크톱 */}
+        <div className="hidden sm:flex items-center gap-4">
           {subscriber.submittedCount > 0 && (
             <div className="flex items-center gap-1.5 text-sm">
               <div className="w-2 h-2 bg-purple-500 rounded-full animate-pulse" />
@@ -956,55 +977,55 @@ function TaskRow({ task, coacheeUserId, onComplete, onSendReminder }) {
     <div className="bg-white">
       <div
         onClick={() => setIsExpanded(!isExpanded)}
-        className="flex items-center gap-4 p-4 pl-16 hover:bg-emerald-50 cursor-pointer transition-colors"
+        className="flex items-center gap-2 sm:gap-4 p-3 sm:p-4 pl-4 sm:pl-16 hover:bg-emerald-50 cursor-pointer transition-colors"
       >
         {/* 펼침 아이콘 */}
-        <div className="w-6 h-6 flex items-center justify-center">
+        <div className="w-5 h-5 sm:w-6 sm:h-6 flex items-center justify-center flex-shrink-0">
           {isExpanded ? (
-            <ChevronDown className="w-4 h-4 text-gray-400" />
+            <ChevronDown className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-400" />
           ) : (
-            <ChevronRight className="w-4 h-4 text-gray-400" />
+            <ChevronRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-400" />
           )}
         </div>
 
         {/* 과제 정보 */}
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-0.5 flex-wrap">
+          <div className="flex items-center gap-1 sm:gap-2 mb-0.5 flex-wrap">
             {/* 과제 타입 */}
-            <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+            <span className={`px-1.5 sm:px-2 py-0.5 rounded-full text-[10px] sm:text-xs font-medium ${
               isRoutine ? 'bg-emerald-50 text-emerald-600' : 'bg-purple-50 text-purple-600'
             }`}>
-              {isRoutine ? '🔄 루틴' : '📝 기록'}
+              {isRoutine ? '🔄' : '📝'}<span className="hidden sm:inline"> {isRoutine ? '루틴' : '기록'}</span>
             </span>
             {/* 상태 */}
-            <span className={`px-2 py-0.5 rounded-full text-xs font-medium flex items-center gap-1 ${config.color}`}>
-              <StatusIcon className="w-3 h-3" />
-              {config.label}
+            <span className={`px-1.5 sm:px-2 py-0.5 rounded-full text-[10px] sm:text-xs font-medium flex items-center gap-0.5 sm:gap-1 ${config.color}`}>
+              <StatusIcon className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+              <span className="hidden sm:inline">{config.label}</span>
             </span>
             {/* 진행률 표시 (루틴 과제만) */}
             {isRoutine && (
-              <span className="text-xs text-gray-500">
-                ({completedCount}/{targetCount}회)
+              <span className="text-[10px] sm:text-xs text-gray-500">
+                ({completedCount}/{targetCount})
               </span>
             )}
-            <span className="font-medium text-gray-900">{task.title}</span>
             {/* 제출 여부 표시 (루틴 과제에서 제출도 있을 경우) */}
             {isRoutine && task.hasSubmission && (
-              <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-700 flex items-center gap-1">
-                <Send className="w-3 h-3" />
-                제출됨
+              <span className="px-1.5 sm:px-2 py-0.5 rounded-full text-[10px] sm:text-xs font-medium bg-purple-100 text-purple-700 flex items-center gap-0.5">
+                <Send className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+                <span className="hidden sm:inline">제출됨</span>
               </span>
             )}
           </div>
-          <div className="flex items-center gap-3 text-xs text-gray-400">
-            <span className={`flex items-center gap-1 ${isOverdue ? 'text-red-500 font-medium' : ''}`}>
-              <Calendar className="w-3 h-3" />
-              마감: {task.dueDate}
-              {isOverdue && ' (초과)'}
+          <p className="font-medium text-gray-900 text-sm sm:text-base truncate">{task.title}</p>
+          <div className="flex items-center gap-2 sm:gap-3 text-[10px] sm:text-xs text-gray-400 mt-0.5">
+            <span className={`flex items-center gap-0.5 sm:gap-1 ${isOverdue ? 'text-red-500 font-medium' : ''}`}>
+              <Calendar className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+              <span className="hidden sm:inline">마감: </span>{task.dueDate}
+              {isOverdue && <span className="text-red-500"> (초과)</span>}
             </span>
-            {/* 진행률 바 (루틴 과제만) */}
+            {/* 진행률 바 (루틴 과제만) - 데스크톱 */}
             {isRoutine && targetCount > 1 && (
-              <div className="flex items-center gap-1">
+              <div className="hidden sm:flex items-center gap-1">
                 <div className="w-16 h-1.5 bg-gray-200 rounded-full overflow-hidden">
                   <div
                     className={`h-full rounded-full ${task.status === 'completed' ? 'bg-green-500' : 'bg-emerald-500'}`}
@@ -1019,16 +1040,17 @@ function TaskRow({ task, coacheeUserId, onComplete, onSendReminder }) {
 
         {/* 검토 필요 알림 (제출됨 + 미완료) */}
         {task.hasSubmission && task.status !== 'completed' && (
-          <Badge variant="primary" className="animate-pulse">
-            검토 필요
+          <Badge variant="primary" className="animate-pulse text-[10px] sm:text-xs flex-shrink-0">
+            <span className="hidden sm:inline">검토 필요</span>
+            <span className="sm:hidden">검토</span>
           </Badge>
         )}
       </div>
 
       {/* 확장 영역 - 제출물 및 액션 */}
       {isExpanded && (
-        <div className="px-4 pb-4 pl-20">
-          <div className="p-4 bg-gray-50 rounded-lg">
+        <div className="px-3 sm:px-4 pb-3 sm:pb-4 pl-3 sm:pl-20">
+          <div className="p-3 sm:p-4 bg-gray-50 rounded-lg">
             {task.description && (
               <div className="mb-4">
                 <h4 className="text-sm font-medium text-gray-700 mb-1">과제 설명</h4>
@@ -1180,21 +1202,21 @@ function TaskAssignModal({ coachees = [], preselectedCoacheeId = null, onClose, 
   }
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-2xl w-full max-w-lg mx-4 shadow-xl max-h-[90vh] overflow-hidden flex flex-col">
-        <div className="flex items-center justify-between p-5 border-b border-gray-100">
+    <div className="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center z-50">
+      <div className="bg-white rounded-t-2xl sm:rounded-2xl w-full sm:max-w-lg sm:mx-4 shadow-xl max-h-[85vh] sm:max-h-[90vh] overflow-hidden flex flex-col">
+        <div className="flex items-center justify-between p-4 sm:p-5 border-b border-gray-100">
           <div>
-            <h2 className="text-lg font-bold text-gray-900">과제 부여</h2>
+            <h2 className="text-base sm:text-lg font-bold text-gray-900">과제 부여</h2>
             {selectedCoacheeData && (
-              <p className="text-sm text-gray-500">{selectedCoacheeData.name}님에게 과제를 부여합니다</p>
+              <p className="text-xs sm:text-sm text-gray-500">{selectedCoacheeData.name}님에게 과제를 부여합니다</p>
             )}
           </div>
-          <button onClick={onClose} className="p-1 hover:bg-gray-100 rounded-lg">
+          <button onClick={onClose} className="p-1.5 hover:bg-gray-100 rounded-lg">
             <X className="w-5 h-5 text-gray-400" />
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-5 space-y-5">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4 sm:space-y-5">
           {/* 피코치 선택 */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -1219,44 +1241,44 @@ function TaskAssignModal({ coachees = [], preselectedCoacheeId = null, onClose, 
             <label className="block text-sm font-medium text-gray-700 mb-2">
               과제 타입 <span className="text-red-500">*</span>
             </label>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-2 sm:gap-3">
               <button
                 type="button"
                 onClick={() => setTaskType('routine')}
-                className={`p-4 rounded-xl border-2 transition-all text-left ${
+                className={`p-3 sm:p-4 rounded-xl border-2 transition-all text-left ${
                   taskType === 'routine'
                     ? 'border-emerald-500 bg-emerald-50'
                     : 'border-gray-200 hover:border-gray-300'
                 }`}
               >
-                <div className="flex items-center gap-2 mb-1">
-                  <Target className="w-5 h-5 text-emerald-600" />
-                  <span className="font-medium text-gray-900">루틴 과제</span>
+                <div className="flex items-center gap-1.5 sm:gap-2 mb-1">
+                  <Target className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-600" />
+                  <span className="font-medium text-gray-900 text-sm sm:text-base">루틴 과제</span>
                 </div>
-                <p className="text-xs text-gray-500">
+                <p className="text-[10px] sm:text-xs text-gray-500">
                   반복 실행 (예: 물 마시기 7회)
                 </p>
-                <p className="text-xs text-emerald-600 mt-1">
+                <p className="text-[10px] sm:text-xs text-emerald-600 mt-1 hidden sm:block">
                   → 실행과제 페이지 + 대시보드
                 </p>
               </button>
               <button
                 type="button"
                 onClick={() => setTaskType('record')}
-                className={`p-4 rounded-xl border-2 transition-all text-left ${
+                className={`p-3 sm:p-4 rounded-xl border-2 transition-all text-left ${
                   taskType === 'record'
                     ? 'border-purple-500 bg-purple-50'
                     : 'border-gray-200 hover:border-gray-300'
                 }`}
               >
-                <div className="flex items-center gap-2 mb-1">
-                  <FileText className="w-5 h-5 text-purple-600" />
-                  <span className="font-medium text-gray-900">기록 과제</span>
+                <div className="flex items-center gap-1.5 sm:gap-2 mb-1">
+                  <FileText className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600" />
+                  <span className="font-medium text-gray-900 text-sm sm:text-base">기록 과제</span>
                 </div>
-                <p className="text-xs text-gray-500">
+                <p className="text-[10px] sm:text-xs text-gray-500">
                   1회 제출 (예: 감정일기 작성)
                 </p>
-                <p className="text-xs text-purple-600 mt-1">
+                <p className="text-[10px] sm:text-xs text-purple-600 mt-1 hidden sm:block">
                   → 채팅으로 제출
                 </p>
               </button>
@@ -1268,14 +1290,14 @@ function TaskAssignModal({ coachees = [], preselectedCoacheeId = null, onClose, 
             <label className="block text-sm font-medium text-gray-700 mb-2">
               빠른 템플릿
             </label>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               {quickTemplates[taskType].map((template, idx) => (
                 <button
                   key={idx}
                   onClick={() => applyTemplate(template)}
-                  className="p-2.5 text-left text-xs bg-gray-50 hover:bg-emerald-50 border border-gray-200 hover:border-emerald-300 rounded-lg transition-colors"
+                  className="p-2 sm:p-2.5 text-left text-xs bg-gray-50 hover:bg-emerald-50 border border-gray-200 hover:border-emerald-300 rounded-lg transition-colors"
                 >
-                  <span className="text-gray-700 line-clamp-2">{template.title}</span>
+                  <span className="text-gray-700 line-clamp-1 sm:line-clamp-2">{template.title}</span>
                 </button>
               ))}
             </div>
@@ -1365,7 +1387,7 @@ function TaskAssignModal({ coachees = [], preselectedCoacheeId = null, onClose, 
           </div>
         </div>
 
-        <div className="flex gap-3 p-5 border-t border-gray-100">
+        <div className="flex gap-3 p-4 sm:p-5 border-t border-gray-100">
           <Button variant="outline" onClick={onClose} className="flex-1" disabled={isSubmitting}>
             취소
           </Button>
@@ -1373,7 +1395,8 @@ function TaskAssignModal({ coachees = [], preselectedCoacheeId = null, onClose, 
             {isSubmitting ? (
               <>
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                부여 중...
+                <span className="hidden sm:inline">부여 중...</span>
+                <span className="sm:hidden">...</span>
               </>
             ) : (
               <>
