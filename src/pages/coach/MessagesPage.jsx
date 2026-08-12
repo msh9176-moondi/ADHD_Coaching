@@ -384,6 +384,7 @@ export function CoachMessagesPage() {
                   coachee={coachee}
                   isSelected={coachee.id === selectedCoacheeId}
                   lastMsg={getLastMessage(coachee.id)}
+                  unreadCount={unreadCounts[coachee.userId] || 0}
                   onClick={() => handleSelectCoachee(coachee.id)}
                 />
               ))}
@@ -419,6 +420,7 @@ export function CoachMessagesPage() {
                   key={subscriber.id}
                   subscriber={subscriber}
                   isSelected={subscriber.userId === selectedCoacheeId}
+                  unreadCount={unreadCounts[subscriber.userId] || 0}
                   onClick={() => handleSelectCoachee(subscriber.userId)}
                 />
               ))}
@@ -455,6 +457,7 @@ export function CoachMessagesPage() {
                   coachee={coachee}
                   isSelected={coachee.id === selectedCoacheeId}
                   lastMsg={getLastMessage(coachee.id)}
+                  unreadCount={unreadCounts[coachee.userId] || 0}
                   onClick={() => handleSelectCoachee(coachee.id)}
                 />
               ))}
@@ -1795,7 +1798,7 @@ function CoacheeInfoPanel({ coachee, onClose }) {
 }
 
 // 피코치 목록 아이템 컴포넌트
-function CoacheeListItem({ coachee, isSelected, lastMsg, onClick }) {
+function CoacheeListItem({ coachee, isSelected, lastMsg, unreadCount = 0, onClick }) {
   return (
     <button
       onClick={onClick}
@@ -1805,7 +1808,13 @@ function CoacheeListItem({ coachee, isSelected, lastMsg, onClick }) {
     >
       <div className="relative">
         <Avatar name={coachee.name} size="sm" />
-        <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-white rounded-full" />
+        {unreadCount > 0 ? (
+          <div className="absolute -top-1 -right-1 min-w-[18px] h-[18px] bg-red-500 border-2 border-white rounded-full flex items-center justify-center">
+            <span className="text-[10px] font-bold text-white">{unreadCount}</span>
+          </div>
+        ) : (
+          <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-white rounded-full" />
+        )}
       </div>
 
       <div className="flex-1 min-w-0">
@@ -1849,7 +1858,7 @@ function CoacheeListItem({ coachee, isSelected, lastMsg, onClick }) {
 }
 
 // 구독자 목록 아이템 컴포넌트
-function SubscriberListItem({ subscriber, isSelected, onClick }) {
+function SubscriberListItem({ subscriber, isSelected, unreadCount = 0, onClick }) {
   const planLabels = {
     monthly: '월간',
     quarterly: '분기',
@@ -1865,9 +1874,15 @@ function SubscriberListItem({ subscriber, isSelected, onClick }) {
     >
       <div className="relative">
         <Avatar name={subscriber.name} size="sm" />
-        <div className="absolute -top-1 -right-1 w-4 h-4 bg-amber-400 border-2 border-white rounded-full flex items-center justify-center">
-          <Crown className="w-2.5 h-2.5 text-white" />
-        </div>
+        {unreadCount > 0 ? (
+          <div className="absolute -top-1 -right-1 min-w-[18px] h-[18px] bg-red-500 border-2 border-white rounded-full flex items-center justify-center">
+            <span className="text-[10px] font-bold text-white">{unreadCount}</span>
+          </div>
+        ) : (
+          <div className="absolute -top-1 -right-1 w-4 h-4 bg-amber-400 border-2 border-white rounded-full flex items-center justify-center">
+            <Crown className="w-2.5 h-2.5 text-white" />
+          </div>
+        )}
       </div>
 
       <div className="flex-1 min-w-0">
