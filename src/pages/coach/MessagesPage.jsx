@@ -508,7 +508,7 @@ export function CoachMessagesPage() {
                         )}
                       </div>
                       <p className="text-xs text-gray-500 truncate">
-                        {Math.min(selectedCoachee.currentSession, selectedCoachee.totalSessions)}/{selectedCoachee.totalSessions}회기
+                        {Math.min(Math.max(0, selectedCoachee.currentSession - 1), selectedCoachee.totalSessions)}/{selectedCoachee.totalSessions}회기
                         {selectedCoachee.currentSession > selectedCoachee.totalSessions && ' (완료)'}
                         <span className="hidden sm:inline">
                           {selectedCoachee.currentSession <= selectedCoachee.totalSessions && ` · 다음: ${selectedCoachee.nextSession}`}
@@ -1849,7 +1849,7 @@ function CoacheeListItem({ coachee, isSelected, lastMsg, unreadCount = 0, onClic
             </span>
           )}
           <span>
-            {Math.min(coachee.currentSession, coachee.totalSessions)}/{coachee.totalSessions}회기
+            {Math.min(Math.max(0, coachee.currentSession - 1), coachee.totalSessions)}/{coachee.totalSessions}회기
             {coachee.currentSession > coachee.totalSessions && ' ✓'}
           </span>
           {coachee.hasWarning && (

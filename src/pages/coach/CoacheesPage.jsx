@@ -264,7 +264,8 @@ export function CoacheesPage() {
 }
 
 function CoacheeCard({ coachee, onBookSession, onClick }) {
-  const displaySession = Math.min(coachee.currentSession, coachee.totalSessions)
+  const completedSessions = Math.max(0, coachee.currentSession - 1)
+  const displaySession = Math.min(completedSessions, coachee.totalSessions)
   const isCompleted = coachee.currentSession > coachee.totalSessions
   const pkg = coachee.packageType ? PACKAGES[coachee.packageType] : null
 

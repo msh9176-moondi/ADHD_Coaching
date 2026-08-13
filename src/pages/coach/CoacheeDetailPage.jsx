@@ -278,8 +278,9 @@ export function CoacheeDetailPage() {
   const adhdType = getADHDType(coachee.asrsResult)
   const typeInfo = ADHD_TYPES[adhdType]
   const TypeIcon = TYPE_ICONS[adhdType]
-  const displaySession = Math.min(coachee.currentSession, coachee.totalSessions)
-  const progress = Math.min((coachee.currentSession / coachee.totalSessions) * 100, 100)
+  const completedSessions = Math.max(0, coachee.currentSession - 1)
+  const displaySession = Math.min(completedSessions, coachee.totalSessions)
+  const progress = Math.min((completedSessions / coachee.totalSessions) * 100, 100)
   const isCoachingCompleted = coachee.currentSession > coachee.totalSessions
 
   // 약점 영역 계산

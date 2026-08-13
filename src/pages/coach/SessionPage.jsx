@@ -678,7 +678,7 @@ function CoacheeDrawer({ coachee, isExpanded, onToggle, onSelectSession, onCreat
               </span>
             )}
             <Badge variant="secondary" className="text-[10px] sm:text-xs">
-              {Math.min(coachee.currentSession, coachee.totalSessions)}/{coachee.totalSessions} 회기
+              {Math.min(Math.max(0, coachee.currentSession - 1), coachee.totalSessions)}/{coachee.totalSessions} 회기
               {coachee.currentSession > coachee.totalSessions && ' ✓'}
             </Badge>
           </div>

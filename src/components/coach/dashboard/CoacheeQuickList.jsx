@@ -145,7 +145,7 @@ export function CoacheeQuickList({ coachees = [], subscribers = [] }) {
                   <div className="flex items-center justify-between text-xs text-gray-500">
                     <div className="flex items-center gap-3">
                       <span>
-                        {Math.min(coachee.currentSession, coachee.totalSessions)}/{coachee.totalSessions}회기
+                        {Math.min(Math.max(0, coachee.currentSession - 1), coachee.totalSessions)}/{coachee.totalSessions}회기
                         {coachee.currentSession > coachee.totalSessions && ' ✓'}
                       </span>
                       <span className="flex items-center gap-1">
@@ -202,14 +202,14 @@ export function CoacheeQuickList({ coachees = [], subscribers = [] }) {
                       <td className="py-4">
                         <div className="flex items-center gap-2">
                           <ProgressBar
-                            current={coachee.currentSession}
+                            current={Math.max(0, coachee.currentSession - 1)}
                             total={coachee.totalSessions}
                             color="blue"
                             size="sm"
                             className="w-24"
                           />
                           <span className="text-sm text-gray-600">
-                            {Math.min(coachee.currentSession, coachee.totalSessions)}/{coachee.totalSessions}
+                            {Math.min(Math.max(0, coachee.currentSession - 1), coachee.totalSessions)}/{coachee.totalSessions}
                             {coachee.currentSession > coachee.totalSessions && ' ✓'}
                           </span>
                         </div>
