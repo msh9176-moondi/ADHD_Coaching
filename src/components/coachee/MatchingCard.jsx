@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { useStore } from '../../store/useStore'
 import { Card, CardContent, CardHeader, CardTitle } from '../common/Card'
 import { Button } from '../common/Button'
@@ -6,7 +7,7 @@ import { createCoacheeProfile, getCoacheeProfile, updateCoacheeProfile } from '.
 import { isSupabaseConfigured } from '../../lib/supabase'
 import {
   Package, Check, CheckCircle, Clock, UserCheck,
-  ArrowRight, Sparkles, Target, Edit3
+  ArrowRight, Sparkles, Target, Edit3, Crown, ChevronRight
 } from 'lucide-react'
 
 // 패키지 정보
@@ -42,7 +43,7 @@ const PACKAGES = {
 }
 
 export function MatchingCard() {
-  const { user, coachingPackage, setCoachingPackage, matchedCoach } = useStore()
+  const { user, coachingPackage, setCoachingPackage, matchedCoach, subscription } = useStore()
   const [selectedPackage, setSelectedPackage] = useState(coachingPackage?.type || null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
@@ -50,6 +51,12 @@ export function MatchingCard() {
   // select: 패키지 선택 전
   // pending: 패키지 선택 후 코치 매칭 대기
   // matched: 코치 매칭 완료
+
+  // 모든 회기 완료 여부 체크
+  const totalSessions = coachingPackage?.totalSessions || matchedCoach?.totalSessions || 0
+  const currentSession = coachingPackage?.currentSession || 1
+  const isAllSessionsCompleted = totalSessions > 0 && currentSession > totalSessions
+  const hasActiveSubscription = subscription?.status === 'active'
 
   const handleSelectPackage = async () => {
     if (!selectedPackage || !user?.id) return
@@ -106,8 +113,47 @@ export function MatchingCard() {
     setIsEditing(false)
   }
 
+  // 활성 구독자는 MatchingCard를 표시하지 않음 (SubscriptionStatusCard가 대신 표시됨)
+  if (hasActiveSubscription) {
+    return null
+  }
+
   // 코치 매칭 완료 상태
   if (status === 'matched' && matchedCoach) {
+    // 모든 회기 완료 + 구독 없음 = 구독 안내
+    if (isAllSessionsCompleted) {
+      return (
+        <Card className="border-amber-200 bg-gradient-to-br from-amber-50 to-orange-50 overflow-hidden">
+          <CardContent className="p-6">
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 bg-gradient-to-br from-amber-400 to-orange-400 rounded-full flex items-center justify-center flex-shrink-0 shadow-lg">
+                <Crown className="w-6 h-6 text-white" />
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-1">
+                  <h3 className="font-bold text-gray-900">코칭 여정을 완료했습니다!</h3>
+                  <span className="text-lg">🎉</span>
+                </div>
+                <p className="text-sm text-gray-600 mb-4">
+                  {matchedCoach.coachName || 'FLOCA'} 코치님과 {totalSessions}회 코칭을 모두 마쳤습니다.
+                  <br />
+                  <span className="text-amber-700 font-medium">사후관리 구독</span>으로 성장을 이어가세요!
+                </p>
+                <Link to="/coachee/subscribe">
+                  <Button className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white shadow-md">
+                    <Crown className="w-4 h-4 mr-2" />
+                    구독 플랜 보기
+                    <ChevronRight className="w-4 h-4 ml-2" />
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )
+    }
+
+    // 일반 매칭 완료 상태 (진행 중)
     return (
       <Card className="border-green-200 bg-green-50">
         <CardContent className="p-6">

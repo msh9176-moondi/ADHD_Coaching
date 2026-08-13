@@ -174,11 +174,15 @@ export function CoachMessagesPage() {
 
   // 피코치를 상태별로 분류
   const categorizedCoachees = useMemo(() => {
+    // 구독자 userId 목록 (완료 섹션에서 제외용)
+    const subscriberUserIds = new Set(subscribers.map(s => s.userId))
+
     const inProgress = filteredCoachees.filter(c =>
       c.currentSession > 0 && c.currentSession <= c.totalSessions
     )
+    // 완료된 피코치 중 구독자는 제외
     const completed = filteredCoachees.filter(c =>
-      c.currentSession > c.totalSessions
+      c.currentSession > c.totalSessions && !subscriberUserIds.has(c.userId)
     )
     const newCoachees = filteredCoachees.filter(c =>
       c.currentSession === 0
@@ -188,7 +192,7 @@ export function CoachMessagesPage() {
       inProgress: [...newCoachees, ...inProgress],
       completed
     }
-  }, [filteredCoachees])
+  }, [filteredCoachees, subscribers])
 
   const toggleSection = (section) => {
     setExpandedSections(prev => ({

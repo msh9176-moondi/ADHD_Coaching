@@ -17,7 +17,6 @@ import { MyGoal } from '../../components/coachee/MyGoal'
 import { ReturnButton } from '../../components/coachee/ReturnButton'
 import { MyAnalysisResult } from '../../components/coachee/MyAnalysisResult'
 import { PackageProgress } from '../../components/coachee/PackageProgress'
-import { TopicsScore } from '../../components/coachee/TopicsScore'
 import { ExecutionRecords } from '../../components/coachee/ExecutionRecords'
 import { SessionTasksCard } from '../../components/coachee/SessionTasksCard'
 import { RoutineTasksCard } from '../../components/coachee/RoutineTasksCard'
@@ -145,11 +144,16 @@ export function CoacheeDashboardPage() {
         // 구독 정보 로드
         try {
           const subscriptionData = await getActiveSubscription(user.id)
+          console.log('[대시보드] 구독 정보 로드:', { userId: user.id, subscription: subscriptionData })
           if (subscriptionData) {
             setSubscription(subscriptionData)
+          } else {
+            // 구독이 없으면 명시적으로 null 설정 (이전 사용자 데이터 제거)
+            setSubscription(null)
           }
         } catch (err) {
           console.warn('구독 정보 로드 실패:', err)
+          setSubscription(null)
         }
 
         // ASRS 결과
@@ -361,6 +365,25 @@ export function CoacheeDashboardPage() {
         </div>
       )}
 
+      {/* 구독 대기 중 알림 */}
+      {subscription?.status === 'pending' && (
+        <Card className="border-amber-200 bg-amber-50">
+          <CardContent className="p-5">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center">
+                <Clock className="w-6 h-6 text-amber-600 animate-pulse" />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-semibold text-amber-900">구독 신청 확인 중</h3>
+                <p className="text-sm text-amber-700">
+                  입금 확인 후 구독이 활성화됩니다. (최대 1영업일)
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* 구독자 전용 섹션 */}
       {subscription?.status === 'active' && (
         <>
@@ -375,8 +398,8 @@ export function CoacheeDashboardPage() {
         </>
       )}
 
-      {/* 패키지 진행 현황 (코치 매칭 후, 구독자가 아닐 때만 표시) */}
-      {hasCoach && !subscription?.status && <PackageProgress />}
+      {/* 패키지 진행 현황 (코치 매칭 후, 구독이 없을 때만 표시) */}
+      {hasCoach && !subscription && <PackageProgress />}
 
       {/* 다음 회기까지 과제 */}
       <SessionTasksCard />
@@ -434,9 +457,6 @@ export function CoacheeDashboardPage() {
         <CoachingProgress />
         <CoachMessage />
       </div>
-
-      {/* 주제별 점수 */}
-      <TopicsScore />
 
       {/* 나의 실행 기록 */}
       <ExecutionRecords />

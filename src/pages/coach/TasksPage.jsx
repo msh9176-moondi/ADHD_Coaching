@@ -235,10 +235,16 @@ export function TasksPage() {
 
   // 피코치 카테고리 분류
   const categorizedCoachees = useMemo(() => {
+    // 구독자 userId 목록 (완료 섹션에서 제외용)
+    const subscriberUserIds = new Set(subscribers.map(s => s.userId))
+
     const inProgress = coacheesWithTasks.filter(c => c.currentSession <= c.totalSessions)
-    const completed = coacheesWithTasks.filter(c => c.currentSession > c.totalSessions)
+    // 완료된 피코치 중 구독자는 제외
+    const completed = coacheesWithTasks.filter(c =>
+      c.currentSession > c.totalSessions && !subscriberUserIds.has(c.userId)
+    )
     return { inProgress, completed }
-  }, [coacheesWithTasks])
+  }, [coacheesWithTasks, subscribers])
 
   // 검색 필터링
   const filteredInProgress = categorizedCoachees.inProgress.filter(c =>

@@ -11,6 +11,7 @@ import {
 } from '../../lib/subscriptionService'
 import { SubscriberSessionBookingModal } from '../modals/SubscriberSessionBookingModal'
 import { bookSubscriberSession } from '../../lib/sessionService'
+import { getOrCreateConversation, sendMessage } from '../../lib/messageService'
 import { useStore } from '../../store/useStore'
 
 export function SubscriptionStatusCard({ subscription, onSessionBooked }) {
@@ -18,13 +19,16 @@ export function SubscriptionStatusCard({ subscription, onSessionBooked }) {
   const { user, matchedCoach, setSubscription } = useStore()
 
   const handleBookSession = async (bookingData) => {
-    if (!subscription || !user?.id || !matchedCoach?.coachId) {
+    // 구독의 coach_id 또는 matchedCoach에서 코치 ID 가져오기
+    const coachId = subscription?.coach_id || matchedCoach?.coachId
+
+    if (!subscription || !user?.id || !coachId) {
       throw new Error('필요한 정보가 없습니다')
     }
 
     const session = await bookSubscriberSession(
       subscription.id,
-      matchedCoach.coachId,
+      coachId,
       user.id,
       bookingData
     )
@@ -34,6 +38,36 @@ export function SubscriptionStatusCard({ subscription, onSessionBooked }) {
       ...subscription,
       sessions_used_this_month: subscription.sessions_used_this_month + 1
     })
+
+    // 주제가 있으면 채팅으로 전송
+    if (bookingData.topic && bookingData.topic.trim()) {
+      console.log('[세션예약] 메시지 전송 시작:', { coachId, userId: user.id, topic: bookingData.topic })
+      try {
+        const conversation = await getOrCreateConversation(coachId, user.id)
+        console.log('[세션예약] 대화방 조회 결과:', conversation)
+
+        const formattedDate = new Date(bookingData.date).toLocaleDateString('ko-KR', {
+          month: 'long',
+          day: 'numeric'
+        })
+        const message = `📅 **${formattedDate} ${bookingData.time} 세션 예약**\n\n💬 이번 세션에서 다루고 싶은 주제:\n${bookingData.topic.trim()}`
+
+        const result = await sendMessage(
+          conversation.id,
+          user.id,
+          'coachee',
+          message,
+          'normal',
+          { type: 'session_booking', sessionId: session.id }
+        )
+        console.log('[세션예약] 메시지 전송 완료:', result)
+      } catch (err) {
+        console.error('[세션예약] 메시지 전송 실패:', err)
+        // 메시지 전송 실패해도 예약은 성공했으므로 에러 throw 하지 않음
+      }
+    } else {
+      console.log('[세션예약] 주제가 비어있어서 메시지 전송 안함:', bookingData.topic)
+    }
 
     onSessionBooked?.(session)
     return session
@@ -177,7 +211,7 @@ export function SubscriptionStatusCard({ subscription, onSessionBooked }) {
         isOpen={showBookingModal}
         onClose={() => setShowBookingModal(false)}
         subscription={subscription}
-        coachName={matchedCoach?.coachName}
+        coachName={subscription?.coach?.name || matchedCoach?.coachName || '코치'}
         onBook={handleBookSession}
       />
     </>

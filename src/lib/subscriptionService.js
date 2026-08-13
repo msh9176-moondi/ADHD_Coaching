@@ -50,20 +50,25 @@ export async function getActiveSubscription(userId) {
   if (!isSupabaseConfigured() || !userId) return null
 
   try {
+    // active 또는 pending 상태의 구독 조회 (최신 것 우선)
     const { data, error } = await supabase
       .from('subscriptions')
       .select('*')
       .eq('user_id', userId)
-      .eq('status', 'active')
-      .single()
+      .in('status', ['active', 'pending'])
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle()
 
     // PGRST116: 결과 없음, 406: 테이블 없음 - 둘 다 무시
     if (error) {
+      console.warn('[getActiveSubscription] error:', error)
       return null
     }
 
     return data
-  } catch {
+  } catch (err) {
+    console.warn('[getActiveSubscription] catch:', err)
     return null
   }
 }

@@ -6,8 +6,44 @@ export const useStore = create(
     (set, get) => ({
       // 사용자 상태
       user: null,
-      setUser: (user) => set({ user }),
-      logout: () => set({ user: null }),
+      setUser: (newUser) => {
+        const currentUser = get().user
+        // 다른 사용자로 로그인하면 기존 데이터 초기화
+        if (currentUser?.id && newUser?.id && currentUser.id !== newUser.id) {
+          set({
+            user: newUser,
+            asrsResult: null,
+            preSurvey: null,
+            postSurvey: null,
+            coachingPackage: null,
+            matchedCoach: null,
+            coacheeProfile: null,
+            subscription: null,
+            sessions: [],
+            coachingTopics: [],
+            coachingGoal: null,
+            coachingAction: null,
+            lastCoachMessage: null
+          })
+        } else {
+          set({ user: newUser })
+        }
+      },
+      logout: () => set({
+        user: null,
+        asrsResult: null,
+        preSurvey: null,
+        postSurvey: null,
+        coachingPackage: null,
+        matchedCoach: null,
+        coacheeProfile: null,
+        subscription: null,
+        sessions: [],
+        coachingTopics: [],
+        coachingGoal: null,
+        coachingAction: null,
+        lastCoachMessage: null
+      }),
 
       // 로딩 상태
       isLoading: false,

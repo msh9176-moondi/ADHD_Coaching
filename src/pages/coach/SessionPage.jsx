@@ -14,10 +14,11 @@ import { useStore } from '../../store/useStore'
 import { useCollapsibleList } from '../../hooks'
 import { coacheeService } from '../../lib'
 import { getCoachSessions } from '../../lib/sessionService'
+import { getCoachSubscribers } from '../../lib/subscriptionService'
 import {
   FileText, Calendar, Clock, Play, Check,
   ChevronRight, ChevronDown, Edit, Eye,
-  User, Plus
+  User, Plus, Crown, CircleCheckBig, AlertCircle
 } from 'lucide-react'
 
 // 패키지 색상 설정
@@ -35,10 +36,22 @@ export function SessionPage() {
   const { user } = useStore()
 
   const [coachees, setCoachees] = useState([])
+  const [subscribers, setSubscribers] = useState([])
   const [dbSessions, setDbSessions] = useState([])
   const [loading, setLoading] = useState(true)
   const [selectedSession, setSelectedSession] = useState(null)
   const [searchQuery, setSearchQuery] = useState('')
+
+  // 섹션 펼침/접힘 상태
+  const [expandedSections, setExpandedSections] = useState({
+    inProgress: true,
+    subscribers: true,
+    completed: false
+  })
+
+  const toggleSection = (section) => {
+    setExpandedSections(prev => ({ ...prev, [section]: !prev[section] }))
+  }
 
   // useCollapsibleList 훅 사용
   const {
@@ -75,6 +88,34 @@ export function SessionPage() {
           setDbSessions(sessions || [])
         } catch (err) {
           console.warn('DB 세션 로드 실패:', err)
+        }
+
+        // 구독자 로드
+        try {
+          const subs = await getCoachSubscribers(user?.id)
+          const formattedSubs = subs
+            .filter(s => s.status === 'active')
+            .map(s => ({
+              id: `sub-${s.id}`,
+              oderId: s.id,
+              subscriptionId: s.id,
+              userId: s.user_id,
+              name: s.user?.name || '구독자',
+              email: s.user?.email || '',
+              planType: s.plan_type,
+              status: s.status,
+              sessionsUsed: s.sessions_used_this_month || 0,
+              sessionsPerMonth: s.sessions_per_month || 3,
+              isSubscriber: true,
+              packageType: null,
+              currentSession: s.sessions_used_this_month || 0,
+              totalSessions: s.sessions_per_month || 3,
+              coachingGoal: null,
+              sessionHistory: []
+            }))
+          setSubscribers(formattedSubs)
+        } catch {
+          setSubscribers([])
         }
       } catch (err) {
         console.warn('피코치 로드 실패:', err)
@@ -234,9 +275,67 @@ export function SessionPage() {
     }
   }, [preselectedCoacheeId, preselectedSessionNum, isNewSession, coacheesWithSessions, expand])
 
+  // 구독자별로 세션 데이터 그룹화
+  const subscribersWithSessions = useMemo(() => {
+    return subscribers.map(subscriber => {
+      const sessions = []
+
+      // Supabase DB에서 가져온 세션
+      dbSessions
+        .filter(s => s.coachee_id === subscriber.userId)
+        .forEach(session => {
+          const sessionNote = session.session_notes?.[0]
+          const topic = sessionNote?.main_topics?.[0] || ''
+
+          sessions.push({
+            id: session.id,
+            dbSessionId: session.id,
+            coacheeId: subscriber.id,
+            coacheeUserId: subscriber.userId,
+            coacheeName: subscriber.name,
+            sessionNumber: session.session_number,
+            date: session.date,
+            time: session.time,
+            topic: topic,
+            note: sessionNote,
+            status: session.status || 'completed'
+          })
+        })
+
+      // 날짜 기준 정렬 (최신순)
+      sessions.sort((a, b) => new Date(b.date) - new Date(a.date))
+
+      return {
+        ...subscriber,
+        sessions,
+        completedCount: sessions.filter(s => s.status === 'completed' || s.status === 'in_progress').length,
+        scheduledCount: sessions.filter(s => s.status === 'scheduled').length
+      }
+    })
+  }, [subscribers, dbSessions])
+
+  // 피코치 카테고리 분류
+  const categorizedCoachees = useMemo(() => {
+    // 구독자 userId 목록 (완료 섹션에서 제외용)
+    const subscriberUserIds = new Set(subscribers.map(s => s.userId))
+
+    const inProgress = coacheesWithSessions.filter(c => c.currentSession <= c.totalSessions)
+    // 완료된 피코치 중 구독자는 제외
+    const completed = coacheesWithSessions.filter(c =>
+      c.currentSession > c.totalSessions && !subscriberUserIds.has(c.userId)
+    )
+    return { inProgress, completed }
+  }, [coacheesWithSessions, subscribers])
+
   // 검색 필터링
-  const filteredCoachees = coacheesWithSessions.filter(coachee =>
-    !searchQuery || coachee.name.includes(searchQuery)
+  const filteredInProgress = categorizedCoachees.inProgress.filter(c =>
+    !searchQuery || c.name.includes(searchQuery)
+  )
+  const filteredSubscribers = subscribersWithSessions.filter(s =>
+    !searchQuery || s.name.includes(searchQuery)
+  )
+  const filteredCompleted = categorizedCoachees.completed.filter(c =>
+    !searchQuery || c.name.includes(searchQuery)
   )
 
   // 전체 통계
@@ -411,30 +510,139 @@ export function SessionPage() {
         className="max-w-md"
       />
 
-      {/* 피코치별 서랍형 세션 목록 */}
-      <div className="space-y-3">
-        {filteredCoachees.length === 0 ? (
-          <Card>
-            <CardContent>
-              <EmptyState
-                icon={User}
-                title="해당하는 피코치가 없습니다"
-                description={searchQuery ? "검색어를 변경해 보세요." : undefined}
-              />
-            </CardContent>
-          </Card>
-        ) : (
-          filteredCoachees.map((coachee) => (
-            <CoacheeDrawer
-              key={coachee.id}
-              coachee={coachee}
-              isExpanded={isExpanded(coachee.id)}
-              onToggle={() => toggleCoachee(coachee.id)}
-              onSelectSession={setSelectedSession}
-              onCreateSession={() => handleCreateNewSession(coachee)}
-            />
-          ))
-        )}
+      {/* 피코치별 서랍형 세션 목록 - 섹션별 */}
+      <div className="space-y-4">
+        {/* 진행 중 섹션 */}
+        <div>
+          <button
+            onClick={() => toggleSection('inProgress')}
+            className="w-full flex items-center gap-3 px-4 py-3 bg-emerald-50 border border-emerald-200 rounded-xl hover:bg-emerald-100 transition-colors"
+          >
+            <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${
+              expandedSections.inProgress ? 'bg-emerald-500' : 'bg-emerald-200'
+            }`}>
+              {expandedSections.inProgress ? (
+                <ChevronDown className="w-5 h-5 text-white" />
+              ) : (
+                <ChevronRight className="w-5 h-5 text-emerald-600" />
+              )}
+            </div>
+            <Play className="w-5 h-5 text-emerald-600" />
+            <span className="font-semibold text-emerald-800">진행 중</span>
+            <span className="px-2 py-0.5 bg-emerald-200 text-emerald-700 rounded-full text-sm font-medium">
+              {filteredInProgress.length}
+            </span>
+          </button>
+
+          {expandedSections.inProgress && (
+            <div className="mt-2 space-y-3">
+              {filteredInProgress.length === 0 ? (
+                <div className="py-6 text-center text-gray-500 text-sm bg-gray-50 rounded-lg">
+                  진행 중인 피코치가 없습니다
+                </div>
+              ) : (
+                filteredInProgress.map((coachee) => (
+                  <CoacheeDrawer
+                    key={coachee.id}
+                    coachee={coachee}
+                    isExpanded={isExpanded(coachee.id)}
+                    onToggle={() => toggleCoachee(coachee.id)}
+                    onSelectSession={setSelectedSession}
+                    onCreateSession={() => handleCreateNewSession(coachee)}
+                  />
+                ))
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* 구독자 섹션 */}
+        <div>
+          <button
+            onClick={() => toggleSection('subscribers')}
+            className="w-full flex items-center gap-3 px-4 py-3 bg-amber-50 border border-amber-200 rounded-xl hover:bg-amber-100 transition-colors"
+          >
+            <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${
+              expandedSections.subscribers ? 'bg-amber-500' : 'bg-amber-200'
+            }`}>
+              {expandedSections.subscribers ? (
+                <ChevronDown className="w-5 h-5 text-white" />
+              ) : (
+                <ChevronRight className="w-5 h-5 text-amber-600" />
+              )}
+            </div>
+            <Crown className="w-5 h-5 text-amber-600" />
+            <span className="font-semibold text-amber-800">구독자</span>
+            <span className="px-2 py-0.5 bg-amber-200 text-amber-700 rounded-full text-sm font-medium">
+              {filteredSubscribers.length}
+            </span>
+          </button>
+
+          {expandedSections.subscribers && (
+            <div className="mt-2 space-y-3">
+              {filteredSubscribers.length === 0 ? (
+                <div className="py-6 text-center text-gray-500 text-sm bg-gray-50 rounded-lg">
+                  구독자가 없습니다
+                </div>
+              ) : (
+                filteredSubscribers.map((subscriber) => (
+                  <SubscriberDrawer
+                    key={subscriber.id}
+                    subscriber={subscriber}
+                    isExpanded={isExpanded(subscriber.id)}
+                    onToggle={() => toggleCoachee(subscriber.id)}
+                    onSelectSession={setSelectedSession}
+                    onCreateSession={() => handleCreateNewSession(subscriber)}
+                  />
+                ))
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* 완료 섹션 */}
+        <div>
+          <button
+            onClick={() => toggleSection('completed')}
+            className="w-full flex items-center gap-3 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl hover:bg-gray-100 transition-colors"
+          >
+            <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${
+              expandedSections.completed ? 'bg-gray-500' : 'bg-gray-200'
+            }`}>
+              {expandedSections.completed ? (
+                <ChevronDown className="w-5 h-5 text-white" />
+              ) : (
+                <ChevronRight className="w-5 h-5 text-gray-600" />
+              )}
+            </div>
+            <CircleCheckBig className="w-5 h-5 text-gray-500" />
+            <span className="font-semibold text-gray-700">완료</span>
+            <span className="px-2 py-0.5 bg-gray-200 text-gray-600 rounded-full text-sm font-medium">
+              {filteredCompleted.length}
+            </span>
+          </button>
+
+          {expandedSections.completed && (
+            <div className="mt-2 space-y-3">
+              {filteredCompleted.length === 0 ? (
+                <div className="py-6 text-center text-gray-500 text-sm bg-gray-50 rounded-lg">
+                  완료된 피코치가 없습니다
+                </div>
+              ) : (
+                filteredCompleted.map((coachee) => (
+                  <CoacheeDrawer
+                    key={coachee.id}
+                    coachee={coachee}
+                    isExpanded={isExpanded(coachee.id)}
+                    onToggle={() => toggleCoachee(coachee.id)}
+                    onSelectSession={setSelectedSession}
+                    onCreateSession={() => handleCreateNewSession(coachee)}
+                  />
+                ))
+              )}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   )
@@ -539,6 +747,115 @@ function CoacheeDrawer({ coachee, isExpanded, onToggle, onSelectSession, onCreat
               variant="outline"
               size="sm"
               className="w-full"
+              onClick={(e) => {
+                e.stopPropagation()
+                onCreateSession()
+              }}
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              새 세션 일지 작성
+            </Button>
+          </div>
+        </div>
+      )}
+    </Card>
+  )
+}
+
+function SubscriberDrawer({ subscriber, isExpanded, onToggle, onSelectSession, onCreateSession }) {
+  const planLabel = subscriber.planType === 'monthly' ? '월간' : subscriber.planType === 'quarterly' ? '분기' : '연간'
+
+  return (
+    <Card className={`overflow-hidden transition-all border-amber-200 ${isExpanded ? 'ring-2 ring-amber-300' : ''}`}>
+      {/* 구독자 헤더 (클릭하면 펼침/접힘) */}
+      <button
+        onClick={onToggle}
+        className="w-full p-3 sm:p-4 flex items-start sm:items-center gap-3 sm:gap-4 hover:bg-amber-50 transition-colors text-left"
+      >
+        {/* 펼침/접힘 아이콘 */}
+        <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center transition-all flex-shrink-0 ${
+          isExpanded ? 'bg-amber-100' : 'bg-gray-100'
+        }`}>
+          {isExpanded ? (
+            <ChevronDown className={`w-4 h-4 sm:w-5 sm:h-5 ${isExpanded ? 'text-amber-600' : 'text-gray-500'}`} />
+          ) : (
+            <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 text-gray-500" />
+          )}
+        </div>
+
+        {/* 구독자 정보 */}
+        <div className="relative flex-shrink-0">
+          <Avatar name={subscriber.name} size="md" className="hidden sm:flex" />
+          <div className="absolute -top-1 -right-1 w-4 h-4 sm:w-5 sm:h-5 bg-amber-400 border-2 border-white rounded-full items-center justify-center hidden sm:flex">
+            <Crown className="w-2 h-2 sm:w-3 sm:h-3 text-white" />
+          </div>
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 mb-1 flex-wrap">
+            <h3 className="font-semibold text-gray-900 text-sm sm:text-base">{subscriber.name}</h3>
+            <span className="px-1.5 sm:px-2 py-0.5 rounded-full text-[10px] sm:text-xs font-medium bg-amber-100 text-amber-700">
+              👑 <span className="hidden sm:inline">{planLabel} 구독</span><span className="sm:hidden">구독</span>
+            </span>
+          </div>
+          <p className="text-xs sm:text-sm text-gray-500">
+            세션 {subscriber.sessionsUsed}/{subscriber.sessionsPerMonth}회 사용
+          </p>
+
+          {/* 모바일: 세션 통계 인라인 */}
+          <div className="flex items-center gap-3 mt-2 sm:hidden">
+            {subscriber.scheduledCount > 0 && (
+              <div className="flex items-center gap-1 text-xs">
+                <div className="w-1.5 h-1.5 bg-purple-500 rounded-full" />
+                <span className="text-gray-600">{subscriber.scheduledCount}개 예정</span>
+              </div>
+            )}
+            <div className="flex items-center gap-1 text-xs">
+              <div className="w-1.5 h-1.5 bg-green-500 rounded-full" />
+              <span className="text-gray-600">{subscriber.completedCount}개 완료</span>
+            </div>
+          </div>
+        </div>
+
+        {/* 데스크톱: 세션 통계 */}
+        <div className="hidden sm:flex items-center gap-4">
+          {subscriber.scheduledCount > 0 && (
+            <div className="flex items-center gap-1.5 text-sm">
+              <div className="w-2 h-2 bg-purple-500 rounded-full" />
+              <span className="text-gray-600">{subscriber.scheduledCount}개 예정</span>
+            </div>
+          )}
+          <div className="flex items-center gap-1.5 text-sm">
+            <div className="w-2 h-2 bg-green-500 rounded-full" />
+            <span className="text-gray-600">{subscriber.completedCount}개 완료</span>
+          </div>
+        </div>
+      </button>
+
+      {/* 세션 목록 (펼쳐졌을 때) */}
+      {isExpanded && (
+        <div className="border-t border-amber-100 bg-amber-50/50">
+          {subscriber.sessions.length === 0 ? (
+            <div className="py-8 text-center text-gray-500">
+              아직 세션 기록이 없습니다.
+            </div>
+          ) : (
+            <div className="divide-y divide-amber-100">
+              {subscriber.sessions.map((session) => (
+                <SessionRow
+                  key={session.id}
+                  session={session}
+                  onClick={() => onSelectSession(session)}
+                />
+              ))}
+            </div>
+          )}
+
+          {/* 새 세션 추가 버튼 */}
+          <div className="p-3 bg-white border-t border-amber-100">
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full border-amber-300 text-amber-700 hover:bg-amber-50"
               onClick={(e) => {
                 e.stopPropagation()
                 onCreateSession()
