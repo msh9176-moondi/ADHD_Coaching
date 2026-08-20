@@ -21,6 +21,8 @@ import { SurveyPage } from './pages/coachee/SurveyPage'
 import { CoachingReportPage } from './pages/coachee/CoachingReportPage'
 import { ExecutionGuidePage } from './pages/coachee/ExecutionGuidePage'
 import { SubscriptionPlansPage } from './pages/coachee/SubscriptionPlansPage'
+import UltramindProgramPage from './pages/coachee/UltramindProgramPage'
+import MyProfilePage from './pages/coachee/MyProfilePage'
 
 // Coach Pages
 import { CoachDashboardPage } from './pages/coach/DashboardPage'
@@ -136,6 +138,8 @@ function App() {
         <Route path="report" element={<CoachingReportPage />} />
         <Route path="guide" element={<ExecutionGuidePage />} />
         <Route path="subscribe" element={<SubscriptionPlansPage />} />
+        <Route path="ultramind" element={<UltramindProgramPage />} />
+        <Route path="profile" element={<MyProfilePage />} />
       </Route>
 
       {/* Coach Routes */}

@@ -190,15 +190,23 @@ export function analyzeADHDType(asrsScores) {
 export function analyzeCoachingPriorities(categoryScores) {
   if (!categoryScores) return []
 
+  console.log('categoryScores 원본:', categoryScores)
+
   const areas = Object.entries(categoryScores)
     .filter(([key]) => key !== 'total')
-    .map(([key, value]) => ({
-      id: key,
-      name: value.name,
-      score: value.average,
-      ...COACHING_AREAS[key]
-    }))
+    .map(([key, value]) => {
+      const coachingArea = COACHING_AREAS[key] || {}
+      console.log(`key: ${key}, value:`, value, 'coachingArea:', coachingArea)
+      return {
+        id: key,
+        score: value.average,
+        ...coachingArea,
+        // name은 COACHING_AREAS에서 우선 사용, 없으면 value.name 사용
+        name: coachingArea.name || value.name || key
+      }
+    })
     .sort((a, b) => a.score - b.score) // 낮은 점수가 더 필요한 영역
 
+  console.log('최종 areas:', areas)
   return areas
 }

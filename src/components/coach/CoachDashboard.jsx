@@ -15,6 +15,7 @@ import { WarningList } from './dashboard/WarningList'
 import { PendingApplicantsList } from './dashboard/PendingApplicantsList'
 import { PendingSubscriptionsList } from './dashboard/PendingSubscriptionsList'
 import { CoacheeQuickList } from './dashboard/CoacheeQuickList'
+import { UltramindOverviewCard } from './UltramindOverviewCard'
 
 export function CoachDashboard() {
   const navigate = useNavigate()
@@ -186,6 +187,9 @@ export function CoachDashboard() {
           </CardContent>
         </Card>
       )}
+
+      {/* 울트라마인드 현황 */}
+      <UltramindOverviewCard />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
         {/* 오늘의 상담 */}

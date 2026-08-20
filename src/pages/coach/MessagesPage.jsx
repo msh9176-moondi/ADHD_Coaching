@@ -11,7 +11,7 @@ import { coacheeService } from '../../lib'
 import { getOrCreateConversation, sendMessage, getMessages, getConfirmedGoals, getAllUnreadCounts, markAllAsRead } from '../../lib/messageService'
 import { saveCoachingTopicsFromGoal } from '../../lib/coacheeService'
 import { getOrCreateSession, saveSessionNote, getSessionNote, deleteSession, scheduleFollowUpSession, getCoacheeSessions } from '../../lib/sessionService'
-import { isSupabaseConfigured } from '../../lib/supabase'
+import { supabase, isSupabaseConfigured } from '../../lib/supabase'
 import { getCoachSubscribers } from '../../lib/subscriptionService'
 import {
   Search, MessageCircle, Clock, FileText, ChevronRight,
@@ -63,6 +63,37 @@ export function CoachMessagesPage() {
       try {
         setLoading(true)
         const data = await coacheeService.getCoachCoachees(user?.id)
+        // 울트라마인드 상태 확인
+        let ultramindStatuses = {}
+        if (isSupabaseConfigured()) {
+          const userIds = data.map(c => c.user_id).filter(Boolean)
+          if (userIds.length > 0) {
+            const { data: programs } = await supabase
+              .from('ultramind_programs')
+              .select('user_id, status')
+              .in('user_id', userIds)
+
+            if (programs) {
+              programs.forEach(p => {
+                ultramindStatuses[p.user_id] = p.status
+              })
+            }
+          }
+        }
+
+        // localStorage에서도 확인 (데모용)
+        data.forEach(c => {
+          if (!ultramindStatuses[c.user_id]) {
+            const localProgram = localStorage.getItem(`ultramind_program_${c.user_id}`)
+            if (localProgram) {
+              try {
+                const parsed = JSON.parse(localProgram)
+                ultramindStatuses[c.user_id] = parsed.status || 'active'
+              } catch (e) {}
+            }
+          }
+        })
+
         const formatted = data.map(c => ({
           id: c.id,
           name: c.name,
@@ -73,7 +104,8 @@ export function CoachMessagesPage() {
           totalSessions: c.total_sessions || 5,
           nextSession: c.next_session_date ? `${c.next_session_date} ${c.next_session_time || ''}`.trim() : '-',
           hasWarning: c.has_warning || false,
-          topics: c.topics || []
+          topics: c.topics || [],
+          ultramindStatus: ultramindStatuses[c.user_id] || null // 'active', 'completed', or null
         }))
         setCoacheesData(formatted)
         // 첫 번째 피코치 자동 선택
@@ -83,6 +115,37 @@ export function CoachMessagesPage() {
 
         // 구독자 목록 로드
         const subs = await getCoachSubscribers(user?.id)
+
+        // 구독자들의 울트라마인드 상태도 확인
+        const subUserIds = subs.map(s => s.user_id).filter(Boolean)
+        let subUltramindStatuses = {}
+
+        if (isSupabaseConfigured() && subUserIds.length > 0) {
+          const { data: subPrograms } = await supabase
+            .from('ultramind_programs')
+            .select('user_id, status')
+            .in('user_id', subUserIds)
+
+          if (subPrograms) {
+            subPrograms.forEach(p => {
+              subUltramindStatuses[p.user_id] = p.status
+            })
+          }
+        }
+
+        // localStorage에서도 확인 (데모용)
+        subs.forEach(s => {
+          if (!subUltramindStatuses[s.user_id]) {
+            const localProgram = localStorage.getItem(`ultramind_program_${s.user_id}`)
+            if (localProgram) {
+              try {
+                const parsed = JSON.parse(localProgram)
+                subUltramindStatuses[s.user_id] = parsed.status || 'active'
+              } catch (e) {}
+            }
+          }
+        })
+
         const formattedSubs = subs.map(s => ({
           id: `sub-${s.id}`,
           subscriptionId: s.id,
@@ -93,7 +156,8 @@ export function CoachMessagesPage() {
           status: s.status,
           sessionsUsed: s.sessions_used_this_month || 0,
           sessionsPerMonth: s.sessions_per_month || 3,
-          isSubscriber: true
+          isSubscriber: true,
+          ultramindStatus: subUltramindStatuses[s.user_id] || null
         }))
         setSubscribers(formattedSubs)
       } catch (err) {
@@ -315,9 +379,22 @@ export function CoachMessagesPage() {
           : c
       ))
 
-      // 메시지 새로고침
-      const updatedMessages = await getMessages(conversation.id, 100)
-      setMessages(updatedMessages)
+      // 메시지 새로고침 (MessageList와 동일한 포맷으로 변환)
+      const dbMessages = await getMessages(conversation.id, 100)
+      const formattedMessages = dbMessages.map(msg => {
+        const metadata = msg.metadata || {}
+        const actualType = metadata.type || msg.type || 'normal'
+        return {
+          id: msg.id,
+          sender: msg.sender_role,
+          senderName: msg.sender_role === 'coach' ? user.name : selectedCoachee.name,
+          content: msg.content,
+          timestamp: msg.created_at,
+          type: actualType,
+          ...metadata
+        }
+      })
+      setMessages(formattedMessages)
 
       setShowSessionEndModal(false)
     } catch (err) {
@@ -632,6 +709,7 @@ export function CoachMessagesPage() {
               {/* 세션 일지 패널 - 데스크톱에서는 사이드, 모바일에서는 바텀시트 */}
               {showSessionNote && (
                 <SessionNotePanel
+                  key={`session-note-${selectedCoachee?.userId}-${selectedCoachee?.currentSession}`}
                   coachee={selectedCoachee}
                   messages={messages}
                   onClose={() => setShowSessionNote(false)}
@@ -830,7 +908,7 @@ function SessionNotePanel({ coachee, messages = [], onClose }) {
     }
 
     loadSessionNote()
-  }, [user?.id, coachee?.userId])
+  }, [user?.id, coachee?.userId, coachee?.currentSession])
 
   const handleChange = (field, value) => {
     setNote(prev => ({ ...prev, [field]: value }))
@@ -1338,13 +1416,13 @@ function SessionEndModal({ coachee, onClose, onConfirm }) {
             <div className="flex items-center justify-between text-sm mb-2">
               <span className="text-emerald-700">진행률</span>
               <span className="font-semibold text-blue-900">
-                {currentSession} / {totalSessions} 회기
+                {Math.min(Math.max(0, currentSession - 1), totalSessions)} / {totalSessions} 회기 완료
               </span>
             </div>
             <div className="h-2 bg-blue-200 rounded-full overflow-hidden">
               <div
                 className="h-full bg-emerald-500 rounded-full"
-                style={{ width: `${(currentSession / totalSessions) * 100}%` }}
+                style={{ width: `${(Math.min(Math.max(0, currentSession - 1), totalSessions) / totalSessions) * 100}%` }}
               />
             </div>
             {isLastSession && (
@@ -1823,9 +1901,25 @@ function CoacheeListItem({ coachee, isSelected, lastMsg, unreadCount = 0, onClic
 
       <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between mb-0.5">
-          <span className={`font-medium text-sm ${isSelected ? 'text-emerald-700' : 'text-gray-900'}`}>
-            {coachee.name}
-          </span>
+          <div className="flex items-center gap-1.5">
+            <span className={`font-medium text-sm ${isSelected ? 'text-emerald-700' : 'text-gray-900'}`}>
+              {coachee.name}
+            </span>
+            {/* 울트라마인드 참여 표시 */}
+            {coachee.ultramindStatus && (
+              <span
+                className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-medium ${
+                  coachee.ultramindStatus === 'active'
+                    ? 'bg-violet-100 text-violet-700'
+                    : 'bg-emerald-100 text-emerald-700'
+                }`}
+                title={coachee.ultramindStatus === 'active' ? 'Ultra Mind 진행중' : 'Ultra Mind 완료'}
+              >
+                <Brain className="w-2.5 h-2.5" />
+                UM
+              </span>
+            )}
+          </div>
           {lastMsg && (
             <span className="text-xs text-gray-400">{lastMsg.timestamp}</span>
           )}
@@ -1891,9 +1985,25 @@ function SubscriberListItem({ subscriber, isSelected, unreadCount = 0, onClick }
 
       <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between mb-0.5">
-          <span className={`font-medium text-sm ${isSelected ? 'text-amber-700' : 'text-gray-900'}`}>
-            {subscriber.name}
-          </span>
+          <div className="flex items-center gap-1.5">
+            <span className={`font-medium text-sm ${isSelected ? 'text-amber-700' : 'text-gray-900'}`}>
+              {subscriber.name}
+            </span>
+            {/* 울트라마인드 참여 표시 */}
+            {subscriber.ultramindStatus && (
+              <span
+                className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-medium ${
+                  subscriber.ultramindStatus === 'active'
+                    ? 'bg-violet-100 text-violet-700'
+                    : 'bg-emerald-100 text-emerald-700'
+                }`}
+                title={subscriber.ultramindStatus === 'active' ? 'Ultra Mind 진행중' : 'Ultra Mind 완료'}
+              >
+                <Brain className="w-2.5 h-2.5" />
+                UM
+              </span>
+            )}
+          </div>
           <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${
             subscriber.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
           }`}>

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useLocation } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { useStore } from '../../store/useStore'
 import { getASRSResult, getSurveyResult } from '../../lib/surveyService'
 import { getCoacheePackage, getCoacheeProfile, getCoachingTopics, getCoachingGoal } from '../../lib/coacheeService'
@@ -22,17 +22,20 @@ import { SessionTasksCard } from '../../components/coachee/SessionTasksCard'
 import { RoutineTasksCard } from '../../components/coachee/RoutineTasksCard'
 import { NotificationCard } from '../../components/coachee/NotificationCard'
 import { MatchingCard } from '../../components/coachee/MatchingCard'
-import { AICheckinCard } from '../../components/coachee/AICheckinCard'
 import { SubscriptionStatusCard } from '../../components/coachee/SubscriptionStatusCard'
 import { PastSessionsCard } from '../../components/coachee/PastSessionsCard'
 import { CoachInfoCard } from '../../components/coachee/CoachInfoCard'
 import { CoachingCompletionModal } from '../../components/modals/CoachingCompletionModal'
+import { UltramindProgressCard } from '../../components/coachee/UltramindProgressCard'
+import { UltramindTodayPlan } from '../../components/coachee/UltramindTodayPlan'
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/common/Card'
-import { Calendar, Clock, CalendarCheck } from 'lucide-react'
+import { Calendar, Clock, MessageSquare, Brain, Target, CreditCard, PartyPopper, X, User } from 'lucide-react'
 import { getUpcomingSessions } from '../../lib/sessionService'
+import { getActiveUltramindProgram } from '../../lib/ultramindProgramService'
 
 export function CoacheeDashboardPage() {
   const location = useLocation()
+  const navigate = useNavigate()
   const {
     user,
     sessions,
@@ -59,6 +62,8 @@ export function CoacheeDashboardPage() {
   const [hasCoach, setHasCoach] = useState(!!matchedCoach)
   const [showSubscriptionSuccess, setShowSubscriptionSuccess] = useState(false)
   const [showCompletionModal, setShowCompletionModal] = useState(false)
+  const [activeTab, setActiveTab] = useState('coaching') // 'coaching' | 'ultramind' | 'subscription'
+  const [hasUltramindProgram, setHasUltramindProgram] = useState(false)
 
   // 코칭 완료 모달 표시 체크
   useEffect(() => {
@@ -290,6 +295,14 @@ export function CoacheeDashboardPage() {
         } catch (err) {
           console.warn('실행과제 로드 실패:', err)
         }
+
+        // 울트라마인드 프로그램 확인
+        try {
+          const ultramindData = await getActiveUltramindProgram(user.id)
+          setHasUltramindProgram(!!ultramindData)
+        } catch (err) {
+          console.warn('울트라마인드 프로그램 확인 실패:', err)
+        }
       } catch (err) {
         console.error('대시보드 데이터 로드 실패:', err)
       } finally {
@@ -315,40 +328,47 @@ export function CoacheeDashboardPage() {
     )
   }
 
+  // 탭 설정
+  const tabs = [
+    { id: 'coaching', label: '코칭', icon: MessageSquare, color: 'emerald' },
+    { id: 'ultramind', label: '울트라마인드', icon: Brain, color: 'violet', show: hasCoach },
+    { id: 'subscription', label: '구독관리', icon: CreditCard, color: 'blue', show: subscription?.status === 'active' || coacheeProfile?.status === 'completed' }
+  ].filter(tab => tab.show !== false)
+
   return (
     <div className="max-w-4xl mx-auto space-y-4 md:space-y-6">
       {/* 환영 메시지 */}
-      <div>
-        <h1 className="text-xl md:text-2xl font-bold text-gray-900">
-          안녕하세요, {userName}님.
-        </h1>
-        <p className="text-sm md:text-base text-gray-600 mt-1">
-          오늘은 무엇부터 시작해 볼까요?
-        </p>
+      <div className="flex items-start justify-between">
+        <div>
+          <h1 className="text-xl md:text-2xl font-bold text-gray-900">
+            안녕하세요, {userName}님.
+          </h1>
+          <p className="text-sm md:text-base text-gray-600 mt-1">
+            오늘은 무엇부터 시작해 볼까요?
+          </p>
+        </div>
+        <button
+          onClick={() => navigate('/coachee/profile')}
+          className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+          title="내 정보"
+        >
+          <User className="w-5 h-5 text-gray-500" />
+        </button>
       </div>
 
-      {/* 코치 매칭 카드 (항상 표시 - 내부에서 상태 관리) */}
-      <MatchingCard />
+      {/* 코치 매칭 카드 (코치가 없을 때만) */}
+      {!hasCoach && <MatchingCard />}
 
-      {/* 코치님 알림 */}
+      {/* 코치님 알림 (중요 알림은 항상 표시) */}
       <NotificationCard />
 
-      {/* AI 체크인 */}
-      {hasCoach && (
-        <AICheckinCard
-          userName={userName}
-          currentGoal={useStore.getState().coachingGoal?.title}
-          currentTask={useStore.getState().coachingAction?.title}
-        />
-      )}
-
-      {/* 구독 성공 알림 */}
+      {/* 구독 성공/대기 알림 */}
       {showSubscriptionSuccess && (
         <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center">
-                <span className="text-lg">🎉</span>
+                <PartyPopper className="w-5 h-5 text-emerald-600" />
               </div>
               <div>
                 <h3 className="font-semibold text-emerald-800">구독이 시작되었습니다!</h3>
@@ -359,13 +379,12 @@ export function CoacheeDashboardPage() {
               onClick={() => setShowSubscriptionSuccess(false)}
               className="text-emerald-500 hover:text-emerald-700"
             >
-              ✕
+              <X className="w-5 h-5" />
             </button>
           </div>
         </div>
       )}
 
-      {/* 구독 대기 중 알림 */}
       {subscription?.status === 'pending' && (
         <Card className="border-amber-200 bg-amber-50">
           <CardContent className="p-5">
@@ -384,91 +403,161 @@ export function CoacheeDashboardPage() {
         </Card>
       )}
 
-      {/* 구독자 전용 섹션 */}
-      {subscription?.status === 'active' && (
-        <>
-          {/* 구독 상태 카드 */}
-          <SubscriptionStatusCard subscription={subscription} />
-
-          {/* 구독자 2열 그리드: 코치 정보 & 지난 세션 */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-            <CoachInfoCard />
-            <PastSessionsCard />
-          </div>
-        </>
+      {/* 탭 네비게이션 (코치 매칭 후에만 표시) */}
+      {hasCoach && tabs.length > 1 && (
+        <div className="flex gap-2 p-1 bg-gray-100 rounded-xl">
+          {tabs.map(tab => {
+            const Icon = tab.icon
+            const isActive = activeTab === tab.id
+            const colorClasses = {
+              emerald: isActive ? 'bg-emerald-500 text-white' : 'text-gray-600 hover:bg-gray-200',
+              violet: isActive ? 'bg-violet-500 text-white' : 'text-gray-600 hover:bg-gray-200',
+              blue: isActive ? 'bg-blue-500 text-white' : 'text-gray-600 hover:bg-gray-200'
+            }
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg font-medium text-sm transition-all ${colorClasses[tab.color]}`}
+              >
+                <Icon className="w-4 h-4" />
+                <span className="hidden sm:inline">{tab.label}</span>
+              </button>
+            )
+          })}
+        </div>
       )}
 
-      {/* 패키지 진행 현황 (코치 매칭 후, 구독이 없을 때만 표시) */}
-      {hasCoach && !subscription && <PackageProgress />}
+      {/* ========== 코칭 탭 ========== */}
+      {activeTab === 'coaching' && (
+        <div className="space-y-4 md:space-y-6">
+          {/* 패키지 진행 현황 */}
+          {hasCoach && !subscription && <PackageProgress />}
 
-      {/* 다음 회기까지 과제 */}
-      <SessionTasksCard />
+          {/* 지금 할 일 (가장 크게) */}
+          <CurrentAction />
 
-      {/* 오늘의 루틴 (채팅에서 받은 루틴 과제) */}
-      {hasCoach && <RoutineTasksCard />}
+          {/* 다음 회기까지 과제 */}
+          <SessionTasksCard />
 
-      {/* 지금 할 일 (가장 크게) */}
-      <CurrentAction />
+          {/* 오늘의 루틴 */}
+          {hasCoach && <RoutineTasksCard />}
 
-      {/* 2열 그리드: 오늘의 일정 & 오늘의 할 일 */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-        {/* 오늘의 일정 */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base flex items-center gap-2">
-              <Calendar className="w-4 h-4 text-emerald-600" />
-              오늘의 일정
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {todaySchedule.length === 0 ? (
-              <p className="text-sm text-gray-500 py-4 text-center">
-                오늘 예정된 일정이 없습니다.
-              </p>
-            ) : (
-              <div className="space-y-3">
-                {todaySchedule.map((schedule) => (
-                  <div
-                    key={schedule.id}
-                    className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg"
-                  >
-                    <div className="flex items-center gap-2 text-sm">
-                      <Clock className="w-4 h-4 text-gray-400" />
-                      <span className="font-medium text-gray-900">
-                        {schedule.time}
-                      </span>
-                    </div>
-                    <span className="text-sm text-gray-600">
-                      {schedule.topic || '코칭 세션'}
-                    </span>
+          {/* 2열 그리드: 오늘의 일정 & 오늘의 할 일 */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Calendar className="w-4 h-4 text-emerald-600" />
+                  오늘의 일정
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {todaySchedule.length === 0 ? (
+                  <p className="text-sm text-gray-500 py-4 text-center">
+                    오늘 예정된 일정이 없습니다.
+                  </p>
+                ) : (
+                  <div className="space-y-3">
+                    {todaySchedule.map((schedule) => (
+                      <div
+                        key={schedule.id}
+                        className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg"
+                      >
+                        <div className="flex items-center gap-2 text-sm">
+                          <Clock className="w-4 h-4 text-gray-400" />
+                          <span className="font-medium text-gray-900">
+                            {schedule.time}
+                          </span>
+                        </div>
+                        <span className="text-sm text-gray-600">
+                          {schedule.topic || '코칭 세션'}
+                        </span>
+                      </div>
+                    ))}
                   </div>
-                ))}
+                )}
+              </CardContent>
+            </Card>
+            <TodayTasks />
+          </div>
+
+          {/* 2열 그리드: 코칭 진행 상태 & 코치 메시지 */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+            <CoachingProgress />
+            <CoachMessage />
+          </div>
+
+          {/* 나의 코칭 목표 */}
+          <MyGoal />
+
+          {/* 다음 상담 */}
+          <NextSession />
+
+          {/* 나의 분석 결과 */}
+          <MyAnalysisResult />
+        </div>
+      )}
+
+      {/* ========== 울트라마인드 탭 ========== */}
+      {activeTab === 'ultramind' && hasCoach && (
+        <div className="space-y-4 md:space-y-6">
+          {/* 프로그램 진행 현황 */}
+          <UltramindProgressCard />
+
+          {/* 오늘의 맞춤 플랜 */}
+          <UltramindTodayPlan />
+
+          {/* 울트라마인드 페이지로 이동 버튼 */}
+          <button
+            onClick={() => navigate('/coachee/ultramind')}
+            className="w-full py-3 px-4 bg-violet-50 hover:bg-violet-100 border border-violet-200 rounded-xl text-violet-700 font-medium text-sm transition-colors flex items-center justify-center gap-2"
+          >
+            <Target className="w-4 h-4" />
+            상세 프로그램 보기
+          </button>
+        </div>
+      )}
+
+      {/* ========== 구독관리 탭 ========== */}
+      {activeTab === 'subscription' && (
+        <div className="space-y-4 md:space-y-6">
+          {subscription?.status === 'active' ? (
+            <>
+              {/* 구독 상태 카드 */}
+              <SubscriptionStatusCard subscription={subscription} />
+
+              {/* 코치 정보 & 지난 세션 */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                <CoachInfoCard />
+                <PastSessionsCard />
               </div>
-            )}
-          </CardContent>
-        </Card>
+            </>
+          ) : (
+            /* 코칭 완료 후 구독 안내 */
+            <Card className="border-blue-200 bg-gradient-to-br from-blue-50 to-indigo-50">
+              <CardContent className="p-6 text-center">
+                <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <CreditCard className="w-8 h-8 text-blue-600" />
+                </div>
+                <h3 className="text-lg font-bold text-gray-900 mb-2">사후관리 구독</h3>
+                <p className="text-sm text-gray-600 mb-4">
+                  코칭이 완료되었습니다. 월간 구독으로 지속적인 관리를 받아보세요.
+                </p>
+                <button
+                  onClick={() => navigate('/coachee/subscription')}
+                  className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors"
+                >
+                  구독 플랜 보기
+                </button>
+              </CardContent>
+            </Card>
+          )}
+        </div>
+      )}
 
-        {/* 오늘의 할 일 */}
-        <TodayTasks />
-      </div>
-
-      {/* 2열 그리드: 코칭 진행 상태 & 코치 메시지 */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-        <CoachingProgress />
-        <CoachMessage />
-      </div>
-
-      {/* 나의 실행 기록 */}
+      {/* 나의 실행 기록 (모든 탭에서 표시) */}
       <ExecutionRecords />
-
-      {/* 나의 코칭 목표 */}
-      <MyGoal />
-
-      {/* 다음 상담 */}
-      <NextSession />
-
-      {/* 나의 분석 결과 */}
-      <MyAnalysisResult />
 
       {/* 복귀 버튼 (항상 표시) */}
       <ReturnButton />

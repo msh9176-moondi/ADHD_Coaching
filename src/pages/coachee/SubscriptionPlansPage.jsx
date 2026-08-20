@@ -7,7 +7,7 @@ import { useStore } from '../../store/useStore'
 import {
   Check, Crown, Sparkles, Calendar, MessageSquare,
   TrendingUp, Shield, ArrowRight, Loader2, Copy,
-  CreditCard, CheckCircle, AlertCircle, X
+  CreditCard, CheckCircle, AlertCircle, X, Brain, Leaf, Zap
 } from 'lucide-react'
 import { SUBSCRIPTION_PLANS, createSubscription } from '../../lib/subscriptionService'
 import { isSupabaseConfigured } from '../../lib/supabase'
@@ -255,6 +255,74 @@ export function SubscriptionPlansPage() {
           </div>
         </CardContent>
       </Card>
+
+      {/* 울트라마인드 프로그램 안내 */}
+      <div className="mb-6">
+        <div className="flex items-center gap-2 mb-4">
+          <div className="h-px flex-1 bg-gray-200" />
+          <span className="text-sm text-gray-500 px-2">또는</span>
+          <div className="h-px flex-1 bg-gray-200" />
+        </div>
+
+        <Card className="overflow-hidden border-2 border-violet-200 bg-gradient-to-br from-violet-50 to-indigo-50">
+          <CardContent className="p-5">
+            <div className="flex flex-col md:flex-row md:items-center gap-4">
+              {/* 아이콘 & 제목 */}
+              <div className="flex items-start gap-4 flex-1">
+                <div className="w-14 h-14 bg-gradient-to-br from-violet-500 to-indigo-600 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg shadow-violet-200">
+                  <Brain className="w-7 h-7 text-white" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <h3 className="font-bold text-lg text-gray-900">Ultra Mind Solution</h3>
+                    <span className="px-2 py-0.5 bg-violet-100 text-violet-700 text-xs font-medium rounded-full">
+                      NEW
+                    </span>
+                  </div>
+                  <p className="text-sm text-gray-600 mb-3">
+                    뇌 기능 최적화를 위한 6주 맞춤형 건강 프로그램
+                  </p>
+
+                  {/* 특징 */}
+                  <div className="flex flex-wrap gap-3 text-xs">
+                    <div className="flex items-center gap-1 text-violet-700">
+                      <Zap className="w-3.5 h-3.5" />
+                      <span>7가지 핵심 영역 분석</span>
+                    </div>
+                    <div className="flex items-center gap-1 text-violet-700">
+                      <Leaf className="w-3.5 h-3.5" />
+                      <span>맞춤형 체크리스트</span>
+                    </div>
+                    <div className="flex items-center gap-1 text-violet-700">
+                      <Calendar className="w-3.5 h-3.5" />
+                      <span>6주 실천 프로그램</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* 버튼 */}
+              <div className="flex-shrink-0">
+                <button
+                  onClick={() => navigate('/coachee/ultramind')}
+                  className="w-full md:w-auto flex items-center justify-center gap-2 px-5 py-2.5 bg-gradient-to-r from-violet-600 to-indigo-600 text-white rounded-xl font-medium hover:from-violet-700 hover:to-indigo-700 transition-all shadow-lg shadow-violet-200"
+                >
+                  알아보기
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+
+            {/* 구독과 함께 안내 */}
+            <div className="mt-4 pt-4 border-t border-violet-200">
+              <p className="text-xs text-gray-500 flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5 text-violet-500" />
+                사후관리 구독과 함께 진행하면 코치의 지속적인 지원을 받을 수 있어요
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
 
       {/* 구독 시작 버튼 */}
       <div className="sticky bottom-4 bg-white/80 backdrop-blur-sm rounded-xl p-4 shadow-lg border border-gray-100">

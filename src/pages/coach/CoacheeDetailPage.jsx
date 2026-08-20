@@ -14,6 +14,7 @@ import { ADHD_TYPES, PACKAGES } from '../../data/coachData'
 import { SessionDetailModal } from '../../components/coach/SessionDetailModal'
 import { TaskModal } from '../../components/coach/TaskModal'
 import { CoachAIBriefing } from '../../components/coach/CoachAIBriefing'
+import { CoacheeUltramindView } from '../../components/coach/CoacheeUltramindView'
 import { coacheeService } from '../../lib'
 import { getOrCreateConversation, sendMessage, getMessages } from '../../lib/messageService'
 import { getCoacheeSessions } from '../../lib/sessionService'
@@ -69,6 +70,7 @@ export function CoacheeDetailPage() {
   const [messages, setMessages] = useState([])
   const [sessionNotes, setSessionNotes] = useState([])
   const [showAIBriefing, setShowAIBriefing] = useState(false)
+  const [showUltramind, setShowUltramind] = useState(false)
 
   // 모달 상태
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false)
@@ -447,6 +449,40 @@ export function CoacheeDetailPage() {
               reflections={[]}
               currentSessionNumber={coachee.currentSession + 1}
               mode="full"
+            />
+          )}
+        </div>
+      )}
+
+      {/* 울트라마인드 섹션 */}
+      {!isPending && (
+        <div className="space-y-3">
+          <button
+            onClick={() => setShowUltramind(!showUltramind)}
+            className="w-full flex items-center justify-between p-4 bg-gradient-to-r from-violet-50 to-indigo-50 border border-violet-200 rounded-xl hover:from-violet-100 hover:to-indigo-100 transition-colors"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-violet-100 rounded-xl flex items-center justify-center">
+                <Brain className="w-5 h-5 text-violet-600" />
+              </div>
+              <div className="text-left">
+                <h3 className="font-semibold text-violet-900">Ultra Mind 프로그램</h3>
+                <p className="text-sm text-violet-700">
+                  검사 결과, AI 처방, 식단 및 보충제 계획
+                </p>
+              </div>
+            </div>
+            {showUltramind ? (
+              <ChevronUp className="w-5 h-5 text-violet-600" />
+            ) : (
+              <ChevronDown className="w-5 h-5 text-violet-600" />
+            )}
+          </button>
+
+          {showUltramind && (
+            <CoacheeUltramindView
+              coacheeId={coachee.userId}
+              coacheeName={coachee.name}
             />
           )}
         </div>
