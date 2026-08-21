@@ -6,11 +6,16 @@
 import { useEffect, useState, useMemo } from 'react'
 import { useStore } from '../../store/useStore'
 import { Card, CardContent, CardHeader, CardTitle } from '../common/Card'
+import { Button } from '../common/Button'
+import { TaskExecutionModal } from './TaskExecutionModal'
+import { classifyTasks } from '../../lib/taskClassificationService'
 import {
   Utensils, Pill, Sun, Sunrise, Moon, Coffee,
   Check, ChevronDown, ChevronUp, Sparkles, Scale,
   Apple, Salad, Fish, ShoppingCart, Clock, AlertCircle,
-  Ban, Lightbulb, ListChecks, RefreshCw
+  Ban, Lightbulb, ListChecks, RefreshCw,
+  Brain, ListTodo, FolderOpen, Loader2, Trash2, ArrowRight,
+  CheckCircle, GripVertical
 } from 'lucide-react'
 import {
   getActiveUltramindProgram,
@@ -26,8 +31,16 @@ export function UltramindTodayPlan() {
   const { user } = useStore()
   const [program, setProgram] = useState(null)
   const [completedItems, setCompletedItems] = useState([])
-  const [expandedSection, setExpandedSection] = useState('meals')
+  const [expandedSection, setExpandedSection] = useState('tasks') // 기본값을 tasks로 변경
   const [loading, setLoading] = useState(true)
+
+  // 브레인 덤프 관련 상태
+  const [dumpText, setDumpText] = useState('')
+  const [isClassifying, setIsClassifying] = useState(false)
+  const [dailyTasks, setDailyTasks] = useState([])
+  const [comprehensiveTasks, setComprehensiveTasks] = useState([])
+  const [selectedTask, setSelectedTask] = useState(null)
+  const [showExecutionModal, setShowExecutionModal] = useState(false)
 
   // useMemo를 먼저 선언 (Hooks 순서 보장)
   const { mealPlan, supplementSchedule } = useMemo(() => {
@@ -91,6 +104,121 @@ export function UltramindTodayPlan() {
 
     loadProgram()
   }, [user?.id])
+
+  // 브레인 덤프 데이터 로드
+  useEffect(() => {
+    if (user?.id) {
+      const saved = localStorage.getItem(`brain_dump_${user.id}`)
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved)
+          setDailyTasks(parsed.dailyTasks || [])
+          setComprehensiveTasks(parsed.comprehensiveTasks || [])
+        } catch (e) {}
+      }
+    }
+  }, [user?.id])
+
+  // 브레인 덤프 데이터 저장
+  const saveBrainDumpData = (daily, comprehensive) => {
+    if (user?.id) {
+      localStorage.setItem(`brain_dump_${user.id}`, JSON.stringify({
+        dailyTasks: daily,
+        comprehensiveTasks: comprehensive,
+        updatedAt: new Date().toISOString()
+      }))
+    }
+  }
+
+  // AI 분류 실행
+  const handleClassify = async () => {
+    if (!dumpText.trim()) return
+
+    setIsClassifying(true)
+    try {
+      const result = await classifyTasks(dumpText)
+
+      const newDailyTasks = result.daily.map((task, idx) => ({
+        id: `daily-${Date.now()}-${idx}`,
+        text: task,
+        completed: false,
+        createdAt: new Date().toISOString()
+      }))
+
+      const newComprehensiveTasks = result.comprehensive.map((task, idx) => ({
+        id: `comp-${Date.now()}-${idx}`,
+        text: task,
+        completed: false,
+        createdAt: new Date().toISOString()
+      }))
+
+      const updatedDaily = [...dailyTasks, ...newDailyTasks]
+      const updatedComp = [...comprehensiveTasks, ...newComprehensiveTasks]
+
+      setDailyTasks(updatedDaily)
+      setComprehensiveTasks(updatedComp)
+      saveBrainDumpData(updatedDaily, updatedComp)
+      setDumpText('')
+    } catch (err) {
+      console.error('분류 실패:', err)
+      alert('분류 중 오류가 발생했습니다.')
+    } finally {
+      setIsClassifying(false)
+    }
+  }
+
+  // 태스크 이동
+  const moveTask = (task, from) => {
+    if (from === 'daily') {
+      const newDaily = dailyTasks.filter(t => t.id !== task.id)
+      const newComp = [...comprehensiveTasks, { ...task, id: `comp-${Date.now()}` }]
+      setDailyTasks(newDaily)
+      setComprehensiveTasks(newComp)
+      saveBrainDumpData(newDaily, newComp)
+    } else {
+      const newComp = comprehensiveTasks.filter(t => t.id !== task.id)
+      const newDaily = [...dailyTasks, { ...task, id: `daily-${Date.now()}` }]
+      setDailyTasks(newDaily)
+      setComprehensiveTasks(newComp)
+      saveBrainDumpData(newDaily, newComp)
+    }
+  }
+
+  // 태스크 삭제
+  const deleteTask = (taskId, from) => {
+    if (from === 'daily') {
+      const updated = dailyTasks.filter(t => t.id !== taskId)
+      setDailyTasks(updated)
+      saveBrainDumpData(updated, comprehensiveTasks)
+    } else {
+      const updated = comprehensiveTasks.filter(t => t.id !== taskId)
+      setComprehensiveTasks(updated)
+      saveBrainDumpData(dailyTasks, updated)
+    }
+  }
+
+  // 태스크 완료 토글
+  const toggleTaskComplete = (taskId, from) => {
+    if (from === 'daily') {
+      const updated = dailyTasks.map(t =>
+        t.id === taskId ? { ...t, completed: !t.completed } : t
+      )
+      setDailyTasks(updated)
+      saveBrainDumpData(updated, comprehensiveTasks)
+    } else {
+      const updated = comprehensiveTasks.map(t =>
+        t.id === taskId ? { ...t, completed: !t.completed } : t
+      )
+      setComprehensiveTasks(updated)
+      saveBrainDumpData(dailyTasks, updated)
+    }
+  }
+
+  // 태스크 실행 시작
+  const startExecution = (task) => {
+    setSelectedTask(task)
+    setShowExecutionModal(true)
+  }
 
   const handleToggle = async (itemKey) => {
     const newCompleted = completedItems.includes(itemKey)
@@ -176,6 +304,119 @@ export function UltramindTodayPlan() {
       </CardHeader>
 
       <CardContent className="pt-2 space-y-3">
+        {/* 오늘의 할 일 (브레인 덤프 통합) */}
+        <div className="bg-white rounded-xl border border-violet-100 overflow-hidden">
+          <button
+            onClick={() => setExpandedSection(expandedSection === 'tasks' ? null : 'tasks')}
+            className="w-full flex items-center justify-between p-3 hover:bg-violet-50 transition-colors"
+          >
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 bg-violet-100 rounded-lg flex items-center justify-center">
+                <Brain className="w-4 h-4 text-violet-600" />
+              </div>
+              <div className="text-left">
+                <h4 className="font-medium text-gray-900 text-sm">오늘의 할 일</h4>
+                <p className="text-xs text-gray-500">
+                  {dailyTasks.filter(t => !t.completed).length}개 남음
+                </p>
+              </div>
+            </div>
+            {expandedSection === 'tasks' ? (
+              <ChevronUp className="w-5 h-5 text-gray-400" />
+            ) : (
+              <ChevronDown className="w-5 h-5 text-gray-400" />
+            )}
+          </button>
+
+          {expandedSection === 'tasks' && (
+            <div className="px-3 pb-3 space-y-3">
+              {/* 브레인 덤프 입력 */}
+              <div className="p-3 bg-violet-50 rounded-lg border border-violet-100">
+                <p className="text-xs text-gray-600 mb-2">
+                  해야 하는 일, 미루고 있는 일들을 생각나는 대로 적어주세요.
+                </p>
+                <textarea
+                  value={dumpText}
+                  onChange={(e) => setDumpText(e.target.value)}
+                  placeholder="예: 세금 신고하기, 엄마한테 전화, 프로젝트 보고서..."
+                  className="w-full h-16 p-2 border border-violet-200 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-violet-500 text-sm bg-white"
+                />
+                <button
+                  onClick={handleClassify}
+                  disabled={!dumpText.trim() || isClassifying}
+                  className="w-full mt-2 py-2 bg-violet-600 hover:bg-violet-700 disabled:bg-violet-300 text-white text-sm font-medium rounded-lg flex items-center justify-center gap-2 transition-colors"
+                >
+                  {isClassifying ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      AI가 분류하는 중...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="w-4 h-4" />
+                      AI로 분류하기
+                    </>
+                  )}
+                </button>
+              </div>
+
+              {/* 포괄 실행목록 */}
+              {comprehensiveTasks.length > 0 && (
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 px-1">
+                    <FolderOpen className="w-4 h-4 text-blue-600" />
+                    <span className="text-xs font-medium text-gray-700">포괄 실행목록</span>
+                    <span className="text-xs bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded-full">
+                      {comprehensiveTasks.filter(t => !t.completed).length}
+                    </span>
+                  </div>
+                  {comprehensiveTasks.map(task => (
+                    <TaskItem
+                      key={task.id}
+                      task={task}
+                      type="comprehensive"
+                      onToggleComplete={() => toggleTaskComplete(task.id, 'comprehensive')}
+                      onMove={() => moveTask(task, 'comprehensive')}
+                      onDelete={() => deleteTask(task.id, 'comprehensive')}
+                      onStart={() => startExecution(task)}
+                    />
+                  ))}
+                </div>
+              )}
+
+              {/* 일일 실행목록 */}
+              {dailyTasks.length > 0 && (
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 px-1">
+                    <ListTodo className="w-4 h-4 text-emerald-600" />
+                    <span className="text-xs font-medium text-gray-700">일일 실행목록</span>
+                    <span className="text-xs bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded-full">
+                      {dailyTasks.filter(t => !t.completed).length}
+                    </span>
+                  </div>
+                  {dailyTasks.map(task => (
+                    <TaskItem
+                      key={task.id}
+                      task={task}
+                      type="daily"
+                      onToggleComplete={() => toggleTaskComplete(task.id, 'daily')}
+                      onMove={() => moveTask(task, 'daily')}
+                      onDelete={() => deleteTask(task.id, 'daily')}
+                      onStart={() => startExecution(task)}
+                    />
+                  ))}
+                </div>
+              )}
+
+              {dailyTasks.length === 0 && comprehensiveTasks.length === 0 && (
+                <p className="text-sm text-gray-400 text-center py-2">
+                  브레인 덤프를 하면 AI가 할 일을 분류해드려요
+                </p>
+              )}
+            </div>
+          )}
+        </div>
+
         {/* TDEE 정보 표시 */}
         {mealPlan.tdeeInfo && (
           <div className="p-3 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl border border-emerald-100">
@@ -196,88 +437,121 @@ export function UltramindTodayPlan() {
           </div>
         )}
 
-        {/* 오늘의 식단 */}
+        {/* 식단 & 보충제 (시간대별 통합) */}
         <div className="bg-white rounded-xl border border-emerald-100 overflow-hidden">
           <button
-            onClick={() => setExpandedSection(expandedSection === 'meals' ? null : 'meals')}
+            onClick={() => setExpandedSection(expandedSection === 'nutrition' ? null : 'nutrition')}
             className="w-full flex items-center justify-between p-3 hover:bg-emerald-50 transition-colors"
           >
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-emerald-100 rounded-lg flex items-center justify-center">
+              <div className="w-8 h-8 bg-gradient-to-br from-emerald-100 to-blue-100 rounded-lg flex items-center justify-center">
                 <Utensils className="w-4 h-4 text-emerald-600" />
               </div>
               <div className="text-left">
-                <h4 className="font-medium text-gray-900 text-sm">오늘의 식단</h4>
+                <h4 className="font-medium text-gray-900 text-sm">식단 & 보충제</h4>
                 <p className="text-xs text-gray-500">
-                  {mealPlan.tdeeInfo ? `총 ${mealPlan.tdeeInfo.tdee}kcal 기준` : 'AI 맞춤 메뉴'}
+                  {mealPlan.tdeeInfo ? `${mealPlan.tdeeInfo.tdee}kcal · 시간대별 안내` : '시간대별 안내'}
                 </p>
               </div>
             </div>
-            {expandedSection === 'meals' ? (
+            {expandedSection === 'nutrition' ? (
               <ChevronUp className="w-5 h-5 text-gray-400" />
             ) : (
               <ChevronDown className="w-5 h-5 text-gray-400" />
             )}
           </button>
 
-          {expandedSection === 'meals' && (
+          {expandedSection === 'nutrition' && (
             <div className="px-3 pb-3 space-y-3">
-              {/* 아침 */}
-              {meals.breakfast && (
-                <MealCard
-                  meal={meals.breakfast}
+              {/* 기상 직후 보충제 */}
+              {supplementSchedule.wakeUp?.items?.length > 0 && (
+                <TimeSlotCard
+                  title="기상 직후"
+                  time={supplementSchedule.wakeUp.time}
                   icon={<Sunrise className="w-4 h-4 text-amber-600" />}
                   color="amber"
-                  itemKey="meal-breakfast"
-                  isChecked={completedItems.includes('meal-breakfast')}
+                  supplements={supplementSchedule.wakeUp.items}
+                  timeKey="supp-wakeup"
+                  completedItems={completedItems}
                   onToggle={handleToggle}
                 />
               )}
 
+              {/* 아침 */}
+              <TimeSlotCard
+                title="아침"
+                icon={<Sunrise className="w-4 h-4 text-amber-600" />}
+                color="amber"
+                meal={meals.breakfast}
+                mealKey="meal-breakfast"
+                supplements={supplementSchedule.breakfast?.items}
+                timeKey="supp-breakfast"
+                completedItems={completedItems}
+                onToggle={handleToggle}
+              />
+
               {/* 오전 간식 */}
               {meals.morningSnack && (
-                <SnackCard
-                  snack={meals.morningSnack}
+                <TimeSlotCard
+                  title="오전 간식"
                   icon={<Coffee className="w-4 h-4 text-orange-600" />}
                   color="orange"
-                  itemKey="meal-morningsnack"
-                  isChecked={completedItems.includes('meal-morningsnack')}
+                  snack={meals.morningSnack}
+                  mealKey="meal-morningsnack"
+                  completedItems={completedItems}
                   onToggle={handleToggle}
                 />
               )}
 
               {/* 점심 */}
-              {meals.lunch && (
-                <MealCard
-                  meal={meals.lunch}
-                  icon={<Sun className="w-4 h-4 text-yellow-600" />}
-                  color="yellow"
-                  itemKey="meal-lunch"
-                  isChecked={completedItems.includes('meal-lunch')}
-                  onToggle={handleToggle}
-                />
-              )}
+              <TimeSlotCard
+                title="점심"
+                icon={<Sun className="w-4 h-4 text-yellow-600" />}
+                color="yellow"
+                meal={meals.lunch}
+                mealKey="meal-lunch"
+                supplements={supplementSchedule.lunch?.items}
+                timeKey="supp-lunch"
+                completedItems={completedItems}
+                onToggle={handleToggle}
+              />
 
               {/* 오후 간식 */}
               {meals.afternoonSnack && (
-                <SnackCard
-                  snack={meals.afternoonSnack}
+                <TimeSlotCard
+                  title="오후 간식"
                   icon={<Apple className="w-4 h-4 text-green-600" />}
                   color="green"
-                  itemKey="meal-afternoonsnack"
-                  isChecked={completedItems.includes('meal-afternoonsnack')}
+                  snack={meals.afternoonSnack}
+                  mealKey="meal-afternoonsnack"
+                  completedItems={completedItems}
                   onToggle={handleToggle}
                 />
               )}
 
               {/* 저녁 */}
-              {meals.dinner && (
-                <MealCard
-                  meal={meals.dinner}
-                  icon={<Moon className="w-4 h-4 text-indigo-600" />}
-                  color="indigo"
-                  itemKey="meal-dinner"
-                  isChecked={completedItems.includes('meal-dinner')}
+              <TimeSlotCard
+                title="저녁"
+                icon={<Moon className="w-4 h-4 text-indigo-600" />}
+                color="indigo"
+                meal={meals.dinner}
+                mealKey="meal-dinner"
+                supplements={supplementSchedule.dinner?.items}
+                timeKey="supp-dinner"
+                completedItems={completedItems}
+                onToggle={handleToggle}
+              />
+
+              {/* 취침 전 보충제 */}
+              {supplementSchedule.bedtime?.items?.length > 0 && (
+                <TimeSlotCard
+                  title="취침 전"
+                  time={supplementSchedule.bedtime.time}
+                  icon={<Moon className="w-4 h-4 text-purple-600" />}
+                  color="purple"
+                  supplements={supplementSchedule.bedtime.items}
+                  timeKey="supp-bedtime"
+                  completedItems={completedItems}
                   onToggle={handleToggle}
                 />
               )}
@@ -302,7 +576,7 @@ export function UltramindTodayPlan() {
               {mealPlan.personalNotes?.length > 0 && (
                 <div className="p-3 bg-violet-50 rounded-lg border border-violet-100">
                   <p className="text-xs font-medium text-violet-700 mb-2 flex items-center gap-1">
-                    <Lightbulb className="w-3 h-3" /> 나만의 식단 포인트
+                    <Lightbulb className="w-3 h-3" /> 나만의 맞춤 포인트
                   </p>
                   <ul className="space-y-1">
                     {mealPlan.personalNotes.map((note, idx) => (
@@ -313,93 +587,6 @@ export function UltramindTodayPlan() {
                     ))}
                   </ul>
                 </div>
-              )}
-            </div>
-          )}
-        </div>
-
-        {/* 오늘의 보충제 */}
-        <div className="bg-white rounded-xl border border-blue-100 overflow-hidden">
-          <button
-            onClick={() => setExpandedSection(expandedSection === 'supplements' ? null : 'supplements')}
-            className="w-full flex items-center justify-between p-3 hover:bg-blue-50 transition-colors"
-          >
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                <Pill className="w-4 h-4 text-blue-600" />
-              </div>
-              <div className="text-left">
-                <h4 className="font-medium text-gray-900 text-sm">오늘의 보충제</h4>
-                <p className="text-xs text-gray-500">시간대별 복용 안내</p>
-              </div>
-            </div>
-            {expandedSection === 'supplements' ? (
-              <ChevronUp className="w-5 h-5 text-gray-400" />
-            ) : (
-              <ChevronDown className="w-5 h-5 text-gray-400" />
-            )}
-          </button>
-
-          {expandedSection === 'supplements' && (
-            <div className="px-3 pb-3 space-y-3">
-              {/* 기상 직후 */}
-              {supplementSchedule.wakeUp?.items?.length > 0 && (
-                <SupplementTimeSlot
-                  slot={supplementSchedule.wakeUp}
-                  icon={<Sunrise className="w-3 h-3" />}
-                  color="amber"
-                  timeKey="supp-wakeup"
-                  completedItems={completedItems}
-                  onToggle={handleToggle}
-                />
-              )}
-
-              {/* 아침 식후 */}
-              {supplementSchedule.breakfast?.items?.length > 0 && (
-                <SupplementTimeSlot
-                  slot={supplementSchedule.breakfast}
-                  icon={<Coffee className="w-3 h-3" />}
-                  color="orange"
-                  timeKey="supp-breakfast"
-                  completedItems={completedItems}
-                  onToggle={handleToggle}
-                />
-              )}
-
-              {/* 점심 식후 */}
-              {supplementSchedule.lunch?.items?.length > 0 && (
-                <SupplementTimeSlot
-                  slot={supplementSchedule.lunch}
-                  icon={<Sun className="w-3 h-3" />}
-                  color="yellow"
-                  timeKey="supp-lunch"
-                  completedItems={completedItems}
-                  onToggle={handleToggle}
-                />
-              )}
-
-              {/* 저녁 식후 */}
-              {supplementSchedule.dinner?.items?.length > 0 && (
-                <SupplementTimeSlot
-                  slot={supplementSchedule.dinner}
-                  icon={<Moon className="w-3 h-3" />}
-                  color="indigo"
-                  timeKey="supp-dinner"
-                  completedItems={completedItems}
-                  onToggle={handleToggle}
-                />
-              )}
-
-              {/* 취침 전 */}
-              {supplementSchedule.bedtime?.items?.length > 0 && (
-                <SupplementTimeSlot
-                  slot={supplementSchedule.bedtime}
-                  icon={<Moon className="w-3 h-3" />}
-                  color="purple"
-                  timeKey="supp-bedtime"
-                  completedItems={completedItems}
-                  onToggle={handleToggle}
-                />
               )}
             </div>
           )}
@@ -441,119 +628,206 @@ export function UltramindTodayPlan() {
           </div>
         )}
       </CardContent>
+
+      {/* 실행 준비 모달 */}
+      {showExecutionModal && selectedTask && (
+        <TaskExecutionModal
+          task={selectedTask}
+          onClose={() => {
+            setShowExecutionModal(false)
+            setSelectedTask(null)
+          }}
+          onComplete={() => {
+            toggleTaskComplete(selectedTask.id, selectedTask.id.startsWith('daily') ? 'daily' : 'comprehensive')
+            setShowExecutionModal(false)
+            setSelectedTask(null)
+          }}
+        />
+      )}
     </Card>
   )
 }
 
-// 식사 카드 컴포넌트
-function MealCard({ meal, icon, color, itemKey, isChecked, onToggle }) {
+// 태스크 아이템 컴포넌트
+function TaskItem({ task, type, onToggleComplete, onMove, onDelete, onStart }) {
   return (
-    <div className={`p-3 bg-${color}-50 rounded-lg border border-${color}-100`}
-      style={{
-        backgroundColor: color === 'amber' ? '#fffbeb' : color === 'yellow' ? '#fefce8' : color === 'indigo' ? '#eef2ff' : '#f0fdf4'
-      }}
-    >
-      <div className="flex items-center justify-between mb-2">
-        <div className="flex items-center gap-2">
-          {icon}
-          <span className="text-sm font-medium text-gray-800">{meal.title}</span>
-          {meal.calories && (
-            <span className="px-1.5 py-0.5 bg-white/70 rounded text-xs text-gray-500 font-medium">
-              {meal.calories}kcal
-            </span>
-          )}
-        </div>
+    <div className={`p-2.5 rounded-lg border ${
+      task.completed
+        ? 'bg-gray-50 border-gray-200'
+        : type === 'daily'
+          ? 'bg-emerald-50 border-emerald-200'
+          : 'bg-blue-50 border-blue-200'
+    }`}>
+      <div className="flex items-start gap-2">
         <button
-          onClick={() => onToggle(itemKey)}
-          className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${
-            isChecked ? 'border-emerald-500 bg-emerald-500' : 'border-gray-300 hover:border-gray-400'
+          onClick={onToggleComplete}
+          className={`mt-0.5 w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
+            task.completed
+              ? 'bg-gray-400 border-gray-400'
+              : type === 'daily'
+                ? 'border-emerald-400 hover:bg-emerald-100'
+                : 'border-blue-400 hover:bg-blue-100'
           }`}
         >
-          {isChecked && <Check className="w-4 h-4 text-white" />}
+          {task.completed && <CheckCircle className="w-4 h-4 text-white" />}
         </button>
-      </div>
-      <div className="space-y-1 text-xs">
-        <p className="text-gray-700"><span className="font-medium">메인:</span> {meal.mainDish}</p>
-        {meal.sideDish && <p className="text-gray-600"><span className="font-medium">사이드:</span> {meal.sideDish}</p>}
-        {meal.rice && <p className="text-gray-600"><span className="font-medium">밥:</span> {meal.rice}</p>}
-        {meal.drink && <p className="text-gray-600"><span className="font-medium">음료:</span> {meal.drink}</p>}
-        {meal.tip && <p className="text-gray-500 italic mt-1">Tip: {meal.tip}</p>}
-      </div>
-    </div>
-  )
-}
 
-// 간식 카드 컴포넌트
-function SnackCard({ snack, icon, color, itemKey, isChecked, onToggle }) {
-  return (
-    <div className="p-2 bg-gray-50 rounded-lg border border-gray-100">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          {icon}
-          <span className="text-xs font-medium text-gray-700">{snack.title}</span>
+        <div className="flex-1 min-w-0">
+          <p className={`text-sm ${task.completed ? 'text-gray-400 line-through' : 'text-gray-800'}`}>
+            {task.text}
+          </p>
         </div>
-        <button
-          onClick={() => onToggle(itemKey)}
-          className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${
-            isChecked ? 'border-emerald-500 bg-emerald-500' : 'border-gray-300'
-          }`}
-        >
-          {isChecked && <Check className="w-3 h-3 text-white" />}
-        </button>
-      </div>
-      <div className="mt-1 text-xs text-gray-600">
-        {snack.options?.slice(0, 2).join(' 또는 ')}
-      </div>
-    </div>
-  )
-}
 
-// 보충제 시간대 컴포넌트
-function SupplementTimeSlot({ slot, icon, color, timeKey, completedItems, onToggle }) {
-  const colorStyles = {
-    amber: 'bg-amber-50 border-amber-100 text-amber-700',
-    orange: 'bg-orange-50 border-orange-100 text-orange-700',
-    yellow: 'bg-yellow-50 border-yellow-100 text-yellow-700',
-    indigo: 'bg-indigo-50 border-indigo-100 text-indigo-700',
-    purple: 'bg-purple-50 border-purple-100 text-purple-700'
-  }
-
-  return (
-    <div className={`p-3 rounded-lg border ${colorStyles[color] || 'bg-gray-50 border-gray-100'}`}>
-      <div className="flex items-center gap-2 mb-2">
-        {icon}
-        <span className="text-xs font-medium">{slot.time}</span>
-      </div>
-      <div className="space-y-2">
-        {slot.items?.map((item, idx) => {
-          const key = `${timeKey}-${idx}`
-          const isChecked = completedItems.includes(key)
-
-          return (
+        <div className="flex items-center gap-0.5">
+          {!task.completed && type === 'daily' && (
             <button
-              key={idx}
-              onClick={() => onToggle(key)}
-              className={`w-full flex items-start gap-2 p-2 rounded-lg transition-all text-left ${
-                isChecked ? 'bg-white/80' : 'bg-white hover:bg-white/80'
+              onClick={onStart}
+              className="p-1 text-emerald-600 hover:bg-emerald-100 rounded"
+              title="실행 시작"
+            >
+              <ArrowRight className="w-3.5 h-3.5" />
+            </button>
+          )}
+          <button
+            onClick={onMove}
+            className="p-1 text-gray-400 hover:bg-gray-100 rounded"
+            title={type === 'daily' ? '포괄목록으로' : '일일목록으로'}
+          >
+            <GripVertical className="w-3.5 h-3.5" />
+          </button>
+          <button
+            onClick={onDelete}
+            className="p-1 text-gray-400 hover:bg-red-100 hover:text-red-600 rounded"
+            title="삭제"
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// 시간대별 통합 카드 컴포넌트 (식사 + 보충제)
+function TimeSlotCard({ title, time, icon, color, meal, snack, mealKey, supplements, timeKey, completedItems, onToggle }) {
+  const colorStyles = {
+    amber: { bg: '#fffbeb', border: '#fef3c7' },
+    orange: { bg: '#fff7ed', border: '#fed7aa' },
+    yellow: { bg: '#fefce8', border: '#fef08a' },
+    green: { bg: '#f0fdf4', border: '#bbf7d0' },
+    indigo: { bg: '#eef2ff', border: '#c7d2fe' },
+    purple: { bg: '#faf5ff', border: '#e9d5ff' }
+  }
+  const styles = colorStyles[color] || colorStyles.amber
+
+  const hasMeal = meal && meal.mainDish
+  const hasSnack = snack
+  const hasSupplements = supplements && supplements.length > 0
+  const mealChecked = completedItems.includes(mealKey)
+
+  // 아무 내용도 없으면 렌더링 안 함
+  if (!hasMeal && !hasSnack && !hasSupplements) return null
+
+  return (
+    <div
+      className="rounded-xl border overflow-hidden"
+      style={{ backgroundColor: styles.bg, borderColor: styles.border }}
+    >
+      {/* 헤더 */}
+      <div className="flex items-center gap-2 px-3 py-2 border-b" style={{ borderColor: styles.border }}>
+        {icon}
+        <span className="text-sm font-semibold text-gray-800">{title}</span>
+        {time && <span className="text-xs text-gray-500">({time})</span>}
+        {meal?.calories && (
+          <span className="ml-auto px-2 py-0.5 bg-white/70 rounded text-xs text-gray-500 font-medium">
+            {meal.calories}kcal
+          </span>
+        )}
+      </div>
+
+      <div className="p-3 space-y-2">
+        {/* 식사 */}
+        {hasMeal && (
+          <div className="flex items-start gap-2">
+            <button
+              onClick={() => onToggle(mealKey)}
+              className={`mt-0.5 w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
+                mealChecked ? 'border-emerald-500 bg-emerald-500' : 'border-gray-300 hover:border-gray-400'
               }`}
             >
-              <div className={`w-5 h-5 mt-0.5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
-                isChecked ? 'border-blue-500 bg-blue-500' : 'border-gray-300'
-              }`}>
-                {isChecked && <Check className="w-3 h-3 text-white" />}
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className={`text-sm font-medium ${isChecked ? 'text-gray-500 line-through' : 'text-gray-800'}`}>
-                  {item.name}
-                </div>
-                <div className="text-xs text-gray-500">
-                  {item.dosage}
-                  {item.note && <span className="text-gray-400 ml-1">· {item.note}</span>}
-                </div>
-              </div>
+              {mealChecked && <Check className="w-3 h-3 text-white" />}
             </button>
-          )
-        })}
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 mb-1">
+                <Utensils className="w-3 h-3 text-gray-400" />
+                <span className={`text-xs font-medium ${mealChecked ? 'text-gray-400 line-through' : 'text-gray-700'}`}>
+                  식사
+                </span>
+              </div>
+              <div className={`text-xs space-y-0.5 ${mealChecked ? 'text-gray-400' : 'text-gray-600'}`}>
+                <p><span className="font-medium">메인:</span> {meal.mainDish}</p>
+                {meal.sideDish && <p><span className="font-medium">사이드:</span> {meal.sideDish}</p>}
+                {meal.rice && <p><span className="font-medium">밥:</span> {meal.rice}</p>}
+                {meal.drink && <p><span className="font-medium">음료:</span> {meal.drink}</p>}
+                {meal.tip && <p className="text-gray-400 italic">Tip: {meal.tip}</p>}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* 간식 */}
+        {hasSnack && (
+          <div className="flex items-start gap-2">
+            <button
+              onClick={() => onToggle(mealKey)}
+              className={`mt-0.5 w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
+                mealChecked ? 'border-emerald-500 bg-emerald-500' : 'border-gray-300 hover:border-gray-400'
+              }`}
+            >
+              {mealChecked && <Check className="w-3 h-3 text-white" />}
+            </button>
+            <div className="flex-1 min-w-0">
+              <div className={`text-xs ${mealChecked ? 'text-gray-400 line-through' : 'text-gray-600'}`}>
+                {snack.options?.slice(0, 2).join(' 또는 ') || snack.title}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* 보충제 */}
+        {hasSupplements && (
+          <div className="space-y-1.5">
+            {(hasMeal || hasSnack) && <div className="border-t my-2" style={{ borderColor: styles.border }} />}
+            <div className="flex items-center gap-1 mb-1">
+              <Pill className="w-3 h-3 text-blue-500" />
+              <span className="text-xs font-medium text-gray-500">보충제</span>
+            </div>
+            {supplements.map((item, idx) => {
+              const key = `${timeKey}-${idx}`
+              const isChecked = completedItems.includes(key)
+
+              return (
+                <button
+                  key={idx}
+                  onClick={() => onToggle(key)}
+                  className="w-full flex items-start gap-2 text-left"
+                >
+                  <div className={`mt-0.5 w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
+                    isChecked ? 'border-blue-500 bg-blue-500' : 'border-gray-300'
+                  }`}>
+                    {isChecked && <Check className="w-2.5 h-2.5 text-white" />}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <span className={`text-xs ${isChecked ? 'text-gray-400 line-through' : 'text-gray-700'}`}>
+                      {item.name}
+                      <span className="text-gray-400 ml-1">{item.dosage}</span>
+                    </span>
+                  </div>
+                </button>
+              )
+            })}
+          </div>
+        )}
       </div>
     </div>
   )
