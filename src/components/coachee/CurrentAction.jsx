@@ -1,11 +1,11 @@
 import { useState, useEffect, useRef } from 'react'
 import { useStore } from '../../store/useStore'
 import { Button } from '../common/Button'
-import { FileText, Target, Play, Pause, RotateCcw, CheckCircle } from 'lucide-react'
+import { FileText, Target, Play, Pause, RotateCcw, CheckCircle, Clock, ListTodo } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 
 export function CurrentAction() {
-  const { coachingStatus, coachingAction, setCoachingAction } = useStore()
+  const { user, coachingStatus, coachingAction, setCoachingAction } = useStore()
   const navigate = useNavigate()
 
   // 타이머 상태 (10분 = 600초)
@@ -13,6 +13,78 @@ export function CurrentAction() {
   const [isRunning, setIsRunning] = useState(false)
   const [isCompleted, setIsCompleted] = useState(false)
   const intervalRef = useRef(null)
+
+  // 브레인 덤프에서 현재 시간 태스크
+  const [currentDailyTask, setCurrentDailyTask] = useState(null)
+  const [nextDailyTask, setNextDailyTask] = useState(null)
+
+  // 브레인 덤프 일일 목록에서 현재 시간에 해당하는 태스크 찾기
+  useEffect(() => {
+    if (!user?.id) return
+
+    const loadDailyTasks = () => {
+      const saved = localStorage.getItem(`brain_dump_${user.id}`)
+      if (!saved) return
+
+      try {
+        const parsed = JSON.parse(saved)
+        const dailyTasks = (parsed.dailyTasks || []).filter(t => !t.completed && t.scheduledTime)
+
+        if (dailyTasks.length === 0) return
+
+        // 현재 시간
+        const now = new Date()
+        const currentTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`
+
+        // 시간순 정렬
+        const sortedTasks = dailyTasks.sort((a, b) => a.scheduledTime.localeCompare(b.scheduledTime))
+
+        // 현재 시간에 해당하는 태스크 찾기 (시작시간이 현재 이전이고 아직 끝나지 않은 것)
+        let current = null
+        let next = null
+
+        for (let i = 0; i < sortedTasks.length; i++) {
+          const task = sortedTasks[i]
+          const taskEndTime = addMinutes(task.scheduledTime, task.estimatedMinutes || 30)
+
+          if (task.scheduledTime <= currentTime && currentTime < taskEndTime) {
+            current = task
+            next = sortedTasks[i + 1] || null
+            break
+          } else if (task.scheduledTime > currentTime) {
+            next = task
+            break
+          }
+        }
+
+        // 현재 진행 중인 태스크가 없으면 가장 가까운 다음 태스크를 현재로
+        if (!current && next) {
+          current = next
+          next = sortedTasks[sortedTasks.indexOf(next) + 1] || null
+        }
+
+        setCurrentDailyTask(current)
+        setNextDailyTask(next)
+      } catch (e) {
+        console.error('브레인 덤프 로드 실패:', e)
+      }
+    }
+
+    // 시간에 분 추가하는 헬퍼
+    const addMinutes = (time, minutes) => {
+      const [h, m] = time.split(':').map(Number)
+      const totalMinutes = h * 60 + m + minutes
+      const newH = Math.floor(totalMinutes / 60) % 24
+      const newM = totalMinutes % 60
+      return `${newH.toString().padStart(2, '0')}:${newM.toString().padStart(2, '0')}`
+    }
+
+    loadDailyTasks()
+
+    // 1분마다 갱신
+    const interval = setInterval(loadDailyTasks, 60000)
+    return () => clearInterval(interval)
+  }, [user?.id])
 
   // 타이머 로직
   useEffect(() => {
@@ -31,12 +103,12 @@ export function CurrentAction() {
     return () => clearInterval(intervalRef.current)
   }, [isRunning])
 
-  // coachingAction이 변경되면 타이머 리셋
+  // coachingAction 또는 currentDailyTask가 변경되면 타이머 리셋
   useEffect(() => {
     setTimeLeft(600)
     setIsRunning(false)
     setIsCompleted(false)
-  }, [coachingAction?.id])
+  }, [coachingAction?.id, currentDailyTask?.id])
 
   const formatTime = (seconds) => {
     const mins = Math.floor(seconds / 60)
@@ -46,7 +118,10 @@ export function CurrentAction() {
 
   const handleStart = () => {
     setIsRunning(true)
-    setCoachingAction({ ...coachingAction, status: 'in_progress' })
+    // 코칭 액션이 있는 경우에만 상태 업데이트
+    if (coachingAction && !currentDailyTask) {
+      setCoachingAction({ ...coachingAction, status: 'in_progress' })
+    }
   }
 
   const handlePause = () => {
@@ -63,6 +138,38 @@ export function CurrentAction() {
     setCoachingAction({ ...coachingAction, status: 'completed' })
     setIsCompleted(false)
     setTimeLeft(600)
+  }
+
+  // 브레인 덤프 태스크 완료 처리
+  const handleDailyTaskComplete = (taskId) => {
+    if (!user?.id) return
+
+    const saved = localStorage.getItem(`brain_dump_${user.id}`)
+    if (!saved) return
+
+    try {
+      const parsed = JSON.parse(saved)
+      const updatedDaily = (parsed.dailyTasks || []).map(t =>
+        t.id === taskId ? { ...t, completed: true } : t
+      )
+
+      localStorage.setItem(`brain_dump_${user.id}`, JSON.stringify({
+        ...parsed,
+        dailyTasks: updatedDaily,
+        updatedAt: new Date().toISOString()
+      }))
+
+      // 다음 태스크로 이동
+      setCurrentDailyTask(nextDailyTask)
+      setNextDailyTask(null)
+      setIsCompleted(false)
+      setTimeLeft(600)
+
+      // 강제 리렌더
+      window.dispatchEvent(new Event('brain-dump-updated'))
+    } catch (e) {
+      console.error('태스크 완료 처리 실패:', e)
+    }
   }
 
   // 진행 상태에 따라 다른 CTA 표시
@@ -116,6 +223,100 @@ export function CurrentAction() {
     )
   }
 
+  // 브레인 덤프에서 현재 태스크가 있는 경우 우선 표시
+  if (currentDailyTask) {
+    return (
+      <div id="current-action" className="bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 rounded-2xl p-6">
+        <div className="flex items-center justify-between mb-3">
+          <p className="text-sm text-emerald-600 font-medium flex items-center gap-1">
+            <ListTodo className="w-4 h-4" />
+            지금 할 일
+          </p>
+          <div className="flex items-center gap-1 text-emerald-700 bg-emerald-100 px-2 py-1 rounded-lg">
+            <Clock className="w-3.5 h-3.5" />
+            <span className="text-sm font-medium">{currentDailyTask.scheduledTime}</span>
+            <span className="text-xs text-emerald-600">({currentDailyTask.estimatedMinutes || 30}분)</span>
+          </div>
+        </div>
+
+        <h2 className="text-xl font-bold text-gray-900 mb-4">
+          {currentDailyTask.text}
+        </h2>
+
+        {/* 다음 일정 미리보기 */}
+        {nextDailyTask && (
+          <div className="mb-4 p-2 bg-white/60 rounded-lg border border-emerald-100">
+            <p className="text-xs text-gray-500">다음 일정</p>
+            <p className="text-sm text-gray-700">
+              <span className="font-medium text-emerald-600">{nextDailyTask.scheduledTime}</span>
+              {' '}{nextDailyTask.text}
+            </p>
+          </div>
+        )}
+
+        {/* 타이머 UI */}
+        {(isRunning || timeLeft < 600 || isCompleted) ? (
+          <div className="space-y-4">
+            <div className="flex items-center justify-center">
+              <div className={`text-5xl font-bold tabular-nums ${
+                isCompleted ? 'text-emerald-600' : timeLeft <= 60 ? 'text-red-500' : 'text-gray-900'
+              }`}>
+                {formatTime(timeLeft)}
+              </div>
+            </div>
+
+            <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+              <div
+                className={`h-full rounded-full transition-all ${
+                  isCompleted ? 'bg-emerald-500' : 'bg-emerald-400'
+                }`}
+                style={{ width: `${((600 - timeLeft) / 600) * 100}%` }}
+              />
+            </div>
+
+            <div className="flex justify-center gap-3">
+              {isCompleted ? (
+                <Button
+                  size="lg"
+                  onClick={() => handleDailyTaskComplete(currentDailyTask.id)}
+                  className="bg-emerald-600 hover:bg-emerald-700"
+                >
+                  <CheckCircle className="w-4 h-4 mr-2" />
+                  완료!
+                </Button>
+              ) : isRunning ? (
+                <Button size="lg" variant="outline" onClick={handlePause}>
+                  <Pause className="w-4 h-4 mr-2" />
+                  일시정지
+                </Button>
+              ) : (
+                <Button size="lg" onClick={handleStart} className="bg-emerald-600 hover:bg-emerald-700">
+                  <Play className="w-4 h-4 mr-2" />
+                  계속하기
+                </Button>
+              )}
+              <Button size="lg" variant="outline" onClick={handleReset}>
+                <RotateCcw className="w-4 h-4 mr-2" />
+                리셋
+              </Button>
+            </div>
+
+            {isCompleted && (
+              <p className="text-center text-emerald-600 font-medium">
+                잘하셨어요! 다음 일정으로 넘어갈까요?
+              </p>
+            )}
+          </div>
+        ) : (
+          <Button size="lg" onClick={handleStart} className="bg-emerald-600 hover:bg-emerald-700">
+            <Play className="w-4 h-4 mr-2" />
+            10분 시작하기
+          </Button>
+        )}
+      </div>
+    )
+  }
+
   // coachingAction이 없는 경우
   if (!coachingAction) {
     return (
@@ -123,13 +324,13 @@ export function CurrentAction() {
         <div className="text-center py-4">
           <Target className="w-10 h-10 text-gray-300 mx-auto mb-2" />
           <p className="text-gray-500">아직 설정된 행동이 없습니다.</p>
-          <p className="text-sm text-gray-400 mt-1">코치님과 상담 후 행동이 설정됩니다.</p>
+          <p className="text-sm text-gray-400 mt-1">브레인 덤프에서 오늘 할 일을 추가하세요.</p>
         </div>
       </div>
     )
   }
 
-  // 선언서, 목표합의서 완료 → 오늘의 다음 행동
+  // 선언서, 목표합의서 완료 → 오늘의 다음 행동 (코칭 과제)
   return (
     <div id="current-action" className="bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 rounded-2xl p-6">
       <p className="text-sm text-emerald-600 font-medium mb-2">지금 할 일</p>

@@ -9,8 +9,14 @@ import { SelfIntroPage } from './pages/SelfIntroPage'
 import { CoachSelectionPage } from './pages/CoachSelectionPage'
 import { MatchCompletePage } from './pages/MatchCompletePage'
 
-// Coachee Pages
-import { CoacheeDashboardPage } from './pages/coachee/DashboardPage'
+// Coachee Pages - New Navigation Structure
+import { TodayPage } from './pages/coachee/TodayPage'
+import { CoachingPage } from './pages/coachee/CoachingPage'
+import { AnalysisPage } from './pages/coachee/AnalysisPage'
+import { UltramindDashboardPage } from './pages/coachee/UltramindDashboardPage'
+import { SettingsPage } from './pages/coachee/SettingsPage'
+
+// Coachee Pages - Legacy/Detail Pages
 import { GoalsPage } from './pages/coachee/GoalsPage'
 import { TasksPage } from './pages/coachee/TasksPage'
 import { SchedulePage } from './pages/coachee/SchedulePage'
@@ -127,7 +133,16 @@ function App() {
           </ProtectedRoute>
         }
       >
-        <Route index element={<CoacheeDashboardPage />} />
+        {/* Main Navigation Pages */}
+        <Route index element={<Navigate to="today" replace />} />
+        <Route path="today" element={<TodayPage />} />
+        <Route path="coaching" element={<CoachingPage />} />
+        <Route path="analysis" element={<AnalysisPage />} />
+        <Route path="ultramind" element={<UltramindDashboardPage />} />
+        <Route path="ultramind/program" element={<UltramindProgramPage />} />
+        <Route path="settings" element={<SettingsPage />} />
+
+        {/* Detail/Legacy Pages */}
         <Route path="goals" element={<GoalsPage />} />
         <Route path="tasks" element={<TasksPage />} />
         <Route path="schedule" element={<SchedulePage />} />
@@ -137,8 +152,7 @@ function App() {
         <Route path="survey" element={<SurveyPage />} />
         <Route path="report" element={<CoachingReportPage />} />
         <Route path="guide" element={<ExecutionGuidePage />} />
-        <Route path="subscribe" element={<SubscriptionPlansPage />} />
-        <Route path="ultramind" element={<UltramindProgramPage />} />
+        <Route path="subscription" element={<SubscriptionPlansPage />} />
         <Route path="profile" element={<MyProfilePage />} />
       </Route>
 

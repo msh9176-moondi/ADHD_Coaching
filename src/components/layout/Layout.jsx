@@ -2,9 +2,13 @@ import { useState } from 'react'
 import { Outlet } from 'react-router-dom'
 import { Sidebar } from './Sidebar'
 import { Header } from './Header'
+import { CoacheeBottomNav } from './CoacheeBottomNav'
+import { useStore } from '../../store/useStore'
 
 export function Layout() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const { user } = useStore()
+  const isCoachee = user?.role === 'coachee'
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -24,6 +28,9 @@ export function Layout() {
           <Outlet />
         </main>
       </div>
+
+      {/* 피코치용 모바일 바텀 네비게이션 */}
+      {isCoachee && <CoacheeBottomNav />}
     </div>
   )
 }

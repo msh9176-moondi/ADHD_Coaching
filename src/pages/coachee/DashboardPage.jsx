@@ -9,7 +9,7 @@ import { getSessionsForCoachee } from '../../lib/sessionService'
 import { getActiveSubscription } from '../../lib/subscriptionService'
 import { isSupabaseConfigured, supabase } from '../../lib/supabase'
 import { CurrentAction } from '../../components/coachee/CurrentAction'
-import { TodayTasks } from '../../components/coachee/TodayTasks'
+import { BrainDump } from '../../components/coachee/BrainDump'
 import { CoachingProgress } from '../../components/coachee/CoachingProgress'
 import { NextSession } from '../../components/coachee/NextSession'
 import { CoachMessage } from '../../components/coachee/CoachMessage'
@@ -29,7 +29,7 @@ import { CoachingCompletionModal } from '../../components/modals/CoachingComplet
 import { UltramindProgressCard } from '../../components/coachee/UltramindProgressCard'
 import { UltramindTodayPlan } from '../../components/coachee/UltramindTodayPlan'
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/common/Card'
-import { Calendar, Clock, MessageSquare, Brain, Target, CreditCard, PartyPopper, X, User } from 'lucide-react'
+import { Clock, MessageSquare, Brain, Target, CreditCard, PartyPopper, X, User } from 'lucide-react'
 import { getUpcomingSessions } from '../../lib/sessionService'
 import { getActiveUltramindProgram } from '../../lib/ultramindProgramService'
 
@@ -313,10 +313,6 @@ export function CoacheeDashboardPage() {
     loadDashboardData()
   }, [user?.id])
 
-  // 오늘의 일정 (예약된 세션)
-  const today = new Date().toISOString().split('T')[0]
-  const todaySchedule = sessions.filter((s) => s.date === today && s.status === 'scheduled')
-
   if (isLoading) {
     return (
       <div className="max-w-4xl mx-auto flex items-center justify-center py-20">
@@ -443,44 +439,8 @@ export function CoacheeDashboardPage() {
           {/* 오늘의 루틴 */}
           {hasCoach && <RoutineTasksCard />}
 
-          {/* 2열 그리드: 오늘의 일정 & 오늘의 할 일 */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base flex items-center gap-2">
-                  <Calendar className="w-4 h-4 text-emerald-600" />
-                  오늘의 일정
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {todaySchedule.length === 0 ? (
-                  <p className="text-sm text-gray-500 py-4 text-center">
-                    오늘 예정된 일정이 없습니다.
-                  </p>
-                ) : (
-                  <div className="space-y-3">
-                    {todaySchedule.map((schedule) => (
-                      <div
-                        key={schedule.id}
-                        className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg"
-                      >
-                        <div className="flex items-center gap-2 text-sm">
-                          <Clock className="w-4 h-4 text-gray-400" />
-                          <span className="font-medium text-gray-900">
-                            {schedule.time}
-                          </span>
-                        </div>
-                        <span className="text-sm text-gray-600">
-                          {schedule.topic || '코칭 세션'}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-            <TodayTasks />
-          </div>
+          {/* 브레인 덤프 & 실행목록 */}
+          <BrainDump />
 
           {/* 2열 그리드: 코칭 진행 상태 & 코치 메시지 */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">

@@ -246,9 +246,9 @@ function RadarChart({ data }) {
     }
   }
 
-  // 데이터 폴리곤 경로
+  // 데이터 폴리곤 경로 (percentage가 높을수록 바깥쪽 = 관리 필요)
   const dataPath = data.map((item, i) => {
-    const point = getPoint(i, 100 - item.percentage) // 점수가 높을수록 문제가 많음, 반전
+    const point = getPoint(i, item.percentage)
     return `${i === 0 ? 'M' : 'L'} ${point.x} ${point.y}`
   }).join(' ') + ' Z'
 
@@ -307,7 +307,7 @@ function RadarChart({ data }) {
 
         {/* 데이터 포인트 */}
         {data.map((item, i) => {
-          const point = getPoint(i, 100 - item.percentage)
+          const point = getPoint(i, item.percentage)
           return (
             <circle
               key={i}
@@ -468,7 +468,7 @@ export function ResultsVisualization({ prescriptions, checklistResults }) {
             <h3 className="font-semibold text-gray-900 mb-4 text-center">영역별 불균형 분포</h3>
             <RadarChart data={radarData} />
             <p className="text-center text-xs text-gray-400 mt-4">
-              * 중심에 가까울수록 양호, 바깥쪽일수록 관리 필요
+              * 바깥쪽으로 튀어나올수록 관리 필요, 중심에 가까울수록 양호
             </p>
           </div>
 

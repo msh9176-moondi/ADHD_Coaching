@@ -7,10 +7,13 @@ import {
   FileText,
   CheckSquare,
   MessageCircle,
+  MessageSquare,
   Settings,
   LogOut,
   Users,
-  X
+  X,
+  BarChart3,
+  Brain
 } from 'lucide-react'
 import { useStore } from '../../store/useStore'
 import { getAllUnreadCounts } from '../../lib/messageService'
@@ -63,11 +66,9 @@ export function Sidebar({ isOpen, onClose }) {
   ]
 
   const coacheeMenuItems = [
-    { icon: LayoutDashboard, label: '홈', path: '/coachee' },
-    { icon: Target, label: '나의 목표', path: '/coachee/goals' },
-    { icon: CheckSquare, label: '실행 과제', path: '/coachee/tasks' },
-    { icon: Calendar, label: '상담 일정', path: '/coachee/schedule' },
-    { icon: FileText, label: '성찰 일지', path: '/coachee/reflections' },
+    { icon: CheckSquare, label: '오늘 할 일', path: '/coachee/today' },
+    { icon: MessageSquare, label: '코칭 상담', path: '/coachee/coaching' },
+    { icon: BarChart3, label: '나의 분석', path: '/coachee/analysis' },
     { icon: MessageCircle, label: '메시지', path: '/coachee/messages' },
   ]
 
@@ -105,7 +106,7 @@ export function Sidebar({ isOpen, onClose }) {
             <NavLink
               key={item.path}
               to={item.path}
-              end={item.path === '/coach' || item.path === '/coachee'}
+              end={item.path === '/coach'}
               onClick={handleNavClick}
               className={({ isActive }) =>
                 `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
@@ -132,14 +133,17 @@ export function Sidebar({ isOpen, onClose }) {
       </nav>
 
       <div className="px-3 py-4 border-t border-gray-100 space-y-1">
-        <NavLink
-          to="/settings"
-          onClick={handleNavClick}
-          className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors"
-        >
-          <Settings className="w-5 h-5" />
-          설정
-        </NavLink>
+        {/* 코치는 설정 링크 표시, 피코치는 메인 메뉴에 설정이 있으므로 숨김 */}
+        {isCoach && (
+          <NavLink
+            to="/settings"
+            onClick={handleNavClick}
+            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors"
+          >
+            <Settings className="w-5 h-5" />
+            설정
+          </NavLink>
+        )}
         <button
           onClick={handleLogout}
           className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors"
