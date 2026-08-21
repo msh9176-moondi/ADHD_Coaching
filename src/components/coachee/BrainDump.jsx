@@ -6,17 +6,19 @@
  * - 사용자 검토 및 수정
  */
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '../common/Card'
 import { Button } from '../common/Button'
 import { useStore } from '../../store/useStore'
 import { classifyTasks, classifyTasksWithReview, generateTaskExamples, generatePriorityAdvice } from '../../lib/taskClassificationService'
+import { getBrainDump, saveBrainDump, subscribeToBrainDump, migrateLocalToServer } from '../../lib/brainDumpService'
 import { TaskExecutionModal } from './TaskExecutionModal'
 import { BrainDumpWizard } from './BrainDumpWizard'
 import {
   Brain, Sparkles, ListTodo, FolderOpen, Loader2,
   Plus, Trash2, ArrowRight, CheckCircle, Clock, Check,
-  ChevronDown, ChevronUp, Edit3, GripVertical, AlertCircle
+  ChevronDown, ChevronUp, Edit3, GripVertical, AlertCircle,
+  Cloud, CloudOff
 } from 'lucide-react'
 
 export function BrainDump() {
@@ -29,39 +31,61 @@ export function BrainDump() {
   const [selectedTask, setSelectedTask] = useState(null)
   const [showExecutionModal, setShowExecutionModal] = useState(false)
   const [expandedSection, setExpandedSection] = useState('comprehensive')
+  const [isSyncing, setIsSyncing] = useState(false)
 
   // 위자드 관련 상태
   const [showWizard, setShowWizard] = useState(false)
   const [wizardItems, setWizardItems] = useState([])
   const [priorityAdvice, setPriorityAdvice] = useState('')
 
-  // localStorage에서 기존 데이터 로드
+  // 서버/localStorage에서 기존 데이터 로드
   useEffect(() => {
     if (user?.id) {
-      const saved = localStorage.getItem(`brain_dump_${user.id}`)
-      if (saved) {
+      const loadData = async () => {
+        setIsSyncing(true)
         try {
-          const parsed = JSON.parse(saved)
-          setDailyTasks(parsed.dailyTasks || [])
-          setComprehensiveTasks(parsed.comprehensiveTasks || [])
-          if (parsed.dailyTasks?.length > 0 || parsed.comprehensiveTasks?.length > 0) {
+          // 로컬 데이터 서버로 마이그레이션 시도
+          await migrateLocalToServer(user.id)
+
+          // 데이터 로드 (서버 우선, localStorage 폴백)
+          const data = await getBrainDump(user.id)
+          setDailyTasks(data.dailyTasks)
+          setComprehensiveTasks(data.comprehensiveTasks)
+          if (data.dailyTasks.length > 0 || data.comprehensiveTasks.length > 0) {
             setShowClassified(true)
           }
-        } catch (e) {}
+        } catch (e) {
+          console.error('데이터 로드 실패:', e)
+        } finally {
+          setIsSyncing(false)
+        }
       }
+      loadData()
+
+      // 실시간 구독 (다른 기기에서 변경 시 동기화)
+      const unsubscribe = subscribeToBrainDump(user.id, (data) => {
+        setDailyTasks(data.dailyTasks)
+        setComprehensiveTasks(data.comprehensiveTasks)
+        if (data.dailyTasks.length > 0 || data.comprehensiveTasks.length > 0) {
+          setShowClassified(true)
+        }
+      })
+
+      return () => unsubscribe()
     }
   }, [user?.id])
 
-  // 데이터 저장
-  const saveData = (daily, comprehensive) => {
+  // 데이터 저장 (서버 + localStorage)
+  const saveData = useCallback(async (daily, comprehensive) => {
     if (user?.id) {
-      localStorage.setItem(`brain_dump_${user.id}`, JSON.stringify({
-        dailyTasks: daily,
-        comprehensiveTasks: comprehensive,
-        updatedAt: new Date().toISOString()
-      }))
+      setIsSyncing(true)
+      try {
+        await saveBrainDump(user.id, daily, comprehensive)
+      } finally {
+        setIsSyncing(false)
+      }
     }
-  }
+  }, [user?.id])
 
   // AI 분류 실행 (카드뉴스 위자드 열기)
   const handleClassify = async () => {
@@ -202,6 +226,11 @@ export function BrainDump() {
           <CardTitle className="text-base flex items-center gap-2">
             <Brain className="w-5 h-5 text-violet-600" />
             브레인 덤프
+            {isSyncing ? (
+              <Loader2 className="w-3.5 h-3.5 text-violet-400 animate-spin" />
+            ) : (
+              <Cloud className="w-3.5 h-3.5 text-emerald-500" title="동기화됨" />
+            )}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">

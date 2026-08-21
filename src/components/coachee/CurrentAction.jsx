@@ -3,6 +3,7 @@ import { useStore } from '../../store/useStore'
 import { Button } from '../common/Button'
 import { FileText, Target, Play, Pause, RotateCcw, CheckCircle, Clock, ListTodo } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
+import { getBrainDump, saveBrainDump } from '../../lib/brainDumpService'
 
 export function CurrentAction() {
   const { user, coachingStatus, coachingAction, setCoachingAction } = useStore()
@@ -18,19 +19,29 @@ export function CurrentAction() {
   const [currentDailyTask, setCurrentDailyTask] = useState(null)
   const [nextDailyTask, setNextDailyTask] = useState(null)
 
+  // 시간에 분 추가하는 헬퍼
+  const addMinutes = (time, minutes) => {
+    const [h, m] = time.split(':').map(Number)
+    const totalMinutes = h * 60 + m + minutes
+    const newH = Math.floor(totalMinutes / 60) % 24
+    const newM = totalMinutes % 60
+    return `${newH.toString().padStart(2, '0')}:${newM.toString().padStart(2, '0')}`
+  }
+
   // 브레인 덤프 일일 목록에서 현재 시간에 해당하는 태스크 찾기
   useEffect(() => {
     if (!user?.id) return
 
-    const loadDailyTasks = () => {
-      const saved = localStorage.getItem(`brain_dump_${user.id}`)
-      if (!saved) return
-
+    const loadDailyTasks = async () => {
       try {
-        const parsed = JSON.parse(saved)
-        const dailyTasks = (parsed.dailyTasks || []).filter(t => !t.completed && t.scheduledTime)
+        const data = await getBrainDump(user.id)
+        const dailyTasks = (data.dailyTasks || []).filter(t => !t.completed && t.scheduledTime)
 
-        if (dailyTasks.length === 0) return
+        if (dailyTasks.length === 0) {
+          setCurrentDailyTask(null)
+          setNextDailyTask(null)
+          return
+        }
 
         // 현재 시간
         const now = new Date()
@@ -70,20 +81,19 @@ export function CurrentAction() {
       }
     }
 
-    // 시간에 분 추가하는 헬퍼
-    const addMinutes = (time, minutes) => {
-      const [h, m] = time.split(':').map(Number)
-      const totalMinutes = h * 60 + m + minutes
-      const newH = Math.floor(totalMinutes / 60) % 24
-      const newM = totalMinutes % 60
-      return `${newH.toString().padStart(2, '0')}:${newM.toString().padStart(2, '0')}`
-    }
-
     loadDailyTasks()
 
     // 1분마다 갱신
     const interval = setInterval(loadDailyTasks, 60000)
-    return () => clearInterval(interval)
+
+    // brain-dump-updated 이벤트 리스너
+    const handleUpdate = () => loadDailyTasks()
+    window.addEventListener('brain-dump-updated', handleUpdate)
+
+    return () => {
+      clearInterval(interval)
+      window.removeEventListener('brain-dump-updated', handleUpdate)
+    }
   }, [user?.id])
 
   // 타이머 로직
@@ -141,32 +151,22 @@ export function CurrentAction() {
   }
 
   // 브레인 덤프 태스크 완료 처리
-  const handleDailyTaskComplete = (taskId) => {
+  const handleDailyTaskComplete = async (taskId) => {
     if (!user?.id) return
 
-    const saved = localStorage.getItem(`brain_dump_${user.id}`)
-    if (!saved) return
-
     try {
-      const parsed = JSON.parse(saved)
-      const updatedDaily = (parsed.dailyTasks || []).map(t =>
+      const data = await getBrainDump(user.id)
+      const updatedDaily = (data.dailyTasks || []).map(t =>
         t.id === taskId ? { ...t, completed: true } : t
       )
 
-      localStorage.setItem(`brain_dump_${user.id}`, JSON.stringify({
-        ...parsed,
-        dailyTasks: updatedDaily,
-        updatedAt: new Date().toISOString()
-      }))
+      await saveBrainDump(user.id, updatedDaily, data.comprehensiveTasks || [])
 
       // 다음 태스크로 이동
       setCurrentDailyTask(nextDailyTask)
       setNextDailyTask(null)
       setIsCompleted(false)
       setTimeLeft(600)
-
-      // 강제 리렌더
-      window.dispatchEvent(new Event('brain-dump-updated'))
     } catch (e) {
       console.error('태스크 완료 처리 실패:', e)
     }

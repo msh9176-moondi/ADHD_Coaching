@@ -26,6 +26,10 @@ import {
   generatePrescription,
   generate6WeekProgram
 } from '../../lib/ultramindAnalysisService'
+import {
+  getBrainDump,
+  saveBrainDump as saveBrainDumpToServer
+} from '../../lib/brainDumpService'
 
 export function UltramindTodayPlan() {
   const { user } = useStore()
@@ -108,25 +112,28 @@ export function UltramindTodayPlan() {
   // 브레인 덤프 데이터 로드
   useEffect(() => {
     if (user?.id) {
-      const saved = localStorage.getItem(`brain_dump_${user.id}`)
-      if (saved) {
+      const loadBrainDump = async () => {
         try {
-          const parsed = JSON.parse(saved)
-          setDailyTasks(parsed.dailyTasks || [])
-          setComprehensiveTasks(parsed.comprehensiveTasks || [])
-        } catch (e) {}
+          const data = await getBrainDump(user.id)
+          setDailyTasks(data.dailyTasks || [])
+          setComprehensiveTasks(data.comprehensiveTasks || [])
+        } catch (e) {
+          console.error('브레인 덤프 로드 실패:', e)
+        }
       }
+      loadBrainDump()
+
+      // brain-dump-updated 이벤트 리스너
+      const handleUpdate = () => loadBrainDump()
+      window.addEventListener('brain-dump-updated', handleUpdate)
+      return () => window.removeEventListener('brain-dump-updated', handleUpdate)
     }
   }, [user?.id])
 
   // 브레인 덤프 데이터 저장
-  const saveBrainDumpData = (daily, comprehensive) => {
+  const saveBrainDumpData = async (daily, comprehensive) => {
     if (user?.id) {
-      localStorage.setItem(`brain_dump_${user.id}`, JSON.stringify({
-        dailyTasks: daily,
-        comprehensiveTasks: comprehensive,
-        updatedAt: new Date().toISOString()
-      }))
+      await saveBrainDumpToServer(user.id, daily, comprehensive)
     }
   }
 
